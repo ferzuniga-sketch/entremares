@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entremares — Private Real Estate Investment Club</title>
+    <meta name="description" content="A private club connecting trusted investors with premium real estate development projects in Mexico and Latin America. Two projects completed. 20% average returns.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+    <style>
+        /* Page-specific overrides */
+        .hero { min-height: 100vh; }
+        .hero-content { padding-top: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Navigation ===== -->
+    <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo" aria-label="Entremares home">
+                <div class="logo-mark" aria-hidden="true">E</div>
+                Entremares
+            </a>
+
+            <div class="nav-links" role="menubar">
+                <a href="projects.html" class="nav-link" role="menuitem">Projects</a>
+                <a href="#how-it-works" class="nav-link" role="menuitem">How it works</a>
+                <a href="#team" class="nav-link" role="menuitem">Team</a>
+                <a href="apply.html" class="nav-cta" role="menuitem">Apply Now</a>
+            </div>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu" role="menu" aria-hidden="true">
+        <a href="projects.html" class="mobile-link">Projects</a>
+        <a href="#how-it-works" class="mobile-link">How it works</a>
+        <a href="#team" class="mobile-link">Team</a>
+        <a href="apply.html" class="mobile-cta">Apply Now →</a>
+    </div>
+
+    <!-- ===== Hero ===== -->
+    <section class="hero" id="hero" aria-label="Hero">
+        <div class="hero-bg">
+            <img
+                src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1920&q=85&auto=format&fit=crop"
+                alt="Luxury residential development"
+                class="hero-img"
+            >
+            <div class="hero-overlay" aria-hidden="true"></div>
+            <div class="hero-grain"  aria-hidden="true"></div>
+        </div>
+
+        <div class="hero-content">
+            <div class="container">
+                <div class="hero-eyebrow fade-up">Private Investment Club · Est. 2020</div>
+
+                <h1 class="hero-title fade-up" style="transition-delay: 0.08s">
+                    Where trusted capital<br>
+                    meets premium<br>
+                    <em>real estate.</em>
+                </h1>
+
+                <p class="hero-subtitle fade-up" style="transition-delay: 0.16s">
+                    Entremares is a private club connecting accredited investors with exceptional residential development opportunities across Mexico and Latin America.
+                </p>
+
+                <div class="hero-actions fade-up" style="transition-delay: 0.24s">
+                    <a href="apply.html" class="btn btn-white">Request Access</a>
+                    <a href="projects.html" class="btn btn-ghost-white">View Projects</a>
+                </div>
+
+                <div class="hero-social-proof fade-up" style="transition-delay: 0.34s">
+                    <div class="proof-avatars" aria-hidden="true">
+                        <div class="proof-avatar">AC</div>
+                        <div class="proof-avatar">MR</div>
+                        <div class="proof-avatar">JL</div>
+                        <div class="proof-avatar">+5</div>
+                    </div>
+                    <p class="proof-text">
+                        <strong>8 trusted investors</strong> have deployed capital with Entremares
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-scroll" aria-hidden="true">
+            <span>Scroll</span>
+            <div class="scroll-bar"></div>
+        </div>
+    </section>
+
+    <!-- ===== Stats Bar ===== -->
+    <section class="stats" aria-label="Key statistics">
+        <div class="container">
+            <div class="stats-grid" data-stagger>
+                <div class="stat-item fade-up">
+                    <div class="stat-value">
+                        $<span data-count="1.1" data-suffix="M+" data-decimals="1">1.1M+</span>
+                    </div>
+                    <div class="stat-label">Total Capital Deployed</div>
+                </div>
+                <div class="stat-item fade-up">
+                    <div class="stat-value">
+                        <span data-count="20" data-suffix="%">20</span>%
+                    </div>
+                    <div class="stat-label">Average Investor Return</div>
+                </div>
+                <div class="stat-item fade-up">
+                    <div class="stat-value">
+                        <span data-count="2">2</span>
+                    </div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+                <div class="stat-item fade-up">
+                    <div class="stat-value">
+                        <span data-count="100" data-suffix="%">100</span>%
+                    </div>
+                    <div class="stat-label">Delivered On Time</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== How It Works ===== -->
+    <section class="how-it-works" id="how-it-works" aria-label="How it works">
+        <div class="container">
+            <div class="section-header fade-up">
+                <div class="eyebrow">Process</div>
+                <h2 class="section-title">
+                    A straightforward path<br>to <em>real returns.</em>
+                </h2>
+            </div>
+
+            <div class="steps-grid" data-stagger>
+                <div class="step fade-up">
+                    <span class="step-num">01</span>
+                    <h3 class="step-title">Apply</h3>
+                    <p class="step-desc">Request access and complete your investor profile. Every application is reviewed personally by the founding partners.</p>
+                </div>
+
+                <div class="step fade-up">
+                    <span class="step-num">02</span>
+                    <h3 class="step-title">Review</h3>
+                    <p class="step-desc">Receive full project documentation — architectural plans, budget, timeline, and projected returns — before committing a single dollar.</p>
+                </div>
+
+                <div class="step fade-up">
+                    <span class="step-num">03</span>
+                    <h3 class="step-title">Commit</h3>
+                    <p class="step-desc">Confirm your participation amount and sign a shareholders loan agreement digitally. Secure, clear terms, no surprises.</p>
+                </div>
+
+                <div class="step fade-up">
+                    <span class="step-num">04</span>
+                    <h3 class="step-title">Earn</h3>
+                    <p class="step-desc">Receive detailed investor updates every 1–2 months throughout construction, and your capital plus returns upon project completion.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Past Projects ===== -->
+    <section class="past-projects" id="projects" aria-label="Past projects">
+        <div class="container">
+            <div class="section-header fade-up">
+                <div class="eyebrow">Track Record</div>
+                <h2 class="section-title">
+                    Two projects.<br><em>Both delivered.</em>
+                </h2>
+            </div>
+
+            <div class="projects-row">
+
+                <!-- KABIL -->
+                <article class="proj-card fade-up">
+                    <div class="proj-card-img-wrap">
+                        <img
+                            src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80&auto=format&fit=crop"
+                            alt="Kabil — 4 luxury apartments in Tijuana"
+                            class="proj-card-img"
+                            loading="lazy"
+                        >
+                        <div class="proj-card-badge">Completed</div>
+                    </div>
+                    <div class="proj-card-body">
+                        <div class="proj-card-meta">
+                            <span>Tijuana, Mexico</span>
+                            <span>2020 — 2022</span>
+                        </div>
+                        <h3 class="proj-card-title">Kabil</h3>
+                        <p class="proj-card-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 27 months — 3 months from first listing to sold out.</p>
+                        <div class="proj-card-numbers">
+                            <div class="proj-num">
+                                <div class="proj-num-val">$500K</div>
+                                <div class="proj-num-lbl">Investment</div>
+                            </div>
+                            <div class="proj-num">
+                                <div class="proj-num-val">18%</div>
+                                <div class="proj-num-lbl">Net Return</div>
+                            </div>
+                            <div class="proj-num">
+                                <div class="proj-num-val">3 mo.</div>
+                                <div class="proj-num-lbl">Sold Out</div>
+                            </div>
+                        </div>
+                        <a href="projects.html#kabil" class="proj-card-link">
+                            View Project Details <span class="arrow">→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- ALLURE -->
+                <article class="proj-card fade-up" style="transition-delay: 0.12s">
+                    <div class="proj-card-img-wrap">
+                        <img
+                            src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&auto=format&fit=crop"
+                            alt="Allure — 2 premium townhouses in Tijuana"
+                            class="proj-card-img"
+                            loading="lazy"
+                        >
+                        <div class="proj-card-badge">Completed</div>
+                    </div>
+                    <div class="proj-card-body">
+                        <div class="proj-card-meta">
+                            <span>Tijuana, Mexico</span>
+                            <span>2022 — 2024</span>
+                        </div>
+                        <h3 class="proj-card-title">Allure</h3>
+                        <p class="proj-card-desc">Two premium townhouses that pushed the bar on design and premium finishes. Sold out in just 2 months — delivering a 22% net return, our strongest to date.</p>
+                        <div class="proj-card-numbers">
+                            <div class="proj-num">
+                                <div class="proj-num-val">$600K</div>
+                                <div class="proj-num-lbl">Investment</div>
+                            </div>
+                            <div class="proj-num">
+                                <div class="proj-num-val">22%</div>
+                                <div class="proj-num-lbl">Net Return</div>
+                            </div>
+                            <div class="proj-num">
+                                <div class="proj-num-val">2 mo.</div>
+                                <div class="proj-num-lbl">Sold Out</div>
+                            </div>
+                        </div>
+                        <a href="projects.html#allure" class="proj-card-link">
+                            View Project Details <span class="arrow">→</span>
+                        </a>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Next Project Teaser ===== -->
+    <section class="next-project" aria-label="Next project">
+        <div class="container">
+            <div class="next-inner">
+
+                <div class="next-content">
+                    <div class="eyebrow eyebrow-light fade-up">What's Next</div>
+                    <h2 class="next-title fade-up" style="transition-delay: 0.08s">
+                        The next project<br>is taking shape.
+                    </h2>
+                    <p class="next-desc fade-up" style="transition-delay: 0.16s">
+                        We are actively evaluating premium development opportunities in Tijuana and across Latin America. Allocation will be limited to our existing investor network and a small number of new accredited investors.
+                    </p>
+                    <div class="fade-up" style="transition-delay: 0.24s">
+                        <a href="apply.html" class="btn btn-white">Register Interest</a>
+                    </div>
+                    <p class="next-detail fade-up" style="transition-delay: 0.3s">
+                        Applications open now — project details shared upon approval
+                    </p>
+                </div>
+
+                <div class="next-img-wrap fade-up" style="transition-delay: 0.12s">
+                    <img
+                        src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&auto=format&fit=crop"
+                        alt="Premium residential development"
+                        class="next-img"
+                        loading="lazy"
+                    >
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Team ===== -->
+    <section class="team" id="team" aria-label="Team">
+        <div class="container">
+            <div class="section-header fade-up">
+                <div class="eyebrow">The Team</div>
+                <h2 class="section-title">
+                    Built on trust,<br><em>driven by expertise.</em>
+                </h2>
+            </div>
+
+            <div class="team-grid">
+
+                <div class="team-card fade-up">
+                    <div class="team-avatar" aria-hidden="true">FZ</div>
+                    <div>
+                        <h3 class="team-name">Fernando Zuniga</h3>
+                        <div class="team-role">Managing Partner</div>
+                        <p class="team-bio">Serial entrepreneur and founder of Entremares. Has successfully raised and deployed over $1M USD in real estate development capital across two completed projects. Operates between Panama City and Tijuana.</p>
+                    </div>
+                </div>
+
+                <div class="team-card fade-up" style="transition-delay: 0.12s">
+                    <div class="team-avatar team-avatar--alt" aria-hidden="true">AE</div>
+                    <div>
+                        <h3 class="team-name">Alberto</h3>
+                        <div class="team-role">Development Partner · AEDIFIKA</div>
+                        <p class="team-bio">Architect and founder of AEDIFIKA construction company. 15+ years designing and building premium residential properties in Tijuana, Mexico. Responsible for every Entremares project from ground-up to handover.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA Banner ===== -->
+    <div class="cta-banner" aria-label="Apply call to action">
+        <div class="container">
+            <div class="cta-banner-inner fade-up">
+                <div class="cta-banner-text">
+                    Ready to invest in<br><em>the next project?</em>
+                </div>
+                <a href="apply.html" class="btn btn-black">Apply Now →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Footer ===== -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-grid">
+
+                <div>
+                    <div class="footer-logo">
+                        <div class="logo-mark" style="background: var(--black); color: var(--white);" aria-hidden="true">E</div>
+                        Entremares
+                    </div>
+                    <p class="footer-tagline">
+                        A private real estate investment club connecting trusted investors with premium residential development in Mexico and Latin America.
+                    </p>
+                    <div class="footer-locations">
+                        <span>Panama City, Panama</span>
+                        <span>Tijuana, Baja California, Mexico</span>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="footer-col-label">Navigate</span>
+                    <div class="footer-links">
+                        <a href="projects.html" class="footer-link">Projects</a>
+                        <a href="#how-it-works" class="footer-link">How it works</a>
+                        <a href="#team" class="footer-link">The Team</a>
+                        <a href="apply.html" class="footer-link">Apply</a>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="footer-col-label">Contact</span>
+                    <div class="footer-links">
+                        <a href="mailto:info@entremares.com" class="footer-link">info@entremares.com</a>
+                        <span class="footer-link" style="cursor: default;">Est. 2020</span>
+                        <a href="apply.html" class="footer-link">Register Interest →</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                <p class="footer-copy">© 2026 Entremares. All rights reserved. Private investment club. Not a public offering.</p>
+                <p class="footer-legal">For accredited investors only. Past returns are not indicative of future results. All investments carry risk. Project participation is by invitation following personal review.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
