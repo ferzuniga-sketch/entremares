@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { -webkit-font-smoothing: antialiased; }
@@ -253,7 +254,7 @@
     /* ── Stat cards ── */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 14px;
       margin-bottom: 14px;
     }
@@ -528,6 +529,19 @@
       padding: 4px 10px;
     }
 
+    .badge-committed {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #1A5FA8;
+      background: #EEF4FD;
+      border: 1px solid #BDD3F5;
+      border-radius: 100px;
+      padding: 4px 10px;
+    }
+
     .inv-divider {
       height: 1px;
       background: #F0F0EE;
@@ -622,7 +636,7 @@
        RESPONSIVE
     ══════════════════════════════════════════ */
     @media (max-width: 960px) {
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
       .mid-row { grid-template-columns: 1fr; }
     }
 
@@ -630,7 +644,7 @@
       .hdr { padding: 0 18px; }
       .hdr-name { display: none; }
       .page { padding: 28px 18px 60px; }
-      .stats-row { gap: 10px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .mid-row { gap: 10px; }
       .inv-grid { grid-template-columns: 1fr; gap: 10px; }
       .opp-card { padding: 22px 20px; }
@@ -1152,6 +1166,11 @@
     <!-- Stats -->
     <div class="stats-row">
       <div class="stat">
+        <div class="stat-lbl">Initial Investment</div>
+        <div class="stat-val" id="stat-kabil-investment">—</div>
+        <div class="stat-note">First contribution</div>
+      </div>
+      <div class="stat">
         <div class="stat-lbl">Total Invested</div>
         <div class="stat-val" id="stat-total-invested">—</div>
         <div class="stat-note">2 projects</div>
@@ -1168,7 +1187,7 @@
       </div>
       <div class="stat">
         <div class="stat-lbl">Member Since</div>
-        <div class="stat-val sm">June 2020</div>
+        <div class="stat-val">June 2020</div>
         <div class="stat-note">5+ years</div>
       </div>
     </div>
@@ -1224,6 +1243,40 @@
         <button class="btn-opp" onclick="window.location.href='projects.html'">View Details &rarr;</button>
       </div>
 
+    </div>
+
+    <!-- Active Investments (shown when investor has committed to Real del Monte) -->
+    <div id="active-investments-section" style="display:none;">
+      <div class="sec-hdr">
+        <span class="sec-title">Active Investments</span>
+        <span class="sec-meta">1 project</span>
+      </div>
+      <div class="inv-grid">
+        <div class="inv-card">
+          <div class="inv-card-top">
+            <div>
+              <div class="inv-proj-name">Real del Monte</div>
+              <div class="inv-proj-loc">Tijuana, Mexico &middot; 24 months</div>
+            </div>
+            <span class="badge-committed">Committed</span>
+          </div>
+          <div class="inv-divider"></div>
+          <div class="inv-figures">
+            <div>
+              <div class="inv-fig-lbl">Committed</div>
+              <div class="inv-fig-val" id="rdm-committed-amount">—</div>
+            </div>
+            <div>
+              <div class="inv-fig-lbl">Target Return</div>
+              <div class="inv-fig-val">20–25%</div>
+            </div>
+            <div>
+              <div class="inv-fig-lbl">Status</div>
+              <div class="inv-fig-val" style="font-size:13px;">Funding in progress</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Past Investments -->
@@ -1455,11 +1508,80 @@
 
 
 <script>
+  /* ── Supabase client ── */
+  const { createClient } = window.supabase;
+  const supabaseClient = createClient(
+    'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+    'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+  );
+
+  const BASE_RAISED = 250000; // commitments captured before live tracking
+  const GOAL = 800000;
+
+  async function saveCommitmentToSupabase() {
+    try {
+      const { error } = await supabaseClient.from('commitments').insert({
+        investor_email: currentInvestorEmail,
+        investor_name:  currentInvestor.name,
+        amount:         modalAmount,
+        project_name:   'Real del Monte'
+      });
+      if (error) console.error('Supabase insert error:', error);
+    } catch (err) {
+      console.error('Failed to save commitment:', err);
+    }
+  }
+
+  async function updateFundingProgress() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('commitments')
+        .select('amount')
+        .eq('project_name', 'Real del Monte');
+
+      const liveTotal  = error ? 0 : data.reduce((s, r) => s + Number(r.amount), 0);
+      const totalRaised = BASE_RAISED + liveTotal;
+      const pct = Math.min(totalRaised / GOAL * 100, 100);
+
+      document.getElementById('prog-fill').style.width = pct.toFixed(2) + '%';
+      document.querySelector('.prog-hdr-pct').textContent = Math.round(pct) + '%';
+      document.querySelector('.prog-amts span:first-child').textContent =
+        '$' + totalRaised.toLocaleString('en-US') + ' raised';
+    } catch (err) {
+      console.error('Failed to fetch commitments:', err);
+    }
+  }
+
   /* ── Modal state ── */
   let currentInvestor = null;
   let currentInvestorEmail = '';
   let modalAmount = 0;
   let modalRefNum = '';
+  let rdmCommittedAmount = 0;
+
+  async function loadCommitmentStatus(email) {
+    if (!email) return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('commitments')
+        .select('amount')
+        .eq('investor_email', email)
+        .eq('project_name', 'Real del Monte');
+
+      if (error || !data || data.length === 0) {
+        document.getElementById('active-investments-section').style.display = 'none';
+        return;
+      }
+
+      rdmCommittedAmount = data.reduce((s, r) => s + Number(r.amount), 0);
+      document.getElementById('active-investments-section').style.display = '';
+      document.getElementById('rdm-committed-amount').textContent = fmt(rdmCommittedAmount);
+      set('wallet-balance', fmt(Math.max(0, currentInvestor.wallet - rdmCommittedAmount)));
+    } catch (err) {
+      console.error('Failed to load commitment status:', err);
+      document.getElementById('active-investments-section').style.display = 'none';
+    }
+  }
 
   /* ── Investor database ── */
   const INVESTORS = {
@@ -1574,6 +1696,8 @@
   function renderDashboard(inv, email) {
     currentInvestor = inv;
     currentInvestorEmail = email || '';
+    rdmCommittedAmount = 0;
+    document.getElementById('active-investments-section').style.display = 'none';
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('dashboard').style.display    = 'block';
 
@@ -1594,9 +1718,10 @@
     const totalReturns  = inv.kabil.profit   + inv.allure.profit;
     const avgReturn     = totalReturns / totalInvested * 100;
 
-    set('stat-total-invested', fmt(totalInvested));
-    set('stat-total-returns',  '+' + fmt(totalReturns));
-    set('stat-avg-return',     avgReturn.toFixed(1) + '% average');
+    set('stat-kabil-investment', fmt(inv.kabil.invested));
+    set('stat-total-invested',  fmt(totalInvested));
+    set('stat-total-returns',   '+' + fmt(totalReturns));
+    set('stat-avg-return',      avgReturn.toFixed(1) + '% average');
 
     /* Wallet */
     set('wallet-balance', fmt(inv.wallet));
@@ -1648,12 +1773,9 @@
       </div>
     `).join('');
 
-    /* Funding bar */
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        document.getElementById('prog-fill').style.width = '31.25%';
-      }, 150);
-    });
+    /* Funding bar and commitment status — live from Supabase */
+    setTimeout(() => updateFundingProgress(), 150);
+    loadCommitmentStatus(email || currentInvestorEmail);
   }
 
   /* ── Modal functions ── */
@@ -1754,7 +1876,7 @@
 
   function goToStep1() { showStep(1); }
 
-  function goToStep3() {
+  async function goToStep3() {
     if (!document.getElementById('chk-binding').checked ||
         !document.getElementById('chk-funds').checked) return;
 
@@ -1785,6 +1907,11 @@
       'mailto:ferzuniga@gmail.com?subject=' + subject + '&body=' + body;
 
     showStep(3);
+
+    // Persist commitment, refresh progress bar, and show active investment
+    await saveCommitmentToSupabase();
+    updateFundingProgress();
+    loadCommitmentStatus(currentInvestorEmail);
   }
 
   /* ── Event listeners ── */

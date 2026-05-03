@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { -webkit-font-smoothing: antialiased; }
@@ -306,6 +307,73 @@
       color: #FFFFFF;
       border-color: #0D0D0D;
     }
+
+    .btn-delete {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: #C0392B;
+      background: none;
+      border: 1px solid #F5C6C1;
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      margin-left: 6px;
+    }
+
+    .btn-delete:hover {
+      background: #C0392B;
+      color: #FFFFFF;
+      border-color: #C0392B;
+    }
+
+    .inline-edit-input {
+      width: 130px;
+      padding: 6px 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+      color: #0D0D0D;
+      background: #F5F5F3;
+      border: 1.5px solid #0D0D0D;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .btn-save-inline {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: #FFFFFF;
+      background: #0D0D0D;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-save-inline:hover { opacity: 0.80; }
+
+    .btn-cancel-inline {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6B6B6B;
+      background: none;
+      border: 1px solid #E0E0DC;
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      margin-left: 6px;
+    }
+
+    .btn-cancel-inline:hover { border-color: #0D0D0D; color: #0D0D0D; }
 
     /* ── Table ── */
     .table-card {
@@ -692,9 +760,10 @@
     <div class="tab-content" id="tab-commitments">
       <div class="sec-top">
         <div>
-          <div class="sec-heading">Commitments — Real del Monte</div>
-          <div class="sec-count">$800,000 target</div>
+          <div class="sec-heading">Commitments</div>
+          <div class="sec-count" id="commitment-count">Loading…</div>
         </div>
+        <button class="btn-add" id="btn-add-commitment">+ Add Commitment</button>
       </div>
 
       <!-- Summary strip -->
@@ -724,10 +793,11 @@
           <thead>
             <tr>
               <th>Investor Name</th>
-              <th>Email</th>
-              <th>Amount Committed</th>
-              <th>Status</th>
+              <th>Investor Email</th>
+              <th>Project</th>
+              <th>Amount</th>
               <th>Date</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="commitment-tbody"></tbody>
@@ -870,6 +940,45 @@
 </div>
 
 
+<!-- ══════════════════════════════════════════
+     MODAL — ADD COMMITMENT
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-commitment">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Add Commitment</div>
+      <button class="modal-close" id="modal-commitment-close">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field">
+        <label>Investor</label>
+        <select id="c-investor">
+          <option value="">Select investor…</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Project</label>
+        <select id="c-project">
+          <option value="Real del Monte">Real del Monte</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Amount ($)</label>
+        <input type="number" id="c-amount" placeholder="25000" step="1" min="1">
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="modal-commitment-cancel">Cancel</button>
+      <button class="btn-save" id="modal-commitment-save">Add Commitment</button>
+    </div>
+  </div>
+</div>
+
+
 <script>
   /* ═══════════════════════════════════════════
      DATA
@@ -998,14 +1107,6 @@
     }
   ];
 
-  const COMMITMENTS_DATA = [
-    { investor: 'Fernando Zuniga',       email: 'ferzuniga@gmail.com',          amount: 100000, status: 'Committed', date: 'Jan 15, 2025' },
-    { investor: 'Sergio Gomez',          email: 'sergio.gmd@gmail.com',          amount: 50000,  status: 'Committed', date: 'Feb 3, 2025'  },
-    { investor: 'Nacho Lucas',           email: 'nacho.lucas@gmail.com',         amount: 40000,  status: 'Committed', date: 'Feb 18, 2025' },
-    { investor: 'Gilberto Padilla',      email: 'gilito.iii@gmail.com',          amount: 30000,  status: 'Committed', date: 'Mar 1, 2025'  },
-    { investor: 'Alberto Cuellar',       email: 'cuellarolmos@gmail.com',        amount: 30000,  status: 'Committed', date: 'Mar 10, 2025' }
-  ];
-
   let nextInvId  = 9;
   let nextProjId = 4;
   let editingInvId  = null;
@@ -1076,26 +1177,123 @@
     document.getElementById('proj-count').textContent = PROJECTS_DATA.length + ' project' + (PROJECTS_DATA.length !== 1 ? 's' : '');
   }
 
-  function renderCommitments() {
+  /* ═══════════════════════════════════════════
+     SUPABASE — COMMITMENTS
+  ═══════════════════════════════════════════ */
+  const SUPABASE_URL = 'https://ghkhvjgeqqxfisfjozzr.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR';
+  console.log('[Supabase] Initializing client with URL:', SUPABASE_URL);
+  const { createClient } = window.supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+  console.log('[Supabase] Client created:', supabaseClient);
+
+  let commitmentsCache = {};
+
+  /* ── Visible error banner ── */
+  function showDbError(msg) {
+    let el = document.getElementById('db-error-banner');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'db-error-banner';
+      el.style.cssText = [
+        'position:fixed', 'top:70px', 'right:20px', 'z-index:9999',
+        'background:#FEF0EE', 'border:1px solid #F5C6C1', 'color:#C0392B',
+        'border-radius:10px', 'padding:14px 18px', 'font-size:14px',
+        'font-weight:500', 'max-width:420px',
+        'box-shadow:0 4px 20px rgba(0,0,0,0.12)',
+        'white-space:pre-wrap', 'line-height:1.5'
+      ].join(';');
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 10000);
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function commitmentActionBtns() {
+    return `<button class="btn-edit" data-action="edit">Edit</button>`
+         + `<button class="btn-delete" data-action="delete">Delete</button>`;
+  }
+
+  async function loadCommitmentsFromSupabase() {
     const tbody = document.getElementById('commitment-tbody');
-    tbody.innerHTML = COMMITMENTS_DATA.map(c => `
-      <tr>
-        <td class="td-name">${c.investor}</td>
-        <td class="td-email">${c.email}</td>
-        <td class="td-mono">${fmt(c.amount)}</td>
-        <td>${statusBadge(c.status)}</td>
-        <td style="color:#9B9B9B;font-size:13px">${c.date}</td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
 
-    const totalCommitted = COMMITMENTS_DATA.reduce((s, c) => s + c.amount, 0);
-    const target = 800000;
+    console.log('[Supabase] Loading commitments...');
+    const { data, error } = await supabaseClient
+      .from('commitments')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    console.log('[Supabase] Load result — data:', data, '| error:', error);
+
+    if (error) {
+      const msg = 'Failed to load commitments: ' + error.message + ' (code: ' + error.code + ')';
+      console.error('[Supabase]', msg);
+      showDbError(msg);
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#C0392B;padding:40px 20px">'
+        + escHtml(msg) + '</td></tr>';
+      return;
+    }
+
+    renderCommitmentsTable(data || []);
+  }
+
+  function renderCommitmentsTable(data) {
+    commitmentsCache = {};
+    data.forEach(c => {
+      console.log('[Supabase] Commitment row:', c);
+      commitmentsCache[c.id] = c;
+    });
+
+    const tbody = document.getElementById('commitment-tbody');
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No commitments yet. Add one above.</td></tr>';
+      updateCommitmentSummary([]);
+      return;
+    }
+
+    tbody.innerHTML = data.map(c => {
+      const dateStr = new Date(c.created_at).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric'
+      });
+      return `
+        <tr id="row-${c.id}" data-id="${c.id}">
+          <td class="td-name">${escHtml(c.investor_name)}</td>
+          <td class="td-email">${escHtml(c.investor_email)}</td>
+          <td>${escHtml(c.project_name)}</td>
+          <td class="td-mono" id="cell-amount-${c.id}">${fmt(c.amount)}</td>
+          <td style="color:#9B9B9B;font-size:13px">${dateStr}</td>
+          <td class="td-actions" id="cell-actions-${c.id}">${commitmentActionBtns()}</td>
+        </tr>
+      `;
+    }).join('');
+
+    updateCommitmentSummary(data);
+  }
+
+  function updateCommitmentSummary(data) {
+    const totalCommitted = data.reduce((s, c) => s + Number(c.amount), 0);
+    const target    = 800000;
     const remaining = Math.max(0, target - totalCommitted);
-    const pct = Math.min(100, totalCommitted / target * 100);
+    const pct       = Math.min(100, totalCommitted / target * 100);
+    const n         = data.length;
 
-    document.getElementById('sum-committed').textContent = fmt(totalCommitted);
-    document.getElementById('sum-remaining').textContent = fmt(remaining);
-    document.getElementById('sum-pct-lbl').textContent   = pct.toFixed(1) + '% funded';
+    document.getElementById('sum-committed').textContent  = fmt(totalCommitted);
+    document.getElementById('sum-remaining').textContent  = fmt(remaining);
+    document.getElementById('sum-pct-lbl').textContent    = pct.toFixed(1) + '% funded';
+    document.getElementById('commitment-count').textContent =
+      n + ' commitment' + (n !== 1 ? 's' : '') + ' · $800,000 target';
 
     requestAnimationFrame(() => {
       setTimeout(() => {
@@ -1103,6 +1301,177 @@
       }, 150);
     });
   }
+
+  /* ── Inline edit ── */
+  function startEditCommitment(id, currentAmount) {
+    document.getElementById('cell-amount-' + id).innerHTML =
+      `<input type="number" class="inline-edit-input" id="edit-amount-${id}" value="${currentAmount}" step="1" min="1">`;
+    document.getElementById('cell-actions-' + id).innerHTML =
+      `<button class="btn-save-inline" data-action="save">Save</button>`
+    + `<button class="btn-cancel-inline" data-action="cancel">Cancel</button>`;
+    document.getElementById('edit-amount-' + id).focus();
+  }
+
+  function cancelEditCommitment(id) {
+    const c = commitmentsCache[id];
+    if (!c) { loadCommitmentsFromSupabase(); return; }
+    document.getElementById('cell-amount-' + id).textContent = fmt(c.amount);
+    document.getElementById('cell-actions-' + id).innerHTML  = commitmentActionBtns();
+  }
+
+  async function saveEditCommitment(id) {
+    const input     = document.getElementById('edit-amount-' + id);
+    const newAmount = parseFloat(input.value);
+
+    if (isNaN(newAmount) || newAmount <= 0) {
+      input.style.borderColor = '#C0392B';
+      input.focus();
+      return;
+    }
+
+    input.disabled = true;
+    console.log('[Supabase] Updating commitment — id:', id, 'amount:', newAmount);
+
+    const { data, error } = await supabaseClient
+      .from('commitments')
+      .update({ amount: newAmount })
+      .eq('id', id)
+      .select();
+
+    console.log('[Supabase] Update result — data:', data, '| error:', error);
+
+    if (error) {
+      const msg = 'Save failed: ' + error.message + ' (code: ' + error.code + ')';
+      console.error('[Supabase]', msg);
+      showDbError(msg);
+      input.disabled = false;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      const msg = 'Save failed: 0 rows updated. Check RLS policies — the anon key may not have UPDATE permission on the commitments table.';
+      console.warn('[Supabase]', msg);
+      showDbError(msg);
+      input.disabled = false;
+      return;
+    }
+
+    console.log('[Supabase] Update successful — rows affected:', data.length, data);
+    loadCommitmentsFromSupabase();
+  }
+
+  /* ── Delete ── */
+  async function deleteCommitment(id) {
+    if (!confirm('Are you sure you want to delete this commitment?')) return;
+
+    console.log('[Supabase] Deleting commitment — id:', id);
+
+    const { data, error } = await supabaseClient
+      .from('commitments')
+      .delete()
+      .eq('id', id)
+      .select();
+
+    console.log('[Supabase] Delete result — data:', data, '| error:', error);
+
+    if (error) {
+      const msg = 'Delete failed: ' + error.message + ' (code: ' + error.code + ')';
+      console.error('[Supabase]', msg);
+      showDbError(msg);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      const msg = 'Delete failed: 0 rows deleted. Check RLS policies — the anon key may not have DELETE permission on the commitments table.';
+      console.warn('[Supabase]', msg);
+      showDbError(msg);
+      return;
+    }
+
+    console.log('[Supabase] Delete successful — rows deleted:', data.length, data);
+    loadCommitmentsFromSupabase();
+  }
+
+  /* ── Add Commitment modal ── */
+  function openAddCommitment() {
+    const sel = document.getElementById('c-investor');
+    sel.innerHTML = '<option value="">Select investor…</option>'
+      + INVESTORS_DATA.map(inv =>
+          `<option value="${escHtml(inv.email)}" data-name="${escHtml(inv.name)}">${escHtml(inv.name)}</option>`
+        ).join('');
+    document.getElementById('c-amount').value = '';
+    document.getElementById('modal-commitment').classList.add('open');
+  }
+
+  function closeCommitmentModal() {
+    document.getElementById('modal-commitment').classList.remove('open');
+  }
+
+  async function saveNewCommitment() {
+    const sel    = document.getElementById('c-investor');
+    const email  = sel.value;
+    const name   = sel.options[sel.selectedIndex]?.dataset.name || '';
+    const project= document.getElementById('c-project').value;
+    const amount = parseFloat(document.getElementById('c-amount').value);
+
+    if (!email)                    { alert('Please select an investor.');      return; }
+    if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; }
+
+    const btn = document.getElementById('modal-commitment-save');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const payload = { investor_email: email, investor_name: name, amount, project_name: project };
+    console.log('[Supabase] Inserting commitment:', payload);
+
+    const { data, error } = await supabaseClient
+      .from('commitments')
+      .insert(payload)
+      .select();
+
+    console.log('[Supabase] Insert result — data:', data, '| error:', error);
+
+    btn.disabled = false;
+    btn.textContent = 'Add Commitment';
+
+    if (error) {
+      const msg = 'Failed to add commitment: ' + error.message + ' (code: ' + error.code + ')';
+      console.error('[Supabase]', msg);
+      showDbError(msg);
+      return;
+    }
+
+    closeCommitmentModal();
+    loadCommitmentsFromSupabase();
+  }
+
+  document.getElementById('btn-add-commitment').addEventListener('click', openAddCommitment);
+  document.getElementById('modal-commitment-close').addEventListener('click', closeCommitmentModal);
+  document.getElementById('modal-commitment-cancel').addEventListener('click', closeCommitmentModal);
+  document.getElementById('modal-commitment-save').addEventListener('click', saveNewCommitment);
+  document.getElementById('modal-commitment').addEventListener('click', function(e) {
+    if (e.target === this) closeCommitmentModal();
+  });
+
+  document.getElementById('commitment-tbody').addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    const id     = row.dataset.id;
+    const action = btn.dataset.action;
+
+    if (action === 'edit') {
+      const c = commitmentsCache[id];
+      if (c) startEditCommitment(id, c.amount);
+    } else if (action === 'delete') {
+      deleteCommitment(id);
+    } else if (action === 'save') {
+      saveEditCommitment(id);
+    } else if (action === 'cancel') {
+      cancelEditCommitment(id);
+    }
+  });
 
   /* ═══════════════════════════════════════════
      TABS
@@ -1113,6 +1482,7 @@
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'commitments') loadCommitmentsFromSupabase();
     });
   });
 
@@ -1297,7 +1667,7 @@
     document.getElementById('admin-panel').style.display  = 'block';
     renderInvestors();
     renderProjects();
-    renderCommitments();
+    loadCommitmentsFromSupabase();
   }
 
   document.getElementById('btn-login').addEventListener('click', attemptLogin);
