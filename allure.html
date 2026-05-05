@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Allure — Entremares Investor Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #F5F5F3;
+      color: #0D0D0D;
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════════════════
+       HEADER
+    ══════════════════════════════════════════ */
+    .hdr {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 62px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid #E8E8E4;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hdr-logo {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #0D0D0D;
+      text-decoration: none;
+    }
+
+    .hdr-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .hdr-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hdr-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0D0D0D;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .hdr-name {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-signout {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B6B6B;
+      background: none;
+      border: 1px solid #E0E0DC;
+      border-radius: 7px;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-signout:hover {
+      color: #0D0D0D;
+      border-color: #0D0D0D;
+    }
+
+    /* ══════════════════════════════════════════
+       PAGE
+    ══════════════════════════════════════════ */
+    .page {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
+    .hero {
+      margin-bottom: 36px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #9B9B9B;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    .back-btn:hover { color: #0D0D0D; }
+
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .hero-title {
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      color: #0D0D0D;
+      line-height: 1;
+    }
+
+    .badge-done {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #1A7F4A;
+      background: #F0FBF5;
+      border: 1px solid #C3E8D2;
+      border-radius: 100px;
+      padding: 5px 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      color: #9B9B9B;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .chip {
+      font-size: 12px;
+      font-weight: 600;
+      color: #4A4A4A;
+      background: #FFFFFF;
+      border: 1px solid #E0E0DC;
+      border-radius: 100px;
+      padding: 6px 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .photo-placeholder {
+      width: 100%;
+      height: 280px;
+      background: #EEEEE9;
+      border: 1px solid #E0E0DC;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #B0B0AA;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    /* ══════════════════════════════════════════
+       TWO-COLUMN LAYOUT
+    ══════════════════════════════════════════ */
+    .project-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .project-sidebar {
+      position: sticky;
+      top: 78px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ══════════════════════════════════════════
+       TABS
+    ══════════════════════════════════════════ */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid #E8E8E4;
+      margin-bottom: 28px;
+    }
+
+    .tab-btn {
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: #9B9B9B;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 10px 18px 10px 0;
+      margin-right: 6px;
+      margin-bottom: -1px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    .tab-btn:hover { color: #0D0D0D; }
+
+    .tab-btn.active {
+      color: #0D0D0D;
+      font-weight: 600;
+      border-bottom-color: #0D0D0D;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ══════════════════════════════════════════
+       CONTENT SECTIONS
+    ══════════════════════════════════════════ */
+    .content-section { margin-bottom: 34px; }
+    .content-section:last-child { margin-bottom: 0; }
+
+    .content-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #9B9B9B;
+      margin-bottom: 14px;
+    }
+
+    .content-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEE9;
+      border-radius: 14px;
+      padding: 24px 28px;
+    }
+
+    .content-text {
+      font-size: 14px;
+      color: #4A4A4A;
+      line-height: 1.7;
+    }
+
+    /* ── Bullet list ── */
+    .highlight-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .highlight-list li {
+      display: flex;
+      gap: 12px;
+      font-size: 14px;
+      color: #4A4A4A;
+      line-height: 1.55;
+    }
+
+    .highlight-list li::before {
+      content: '';
+      flex-shrink: 0;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #1A7F4A;
+      margin-top: 7px;
+    }
+
+    /* ── Tables ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #B0B0AA;
+      padding: 0 0 10px;
+      text-align: left;
+      border-bottom: 1px solid #EEEEE9;
+    }
+
+    .data-table th + th { padding-left: 20px; }
+
+    .data-table td {
+      font-size: 13px;
+      color: #0D0D0D;
+      padding: 11px 0;
+      border-bottom: 1px solid #F5F5F2;
+      vertical-align: middle;
+    }
+
+    .data-table td + td { padding-left: 20px; }
+
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .data-table .row-total td {
+      font-weight: 700;
+      color: #0D0D0D;
+      border-top: 1px solid #EEEEE9;
+      padding-top: 13px;
+    }
+
+    .data-table .row-highlight td {
+      background: #F0FBF5;
+    }
+
+    .data-table .row-highlight td:first-child {
+      border-radius: 6px 0 0 6px;
+    }
+
+    .data-table .row-highlight td:last-child {
+      border-radius: 0 6px 6px 0;
+    }
+
+    .placeholder-val {
+      color: #C0C0BC;
+      font-weight: 500;
+    }
+
+    /* ── Return scenario cards ── */
+    .scenarios-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .scenario-card {
+      background: #F5F5F3;
+      border: 1px solid #EEEEE9;
+      border-radius: 12px;
+      padding: 20px 20px 18px;
+      text-align: center;
+    }
+
+    .scenario-card.actual {
+      background: #F0FBF5;
+      border-color: #C3E8D2;
+    }
+
+    .scenario-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #B0B0AA;
+      margin-bottom: 10px;
+    }
+
+    .scenario-card.actual .scenario-label { color: #1A7F4A; }
+
+    .scenario-pct {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #0D0D0D;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .scenario-card.actual .scenario-pct { color: #1A7F4A; }
+
+    .scenario-desc {
+      font-size: 11px;
+      color: #9B9B9B;
+      line-height: 1.55;
+    }
+
+    /* ── Track record table ── */
+    .track-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .track-table th {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #B0B0AA;
+      padding: 0 16px 10px 0;
+      text-align: left;
+      border-bottom: 1px solid #EEEEE9;
+    }
+
+    .track-table td {
+      font-size: 13px;
+      padding: 13px 16px 13px 0;
+      border-bottom: 1px solid #F5F5F2;
+      color: #0D0D0D;
+    }
+
+    .track-table tr:last-child td { border-bottom: none; }
+    .track-table .return-val { color: #1A7F4A; font-weight: 600; }
+    .track-status {
+      display: inline-flex;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #1A7F4A;
+      background: #F0FBF5;
+      border: 1px solid #C3E8D2;
+      border-radius: 100px;
+      padding: 3px 9px;
+    }
+
+    /* ── Update cards ── */
+    .update-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEE9;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .update-card:last-of-type { margin-bottom: 0; }
+
+    .update-photo {
+      width: 100%;
+      height: 100px;
+      background: #EEEEE9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid #EEEEE9;
+    }
+
+    .update-body { padding: 18px 22px; }
+
+    .update-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .update-date {
+      font-size: 12px;
+      color: #9B9B9B;
+      font-weight: 500;
+    }
+
+    .update-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 100px;
+      padding: 3px 9px;
+    }
+
+    .badge-permitting { color: #1A5FA8; background: #EEF4FD; border: 1px solid #BDD3F5; }
+    .badge-construction { color: #8B5E0F; background: #FFF8E7; border: 1px solid #F0D890; }
+    .badge-sales { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
+    .badge-finance { color: #6B6B6B; background: #F5F5F3; border: 1px solid #E0E0DC; }
+
+    .update-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 7px;
+      color: #0D0D0D;
+    }
+
+    .update-text {
+      font-size: 13px;
+      color: #6B6B6B;
+      line-height: 1.65;
+    }
+
+    .updates-footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #B0B0AA;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════════════════
+       SIDEBAR — MY POSITION
+    ══════════════════════════════════════════ */
+    .position-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEE9;
+      border-radius: 14px;
+      padding: 24px 24px 20px;
+    }
+
+    .position-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #B0B0AA;
+      margin-bottom: 18px;
+    }
+
+    .position-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 10px 0;
+      border-bottom: 1px solid #F5F5F2;
+      font-size: 13px;
+    }
+
+    .position-row:last-of-type { border-bottom: none; }
+
+    .position-lbl { color: #9B9B9B; }
+
+    .position-val {
+      font-weight: 600;
+      color: #0D0D0D;
+      text-align: right;
+    }
+
+    .position-val.green { color: #1A7F4A; }
+    .position-val.muted { color: #B0B0AA; font-weight: 500; }
+
+    .btn-statement {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: #FFFFFF;
+      background: #0D0D0D;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 18px;
+      transition: opacity 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-statement:hover { opacity: 0.82; }
+
+    /* ── Documents card ── */
+    .docs-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEE9;
+      border-radius: 14px;
+      padding: 20px 24px;
+    }
+
+    .docs-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #B0B0AA;
+      margin-bottom: 14px;
+    }
+
+    .doc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #F5F5F2;
+      gap: 10px;
+    }
+
+    .doc-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .doc-row:first-of-type { padding-top: 0; }
+
+    .doc-info { flex: 1; min-width: 0; }
+
+    .doc-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #0D0D0D;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .doc-type {
+      font-size: 10px;
+      color: #B0B0AA;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+
+    .doc-dl {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: #F5F5F3;
+      border: 1px solid #E8E8E4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6B6B6B;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .doc-dl:hover {
+      background: #0D0D0D;
+      color: #FFFFFF;
+      border-color: #0D0D0D;
+    }
+
+    /* ── Project Documents (Details tab) ── */
+    .proj-doc-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #F5F5F2;
+    }
+
+    .proj-doc-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .proj-doc-row:first-child { padding-top: 0; }
+
+    .proj-doc-icon {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #F5F5F3;
+      border: 1px solid #E8E8E4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9B9B9B;
+    }
+
+    .proj-doc-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: #0D0D0D;
+      min-width: 0;
+    }
+
+    .pdf-badge {
+      flex-shrink: 0;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9B9B9B;
+      background: #F5F5F3;
+      border: 1px solid #E0E0DC;
+      border-radius: 5px;
+      padding: 3px 7px;
+    }
+
+    .proj-doc-dl {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: #F5F5F3;
+      border: 1px solid #E8E8E4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6B6B6B;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .proj-doc-dl:hover {
+      background: #0D0D0D;
+      color: #FFFFFF;
+      border-color: #0D0D0D;
+    }
+
+    /* ── Contractor section ── */
+    .contractor-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .contractor-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #B0B0AA;
+      flex-shrink: 0;
+    }
+
+    .contractor-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #0D0D0D;
+      text-decoration: none;
+    }
+
+    .contractor-name:hover { text-decoration: underline; }
+
+    .contractor-desc {
+      font-size: 13px;
+      color: #6B6B6B;
+      line-height: 1.65;
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 960px) {
+      .project-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .project-sidebar {
+        position: static;
+        order: -1;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .hdr { padding: 0 18px; }
+      .hdr-name { display: none; }
+      .page { padding: 26px 18px 60px; }
+      .hero-title { font-size: 30px; }
+      .scenarios-grid { grid-template-columns: 1fr; }
+      .tab-btn { font-size: 13px; padding: 8px 14px 8px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header class="hdr">
+  <a href="index.html" class="hdr-logo">Entremares</a>
+  <div class="hdr-right">
+    <div class="hdr-user">
+      <div class="hdr-avatar" id="hdr-initials">--</div>
+      <span class="hdr-name" id="hdr-name"></span>
+    </div>
+    <button class="btn-signout" id="btn-signout">Sign Out</button>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════ -->
+<main class="page">
+
+  <!-- ── Hero ── -->
+  <div class="hero">
+
+    <a href="dashboard.html" class="back-btn">&#8592; Dashboard</a>
+
+    <div class="hero-title-row">
+      <h1 class="hero-title">Allure</h1>
+      <span class="badge-done">Completed</span>
+    </div>
+
+    <div class="hero-subtitle">Tijuana, Mexico &nbsp;&middot;&nbsp; 2 Townhouses &nbsp;&middot;&nbsp; Jan 2023 &ndash; Dec 2024</div>
+
+    <div class="hero-chips">
+      <span class="chip">24 months</span>
+      <span class="chip">22% Net Return</span>
+      <span class="chip">100% On Time</span>
+    </div>
+
+    <div class="photo-placeholder">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+        <circle cx="12" cy="13" r="4"></circle>
+      </svg>
+      Cover photo will load from Supabase
+    </div>
+
+  </div>
+
+
+  <!-- ── Two-column layout ── -->
+  <div class="project-layout">
+
+    <!-- ════════════════════════════
+         LEFT — TABBED CONTENT
+    ════════════════════════════ -->
+    <div class="project-main">
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('analysis')">Analysis</button>
+        <button class="tab-btn" onclick="switchTab('backing')">Backing</button>
+        <button class="tab-btn" onclick="switchTab('details')">Details</button>
+        <button class="tab-btn" onclick="switchTab('updates')">Updates</button>
+      </div>
+
+
+      <!-- ══ TAB 1: ANALYSIS ══ -->
+      <div id="tab-analysis" class="tab-content active">
+
+        <!-- About -->
+        <div class="content-section">
+          <div class="content-section-title">About this Project</div>
+          <div class="content-card">
+            <p class="content-text">Allure is a residential real estate project developed by Entremares in Tijuana, Mexico. The project consists of 2 premium townhouses designed for the mid-to-high end market. Construction began in January 2023 and was completed ahead of schedule in December 2024, delivering a 22% net return to investors.</p>
+          </div>
+        </div>
+
+        <!-- Highlights -->
+        <div class="content-section">
+          <div class="content-section-title">Project Highlights</div>
+          <div class="content-card">
+            <ul class="highlight-list">
+              <li>Strong developer track record with Entremares</li>
+              <li>Premium location in Tijuana with high demand</li>
+              <li>Delivered on time and within budget</li>
+              <li>22% net return achieved, above the 18&ndash;20% target</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Budget Overview -->
+        <div class="content-section">
+          <div class="content-section-title">Budget Overview</div>
+          <div class="content-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                  <th>Variance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Land Acquisition</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
+                <tr><td>Construction Costs</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
+                <tr><td>Soft Costs</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
+                <tr><td>Financing</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
+                <tr><td>Marketing</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
+                <tr><td>Contingency</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
+                <tr class="row-total"><td>TOTAL</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Return Scenarios -->
+        <div class="content-section">
+          <div class="content-section-title">Return Scenarios</div>
+          <div class="scenarios-grid">
+            <div class="scenario-card">
+              <div class="scenario-label">Pessimistic</div>
+              <div class="scenario-pct">18%</div>
+              <div class="scenario-desc">Conservative estimate accounting for extended construction timelines and slower sales absorption.</div>
+            </div>
+            <div class="scenario-card">
+              <div class="scenario-label">Base Case</div>
+              <div class="scenario-pct">20%</div>
+              <div class="scenario-desc">Expected outcome based on comparable Tijuana projects and standard development execution.</div>
+            </div>
+            <div class="scenario-card actual">
+              <div class="scenario-label">Actual Achieved</div>
+              <div class="scenario-pct">22%</div>
+              <div class="scenario-desc">Delivered above target, driven by strong market demand and on-budget execution.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capital Structure -->
+        <div class="content-section">
+          <div class="content-section-title">Capital Structure</div>
+          <div class="content-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Investor Capital</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr><td>Developer Capital</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr><td>Construction Loan</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr class="row-total"><td>Total</td><td class="placeholder-val">$&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /tab-analysis -->
+
+
+      <!-- ══ TAB 2: BACKING ══ -->
+      <div id="tab-backing" class="tab-content">
+
+        <!-- Protection -->
+        <div class="content-section">
+          <div class="content-section-title">What Protects Your Investment</div>
+          <div class="content-card">
+            <p class="content-text">Investors in Allure are protected through a Shareholders Loan Agreement signed between each investor and Entremares. This agreement establishes the rights and obligations of all parties, the agreed return rate, and the distribution schedule.</p>
+          </div>
+        </div>
+
+        <!-- Track Record -->
+        <div class="content-section">
+          <div class="content-section-title">Entremares Track Record</div>
+          <div class="content-card">
+            <table class="track-table">
+              <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Period</th>
+                  <th>Net Return</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Kabil</strong></td>
+                  <td>2020&ndash;2022</td>
+                  <td class="return-val">18%</td>
+                  <td><span class="track-status">Fully Paid</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Allure</strong></td>
+                  <td>2023&ndash;2024</td>
+                  <td class="return-val">22%</td>
+                  <td><span class="track-status">Fully Paid</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Legal Structure -->
+        <div class="content-section">
+          <div class="content-section-title">Legal Structure</div>
+          <div class="content-card">
+            <p class="content-text">Each investor holds a shareholders loan position in the project entity. Returns are distributed proportionally based on each investor's participation percentage upon completion of sales.</p>
+          </div>
+        </div>
+
+      </div><!-- /tab-backing -->
+
+
+      <!-- ══ TAB 3: DETAILS ══ -->
+      <div id="tab-details" class="tab-content">
+
+        <!-- Sales Summary -->
+        <div class="content-section">
+          <div class="content-section-title">Sales Summary</div>
+          <div class="content-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Gross Sales Revenue</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr><td>Sales Commissions</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr><td>Construction Final Cost</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr><td>Financing Costs</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr><td>Administrative Fees</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr><td>Tax Provisions</td><td class="placeholder-val">$&mdash;</td></tr>
+                <tr class="row-total"><td>NET AVAILABLE FOR DISTRIBUTION</td><td class="placeholder-val">$&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="content-section">
+          <div class="content-section-title">Location</div>
+          <div class="content-card">
+            <p class="content-text" style="margin-bottom: 16px;">Calle Sexta 1234, Zona Centro, Tijuana, Baja California, Mexico</p>
+            <iframe
+              src="https://maps.google.com/maps?q=Tijuana,Baja+California,Mexico&output=embed"
+              width="100%"
+              height="300"
+              style="border: none; border-radius: 10px; display: block;"
+              allowfullscreen
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+        </div>
+
+        <!-- Project Documents -->
+        <div class="content-section">
+          <div class="content-section-title">Project Documents</div>
+          <div class="content-card">
+
+            <div class="proj-doc-row">
+              <div class="proj-doc-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </div>
+              <span class="proj-doc-name">Project Design</span>
+              <span class="pdf-badge">PDF</span>
+              <a href="#" class="proj-doc-dl" title="Download">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </a>
+            </div>
+
+            <div class="proj-doc-row">
+              <div class="proj-doc-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </div>
+              <span class="proj-doc-name">Uso de Suelo (Land Use Permit)</span>
+              <span class="pdf-badge">PDF</span>
+              <a href="#" class="proj-doc-dl" title="Download">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </a>
+            </div>
+
+            <div class="proj-doc-row">
+              <div class="proj-doc-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </div>
+              <span class="proj-doc-name">Construction Budget</span>
+              <span class="pdf-badge">PDF</span>
+              <a href="#" class="proj-doc-dl" title="Download">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </a>
+            </div>
+
+            <div class="proj-doc-row">
+              <div class="proj-doc-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </div>
+              <span class="proj-doc-name">Marketing Material</span>
+              <span class="pdf-badge">PDF</span>
+              <a href="#" class="proj-doc-dl" title="Download">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </a>
+            </div>
+
+            <div class="proj-doc-row">
+              <div class="proj-doc-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </div>
+              <span class="proj-doc-name">Building Permits</span>
+              <span class="pdf-badge">PDF</span>
+              <a href="#" class="proj-doc-dl" title="Download">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Construction Company -->
+        <div class="content-section">
+          <div class="content-section-title">Construction Company</div>
+          <div class="content-card">
+            <div class="contractor-row">
+              <span class="contractor-label">General Contractor</span>
+              <a href="#" class="contractor-name">AEDIFIKA</a>
+            </div>
+            <p class="contractor-desc">AEDIFIKA is the licensed construction company responsible for the design and build of the Allure project.</p>
+          </div>
+        </div>
+
+      </div><!-- /tab-details -->
+
+
+      <!-- ══ TAB 4: UPDATES ══ -->
+      <div id="tab-updates" class="tab-content">
+
+        <div class="content-section">
+          <div class="content-section-title">Project Updates</div>
+
+          <!-- Update 1 -->
+          <div class="update-card">
+            <div class="update-photo">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0C0BC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <div class="update-body">
+              <div class="update-meta">
+                <span class="update-date">June 2020</span>
+                <span class="update-badge badge-permitting">Permitting</span>
+              </div>
+              <div class="update-title">Permits Approved</div>
+              <div class="update-text">All construction permits for Allure have been approved by the municipal authorities. Construction is scheduled to begin in the coming weeks.</div>
+            </div>
+          </div>
+
+          <!-- Update 2 -->
+          <div class="update-card">
+            <div class="update-photo">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0C0BC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <div class="update-body">
+              <div class="update-meta">
+                <span class="update-date">March 2021</span>
+                <span class="update-badge badge-construction">Construction</span>
+              </div>
+              <div class="update-title">Foundation Complete</div>
+              <div class="update-text">The foundation work has been completed successfully. The structure is progressing ahead of schedule.</div>
+            </div>
+          </div>
+
+          <!-- Update 3 -->
+          <div class="update-card">
+            <div class="update-photo">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0C0BC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <div class="update-body">
+              <div class="update-meta">
+                <span class="update-date">December 2024</span>
+                <span class="update-badge badge-sales">Sales</span>
+              </div>
+              <div class="update-title">Project Completed</div>
+              <div class="update-text">Both townhouses have been sold and delivered. Final accounting is underway and distribution will be processed shortly.</div>
+            </div>
+          </div>
+
+          <p class="updates-footer">Updates are posted by the Entremares team.<br>You will be notified when new updates are available.</p>
+
+        </div>
+
+      </div><!-- /tab-updates -->
+
+    </div><!-- /project-main -->
+
+
+    <!-- ════════════════════════════
+         RIGHT — SIDEBAR
+    ════════════════════════════ -->
+    <div class="project-sidebar">
+
+      <!-- My Position -->
+      <div class="position-card">
+        <div class="position-card-title">My Position in Allure</div>
+
+        <div class="position-row">
+          <span class="position-lbl">Invested</span>
+          <span class="position-val" id="pos-invested">&mdash;</span>
+        </div>
+        <div class="position-row">
+          <span class="position-lbl">Ownership</span>
+          <span class="position-val" id="pos-ownership">&mdash;</span>
+        </div>
+        <div class="position-row">
+          <span class="position-lbl">Target Return</span>
+          <span class="position-val green">22%</span>
+        </div>
+        <div class="position-row">
+          <span class="position-lbl">Status</span>
+          <span class="position-val green">Completed</span>
+        </div>
+        <div class="position-row">
+          <span class="position-lbl">Distribution</span>
+          <span class="position-val muted">$&mdash; (pending)</span>
+        </div>
+
+        <a href="#" class="btn-statement">Download My Statement</a>
+      </div>
+
+      <!-- Documents -->
+      <div class="docs-card">
+        <div class="docs-card-title">Documents</div>
+
+        <div class="doc-row">
+          <div class="doc-info">
+            <div class="doc-name">Shareholders Loan Agreement</div>
+            <div class="doc-type">PDF</div>
+          </div>
+          <a href="#" class="doc-dl" title="Download">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+
+        <div class="doc-row">
+          <div class="doc-info">
+            <div class="doc-name">Final Financial Report</div>
+            <div class="doc-type">PDF</div>
+          </div>
+          <a href="#" class="doc-dl" title="Download">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+
+    </div><!-- /project-sidebar -->
+
+  </div><!-- /project-layout -->
+
+</main>
+
+
+<script>
+  /* ── Investor registry ── */
+  const INVESTORS = {
+    'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
+    'gilito.iii@gmail.com':          { name: 'Gilberto Padilla',       initials: 'GP' },
+    'alvaroilanes@gmail.com':        { name: 'Alvaro Villasante',      initials: 'AV' },
+    'cuellarolmos@gmail.com':        { name: 'Alberto Cuellar',        initials: 'AC' },
+    'sergio.gmd@gmail.com':          { name: 'Sergio Gomez',           initials: 'SG' },
+    'nacho.lucas@gmail.com':         { name: 'Nacho Lucas',            initials: 'NL' },
+    'ferzuniga@gmail.com':           { name: 'Fernando Zuniga',        initials: 'FZ' },
+    'madelcarmen.galindo@zuksa.net': { name: 'Ma del Carmen Galindo',  initials: 'MG' }
+  };
+
+  /* ── Allure original capital amounts ── */
+  const ALLURE_INVESTORS = [
+    { email: 'fredbusher@gmail.com',          name: 'Groupe Reaction',        invested: 19845.75 },
+    { email: 'gilito.iii@gmail.com',          name: 'Gilberto Padilla',       invested: 25000    },
+    { email: 'alvaroilanes@gmail.com',        name: 'Alvaro Villasante',      invested: 25000    },
+    { email: 'cuellarolmos@gmail.com',        name: 'Alberto Cuellar',        invested: 20000    },
+    { email: 'sergio.gmd@gmail.com',          name: 'Sergio Gomez',           invested: 50000    },
+    { email: 'nacho.lucas@gmail.com',         name: 'Nacho Lucas',            invested: 35000    },
+    { email: 'ferzuniga@gmail.com',           name: 'Fernando Zúñiga', invested: 39370 },
+    { email: 'madelcarmen.galindo@zuksa.net', name: 'Ma del Carmen Galindo',  invested: 13130    }
+  ];
+
+  const ALLURE_TOTAL = 227345.75;
+
+  /* ── Helpers ── */
+  function fmt(n) {
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtPct(n) {
+    return n.toFixed(2) + '%';
+  }
+
+  /* ── Tab switching ── */
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('onclick') === "switchTab('" + name + "')");
+    });
+    document.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active', el.id === 'tab-' + name);
+    });
+  }
+
+  /* ── Build distribution table ── */
+  function buildDistributionTable(currentEmail) {
+    const tbody = document.getElementById('distribution-tbody');
+    if (!tbody) return;
+    const rows = ALLURE_INVESTORS.map(inv => {
+      const pct = inv.invested / ALLURE_TOTAL * 100;
+      const isCurrent = inv.email === currentEmail;
+      return `<tr${isCurrent ? ' class="row-highlight"' : ''}>
+        <td>${inv.name}${isCurrent ? ' <span style="font-size:10px;color:#1A7F4A;font-weight:700;">&#9654; You</span>' : ''}</td>
+        <td>${fmt(inv.invested)}</td>
+        <td>${fmtPct(pct)}</td>
+        <td class="placeholder-val">$&mdash;</td>
+      </tr>`;
+    });
+
+    const totalPct = 100;
+    rows.push(`<tr class="row-total">
+      <td>TOTAL</td>
+      <td>${fmt(ALLURE_TOTAL)}</td>
+      <td>${fmtPct(totalPct)}</td>
+      <td class="placeholder-val">$&mdash;</td>
+    </tr>`);
+
+    tbody.innerHTML = rows.join('');
+  }
+
+  /* ── Render page for a given investor ── */
+  function renderPage(inv, email) {
+    /* Header */
+    document.getElementById('hdr-initials').textContent = inv.initials;
+    document.getElementById('hdr-name').textContent     = inv.name;
+
+    /* My Position card */
+    const allureInv = ALLURE_INVESTORS.find(a => a.email === email);
+    if (allureInv) {
+      const pct = allureInv.invested / ALLURE_TOTAL * 100;
+      document.getElementById('pos-invested').textContent  = fmt(allureInv.invested);
+      document.getElementById('pos-ownership').textContent = fmtPct(pct);
+    }
+
+    /* Distribution table */
+    buildDistributionTable(email);
+  }
+
+  /* ── Sign out ── */
+  document.getElementById('btn-signout').addEventListener('click', function() {
+    localStorage.removeItem('em_session');
+    window.location.href = 'dashboard.html';
+  });
+
+  /* ── Session check ── */
+  (function init() {
+    const raw = localStorage.getItem('em_session');
+    if (!raw) {
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    let email;
+    try {
+      email = JSON.parse(raw).email;
+    } catch (_) {
+      localStorage.removeItem('em_session');
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    const inv = INVESTORS[email];
+    if (!inv) {
+      localStorage.removeItem('em_session');
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    renderPage(inv, email);
+  })();
+</script>
+
+</body>
+</html>
