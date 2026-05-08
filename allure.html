@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { -webkit-font-smoothing: antialiased; }
@@ -176,6 +177,40 @@
       border-radius: 100px;
       padding: 6px 14px;
       letter-spacing: -0.01em;
+    }
+
+    /* ── Key Results chips ── */
+    .hero-key-results {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .kchip {
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 100px;
+      padding: 6px 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .kchip-gray {
+      color: #4A4A4A;
+      background: #FFFFFF;
+      border: 1px solid #E0E0DC;
+    }
+
+    .kchip-green {
+      color: #1A7F4A;
+      background: #F0FBF5;
+      border: 1px solid #C3E8D2;
+    }
+
+    .kchip-blue {
+      color: #1A5FA8;
+      background: #EEF4FD;
+      border: 1px solid #BDD3F5;
     }
 
     .photo-placeholder {
@@ -374,7 +409,17 @@
       text-align: center;
     }
 
-    .scenario-card.actual {
+    .scenario-card.pessimistic {
+      background: #FFF5F5;
+      border-color: #FFCCCC;
+    }
+
+    .scenario-card.base {
+      background: #FFFBEA;
+      border-color: #F5E090;
+    }
+
+    .scenario-card.optimistic {
       background: #F0FBF5;
       border-color: #C3E8D2;
     }
@@ -388,7 +433,9 @@
       margin-bottom: 10px;
     }
 
-    .scenario-card.actual .scenario-label { color: #1A7F4A; }
+    .scenario-card.pessimistic .scenario-label { color: #C0392B; }
+    .scenario-card.base .scenario-label { color: #B8860B; }
+    .scenario-card.optimistic .scenario-label { color: #1A7F4A; }
 
     .scenario-pct {
       font-size: 30px;
@@ -399,12 +446,58 @@
       line-height: 1;
     }
 
-    .scenario-card.actual .scenario-pct { color: #1A7F4A; }
+    .scenario-card.pessimistic .scenario-pct { color: #C0392B; }
+    .scenario-card.base .scenario-pct { color: #B8860B; }
+    .scenario-card.optimistic .scenario-pct { color: #1A7F4A; }
 
     .scenario-desc {
       font-size: 11px;
       color: #9B9B9B;
       line-height: 1.55;
+    }
+
+    /* ── Actual achieved banner ── */
+    .actual-banner {
+      background: #0D1F15;
+      border-radius: 12px;
+      padding: 22px 24px 18px;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .actual-banner-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4DE89A;
+      margin-bottom: 8px;
+    }
+
+    .actual-banner-pct {
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+      line-height: 1;
+    }
+
+    .actual-banner-sub {
+      font-size: 11px;
+      color: #5E9B78;
+    }
+
+    /* ── Above-target badge ── */
+    .above-target-badge {
+      display: none;
+      font-size: 11px;
+      font-weight: 600;
+      color: #1A7F4A;
+      background: #F0FBF5;
+      border: 1px solid #C3E8D2;
+      border-radius: 100px;
+      padding: 3px 10px;
     }
 
     /* ── Track record table ── */
@@ -492,10 +585,53 @@
       padding: 3px 9px;
     }
 
-    .badge-permitting { color: #1A5FA8; background: #EEF4FD; border: 1px solid #BDD3F5; }
+    .badge-permitting   { color: #1A5FA8; background: #EEF4FD; border: 1px solid #BDD3F5; }
     .badge-construction { color: #8B5E0F; background: #FFF8E7; border: 1px solid #F0D890; }
-    .badge-sales { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
-    .badge-finance { color: #6B6B6B; background: #F5F5F3; border: 1px solid #E0E0DC; }
+    .badge-sales        { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
+    .badge-finance      { color: #6B24A8; background: #F5EEFF; border: 1px solid #D9C0F5; }
+    .badge-general      { color: #6B6B6B; background: #F5F5F3; border: 1px solid #E0E0DC; }
+
+    .update-card-v2 {
+      padding: 24px 0;
+      border-bottom: 1px solid #F0F0EE;
+    }
+    .update-card-v2:last-child { border-bottom: none; }
+    .update-card-v2 .upd-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .update-card-v2 .upd-date {
+      font-size: 12px;
+      color: #9B9B9B;
+      font-weight: 500;
+    }
+    .update-card-v2 .upd-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #0D0D0D;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .update-card-v2 .upd-body {
+      font-size: 14px;
+      color: #4B4B4B;
+      line-height: 1.7;
+    }
+    .update-card-v2 .upd-photo {
+      margin-top: 16px;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .update-card-v2 .upd-photo img {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+    }
 
     .update-title {
       font-size: 15px;
@@ -752,6 +888,35 @@
       line-height: 1.65;
     }
 
+    /* ── Position card extras ── */
+    .position-divider {
+      height: 1px;
+      background: #EEEEE9;
+      margin: 2px 0;
+    }
+
+    .position-row-profit {
+      padding: 14px 0;
+    }
+
+    .position-lbl-profit {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4A4A4A;
+    }
+
+    .position-val-profit {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .return-badge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
     /* ══════════════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════════════ */
@@ -805,23 +970,27 @@
 
     <div class="hero-title-row">
       <h1 class="hero-title">Allure</h1>
-      <span class="badge-done">Completed</span>
+      <span class="badge-done" id="hero-badge">Completed</span>
     </div>
 
-    <div class="hero-subtitle">Tijuana, Mexico &nbsp;&middot;&nbsp; 2 Townhouses &nbsp;&middot;&nbsp; Jan 2023 &ndash; Dec 2024</div>
+    <div class="hero-subtitle" id="hero-subtitle">Tijuana, Mexico &nbsp;&middot;&nbsp; 2 Townhouses &nbsp;&middot;&nbsp; Jan 2023 &ndash; Dec 2024</div>
 
-    <div class="hero-chips">
-      <span class="chip">24 months</span>
-      <span class="chip">22% Net Return</span>
-      <span class="chip">100% On Time</span>
+    <div class="hero-key-results">
+      <span class="kchip kchip-gray" id="kr-duration">36 months</span>
+      <span class="kchip kchip-green" id="kr-return">31.68% Total Return</span>
+      <span class="kchip kchip-green">Both Units Sold</span>
+      <span class="kchip kchip-blue">Distribution Pending</span>
     </div>
 
-    <div class="photo-placeholder">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-        <circle cx="12" cy="13" r="4"></circle>
-      </svg>
-      Cover photo will load from Supabase
+    <div id="hero-photo-container">
+      <div class="photo-placeholder" id="photo-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        Cover photo will load from Supabase
+      </div>
+      <img id="hero-cover-photo" src="" alt="Allure project" style="display:none;width:100%;height:280px;object-fit:cover;border-radius:14px;border:1px solid #E0E0DC;">
     </div>
 
   </div>
@@ -851,20 +1020,7 @@
         <div class="content-section">
           <div class="content-section-title">About this Project</div>
           <div class="content-card">
-            <p class="content-text">Allure is a residential real estate project developed by Entremares in Tijuana, Mexico. The project consists of 2 premium townhouses designed for the mid-to-high end market. Construction began in January 2023 and was completed ahead of schedule in December 2024, delivering a 22% net return to investors.</p>
-          </div>
-        </div>
-
-        <!-- Highlights -->
-        <div class="content-section">
-          <div class="content-section-title">Project Highlights</div>
-          <div class="content-card">
-            <ul class="highlight-list">
-              <li>Strong developer track record with Entremares</li>
-              <li>Premium location in Tijuana with high demand</li>
-              <li>Delivered on time and within budget</li>
-              <li>22% net return achieved, above the 18&ndash;20% target</li>
-            </ul>
+            <p class="content-text" id="about-description">Allure is a residential real estate project developed by Entremares in Tijuana, Mexico. The project consists of 2 premium townhouses designed for the mid-to-high end market. Construction began in January 2023 and was completed ahead of schedule in December 2024, delivering a 22% net return to investors.</p>
           </div>
         </div>
 
@@ -881,7 +1037,7 @@
                   <th>Variance</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="budget-overview-tbody">
                 <tr><td>Land Acquisition</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
                 <tr><td>Construction Costs</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
                 <tr><td>Soft Costs</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">$&mdash;</td><td class="placeholder-val">&mdash;</td></tr>
@@ -898,21 +1054,27 @@
         <div class="content-section">
           <div class="content-section-title">Return Scenarios</div>
           <div class="scenarios-grid">
-            <div class="scenario-card">
-              <div class="scenario-label">Pessimistic</div>
-              <div class="scenario-pct">18%</div>
-              <div class="scenario-desc">Conservative estimate accounting for extended construction timelines and slower sales absorption.</div>
+            <div class="scenario-card pessimistic" id="scenario-pessimistic">
+              <div class="scenario-label" id="sc-pess-label">Pessimistic</div>
+              <div class="scenario-pct" id="sc-pess-pct">18%</div>
+              <div class="scenario-desc" id="sc-pess-desc">Conservative estimate accounting for extended construction timelines and slower sales absorption.</div>
             </div>
-            <div class="scenario-card">
-              <div class="scenario-label">Base Case</div>
-              <div class="scenario-pct">20%</div>
-              <div class="scenario-desc">Expected outcome based on comparable Tijuana projects and standard development execution.</div>
+            <div class="scenario-card base" id="scenario-base">
+              <div class="scenario-label" id="sc-base-label">Base Case</div>
+              <div class="scenario-pct" id="sc-base-pct">20%</div>
+              <div class="scenario-desc" id="sc-base-desc">Expected outcome based on comparable Tijuana projects and standard development execution.</div>
             </div>
-            <div class="scenario-card actual">
-              <div class="scenario-label">Actual Achieved</div>
-              <div class="scenario-pct">22%</div>
-              <div class="scenario-desc">Delivered above target, driven by strong market demand and on-budget execution.</div>
+            <div class="scenario-card optimistic" id="scenario-optimistic">
+              <div class="scenario-label" id="sc-opt-label">Optimistic</div>
+              <div class="scenario-pct" id="sc-opt-pct">22%</div>
+              <div class="scenario-desc" id="sc-opt-desc">Delivered above target, driven by strong market demand and on-budget execution.</div>
             </div>
+          </div>
+          <div class="actual-banner" id="actual-banner">
+            <div class="actual-banner-label">Actual Achieved Return</div>
+            <div class="actual-banner-pct" id="actual-banner-pct">—</div>
+            <div id="actual-banner-annualized" style="font-size:12px;color:#5E9B78;margin-bottom:4px;display:none;"></div>
+            <div class="actual-banner-sub">Final result delivered to investors</div>
           </div>
         </div>
 
@@ -1007,7 +1169,7 @@
                   <th>Amount</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="sales-overview-tbody">
                 <tr><td>Gross Sales Revenue</td><td class="placeholder-val">$&mdash;</td></tr>
                 <tr><td>Sales Commissions</td><td class="placeholder-val">$&mdash;</td></tr>
                 <tr><td>Construction Final Cost</td><td class="placeholder-val">$&mdash;</td></tr>
@@ -1106,7 +1268,7 @@
           <div class="content-card">
             <div class="contractor-row">
               <span class="contractor-label">General Contractor</span>
-              <a href="#" class="contractor-name">AEDIFIKA</a>
+              <a href="#" class="contractor-name" id="contractor-name-link">AEDIFIKA</a>
             </div>
             <p class="contractor-desc">AEDIFIKA is the licensed construction company responsible for the design and build of the Allure project.</p>
           </div>
@@ -1117,68 +1279,10 @@
 
       <!-- ══ TAB 4: UPDATES ══ -->
       <div id="tab-updates" class="tab-content">
-
         <div class="content-section">
-          <div class="content-section-title">Project Updates</div>
-
-          <!-- Update 1 -->
-          <div class="update-card">
-            <div class="update-photo">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0C0BC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-            </div>
-            <div class="update-body">
-              <div class="update-meta">
-                <span class="update-date">June 2020</span>
-                <span class="update-badge badge-permitting">Permitting</span>
-              </div>
-              <div class="update-title">Permits Approved</div>
-              <div class="update-text">All construction permits for Allure have been approved by the municipal authorities. Construction is scheduled to begin in the coming weeks.</div>
-            </div>
-          </div>
-
-          <!-- Update 2 -->
-          <div class="update-card">
-            <div class="update-photo">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0C0BC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-            </div>
-            <div class="update-body">
-              <div class="update-meta">
-                <span class="update-date">March 2021</span>
-                <span class="update-badge badge-construction">Construction</span>
-              </div>
-              <div class="update-title">Foundation Complete</div>
-              <div class="update-text">The foundation work has been completed successfully. The structure is progressing ahead of schedule.</div>
-            </div>
-          </div>
-
-          <!-- Update 3 -->
-          <div class="update-card">
-            <div class="update-photo">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0C0BC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-            </div>
-            <div class="update-body">
-              <div class="update-meta">
-                <span class="update-date">December 2024</span>
-                <span class="update-badge badge-sales">Sales</span>
-              </div>
-              <div class="update-title">Project Completed</div>
-              <div class="update-text">Both townhouses have been sold and delivered. Final accounting is underway and distribution will be processed shortly.</div>
-            </div>
-          </div>
-
+          <div id="updates-feed"><p class="updates-footer" style="padding-top:40px">Loading…</p></div>
           <p class="updates-footer">Updates are posted by the Entremares team.<br>You will be notified when new updates are available.</p>
-
         </div>
-
       </div><!-- /tab-updates -->
 
     </div><!-- /project-main -->
@@ -1198,20 +1302,38 @@
           <span class="position-val" id="pos-invested">&mdash;</span>
         </div>
         <div class="position-row">
+          <span class="position-lbl">Distribution</span>
+          <span class="position-val" id="pos-distribution">&mdash;</span>
+        </div>
+
+        <div class="position-divider"></div>
+
+        <div class="position-row position-row-profit">
+          <span class="position-lbl position-lbl-profit">Net Profit</span>
+          <span class="position-val position-val-profit green" id="pos-net-profit">&mdash;</span>
+        </div>
+        <div class="position-row">
+          <span class="position-lbl">Return</span>
+          <div class="return-badge-wrap">
+            <span class="position-val green" style="font-weight:700" id="pos-actual-return">—</span>
+            <span id="above-target-badge" class="above-target-badge"></span>
+            <span id="pos-annualized-return" style="font-size:11px;color:#9B9B9B;font-weight:400;display:none;"></span>
+          </div>
+        </div>
+
+        <div class="position-divider"></div>
+
+        <div class="position-row">
           <span class="position-lbl">Ownership</span>
           <span class="position-val" id="pos-ownership">&mdash;</span>
         </div>
-        <div class="position-row">
-          <span class="position-lbl">Target Return</span>
-          <span class="position-val green">22%</span>
+        <div class="position-row" id="row-join-date">
+          <span class="position-lbl">Joined</span>
+          <span class="position-val" id="pos-join-date">—</span>
         </div>
         <div class="position-row">
           <span class="position-lbl">Status</span>
-          <span class="position-val green">Completed</span>
-        </div>
-        <div class="position-row">
-          <span class="position-lbl">Distribution</span>
-          <span class="position-val muted">$&mdash; (pending)</span>
+          <span class="position-val green" id="pos-status">Completed</span>
         </div>
 
         <a href="#" class="btn-statement">Download My Statement</a>
@@ -1259,6 +1381,13 @@
 
 
 <script>
+  /* ── Supabase client ── */
+  const { createClient } = window.supabase;
+  const supabaseClient = createClient(
+    'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+    'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+  );
+
   /* ── Investor registry ── */
   const INVESTORS = {
     'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
@@ -1271,27 +1400,27 @@
     'madelcarmen.galindo@zuksa.net': { name: 'Ma del Carmen Galindo',  initials: 'MG' }
   };
 
-  /* ── Allure original capital amounts ── */
-  const ALLURE_INVESTORS = [
-    { email: 'fredbusher@gmail.com',          name: 'Groupe Reaction',        invested: 19845.75 },
-    { email: 'gilito.iii@gmail.com',          name: 'Gilberto Padilla',       invested: 25000    },
-    { email: 'alvaroilanes@gmail.com',        name: 'Alvaro Villasante',      invested: 25000    },
-    { email: 'cuellarolmos@gmail.com',        name: 'Alberto Cuellar',        invested: 20000    },
-    { email: 'sergio.gmd@gmail.com',          name: 'Sergio Gomez',           invested: 50000    },
-    { email: 'nacho.lucas@gmail.com',         name: 'Nacho Lucas',            invested: 35000    },
-    { email: 'ferzuniga@gmail.com',           name: 'Fernando Zúñiga', invested: 39370 },
-    { email: 'madelcarmen.galindo@zuksa.net', name: 'Ma del Carmen Galindo',  invested: 13130    }
-  ];
-
-  const ALLURE_TOTAL = 227345.75;
-
   /* ── Helpers ── */
   function fmt(n) {
-    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   function fmtPct(n) {
-    return n.toFixed(2) + '%';
+    return Number(n).toFixed(2) + '%';
+  }
+
+  function fmtDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   /* ── Tab switching ── */
@@ -1304,48 +1433,326 @@
     });
   }
 
-  /* ── Build distribution table ── */
-  function buildDistributionTable(currentEmail) {
-    const tbody = document.getElementById('distribution-tbody');
+  /* ══════════════════════════════════════════
+     SUPABASE DATA LOADERS
+  ══════════════════════════════════════════ */
+
+  async function loadProjectDetails() {
+    const { data, error } = await supabaseClient
+      .from('project_details')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .maybeSingle();
+
+    if (error) { console.error('loadProjectDetails:', error); return; }
+    if (!data) return;
+
+    /* Hero badge */
+    if (data.status) {
+      const badge = document.getElementById('hero-badge');
+      if (badge) badge.textContent = data.status;
+    }
+
+    /* Hero subtitle */
+    if (data.location || data.start_date || data.end_date) {
+      const subtitle = document.getElementById('hero-subtitle');
+      if (subtitle) {
+        const parts = [];
+        if (data.location) parts.push(data.location);
+        const start = data.start_date ? fmtDate(data.start_date) : null;
+        const end   = data.end_date   ? fmtDate(data.end_date)   : null;
+        if (start || end) parts.push([start, end].filter(Boolean).join(' – '));
+        subtitle.textContent = parts.join(' · ');
+      }
+    }
+
+    /* Chips */
+    if (data.duration_months != null) {
+      const krDur = document.getElementById('kr-duration');
+      if (krDur) krDur.textContent = data.duration_months + ' months';
+    }
+    if (data.actual_return != null) {
+      const krRet = document.getElementById('kr-return');
+      if (krRet) krRet.textContent = data.actual_return + '% Total Return';
+      const posActRet = document.getElementById('pos-actual-return');
+      if (posActRet) posActRet.textContent = data.actual_return + '%';
+      const bannerPct = document.getElementById('actual-banner-pct');
+      if (bannerPct) bannerPct.textContent = data.actual_return + '%';
+    }
+
+    /* Annualized return */
+    if (data.actual_return != null && data.duration_months != null) {
+      const annualized = (Math.pow(1 + data.actual_return / 100, 12 / data.duration_months) - 1) * 100;
+      const annualizedRounded = annualized.toFixed(1);
+      const posAnn = document.getElementById('pos-annualized-return');
+      if (posAnn) {
+        posAnn.textContent = '~' + annualizedRounded + '% annualized';
+        posAnn.style.display = '';
+      }
+      const bannerAnn = document.getElementById('actual-banner-annualized');
+      if (bannerAnn) {
+        bannerAnn.textContent = '~' + annualizedRounded + '% annualized over ' + data.duration_months + ' months';
+        bannerAnn.style.display = '';
+      }
+    }
+
+    if (data.target_return != null) {
+      const posTargRet = document.getElementById('pos-target-return');
+      if (posTargRet) posTargRet.textContent = data.target_return + '%';
+    }
+
+    if (data.actual_return != null && data.target_return != null) {
+      const diff = Number(data.actual_return) - Number(data.target_return);
+      const badge = document.getElementById('above-target-badge');
+      if (badge && diff > 0) {
+        const diffStr = diff.toFixed(2).replace(/\.?0+$/, '');
+        badge.textContent = '+' + diffStr + '% above target';
+        badge.style.display = 'block';
+      }
+    }
+
+    /* Status in position card */
+    if (data.status) {
+      const posStatus = document.getElementById('pos-status');
+      if (posStatus) posStatus.textContent = data.status;
+    }
+
+    /* About description */
+    if (data.description) {
+      const desc = document.getElementById('about-description');
+      if (desc) desc.textContent = data.description;
+    }
+
+    /* Cover photo */
+    if (data.cover_photo_url) {
+      const placeholder = document.getElementById('photo-placeholder');
+      const img = document.getElementById('hero-cover-photo');
+      if (placeholder && img) {
+        placeholder.style.display = 'none';
+        img.src = data.cover_photo_url;
+        img.style.display = 'block';
+      }
+    }
+
+    /* Contractor */
+    if (data.contractor_name) {
+      const link = document.getElementById('contractor-name-link');
+      if (link) {
+        link.textContent = data.contractor_name;
+        if (data.contractor_url) link.href = data.contractor_url;
+      }
+    }
+  }
+
+  async function loadBudget() {
+    const { data, error } = await supabaseClient
+      .from('project_budget')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .order('id', { ascending: true });
+
+    const tbody = document.getElementById('budget-overview-tbody');
     if (!tbody) return;
-    const rows = ALLURE_INVESTORS.map(inv => {
-      const pct = inv.invested / ALLURE_TOTAL * 100;
-      const isCurrent = inv.email === currentEmail;
-      return `<tr${isCurrent ? ' class="row-highlight"' : ''}>
-        <td>${inv.name}${isCurrent ? ' <span style="font-size:10px;color:#1A7F4A;font-weight:700;">&#9654; You</span>' : ''}</td>
-        <td>${fmt(inv.invested)}</td>
-        <td>${fmtPct(pct)}</td>
-        <td class="placeholder-val">$&mdash;</td>
+
+    if (error) console.error('loadBudget:', error);
+    if (error || !data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#9B9B9B;padding:20px 0">No budget data available yet</td></tr>';
+      return;
+    }
+
+    let totalFore = 0, totalAct = 0;
+
+    const rows = data.map(r => {
+      const fore     = r.forecasted || 0;
+      const act      = r.actual     || 0;
+      const variance = fore - act;
+      totalFore += fore;
+      totalAct  += act;
+      const vc = variance >= 0 ? 'color:#1A7F4A' : 'color:#C0392B';
+      return `<tr>
+        <td>${escHtml(r.item)}</td>
+        <td>${fmt(fore)}</td>
+        <td>${fmt(act)}</td>
+        <td style="${vc}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
       </tr>`;
     });
 
-    const totalPct = 100;
+    const totalVar = totalFore - totalAct;
+    const tvc = totalVar >= 0 ? 'color:#1A7F4A' : 'color:#C0392B';
     rows.push(`<tr class="row-total">
       <td>TOTAL</td>
-      <td>${fmt(ALLURE_TOTAL)}</td>
-      <td>${fmtPct(totalPct)}</td>
-      <td class="placeholder-val">$&mdash;</td>
+      <td>${fmt(totalFore)}</td>
+      <td>${fmt(totalAct)}</td>
+      <td style="${tvc}">${totalVar >= 0 ? '+' : ''}${fmt(Math.abs(totalVar))}</td>
     </tr>`);
 
     tbody.innerHTML = rows.join('');
   }
 
-  /* ── Render page for a given investor ── */
-  function renderPage(inv, email) {
-    /* Header */
-    document.getElementById('hdr-initials').textContent = inv.initials;
-    document.getElementById('hdr-name').textContent     = inv.name;
+  async function loadScenarios() {
+    const { data, error } = await supabaseClient
+      .from('project_scenarios')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .order('sort_order', { ascending: true, nullsFirst: false });
 
-    /* My Position card */
-    const allureInv = ALLURE_INVESTORS.find(a => a.email === email);
-    if (allureInv) {
-      const pct = allureInv.invested / ALLURE_TOTAL * 100;
-      document.getElementById('pos-invested').textContent  = fmt(allureInv.invested);
-      document.getElementById('pos-ownership').textContent = fmtPct(pct);
+    if (error) { console.error('loadScenarios:', error); return; }
+    if (!data || data.length === 0) return; // keep hardcoded placeholders
+
+    const pfxMap = { pessimistic: 'pess', base: 'base', optimistic: 'opt' };
+
+    data.forEach(sc => {
+      const pfx = pfxMap[sc.scenario_name];
+      if (!pfx) return;
+      if (sc.return_percentage != null) {
+        const el = document.getElementById(`sc-${pfx}-pct`);
+        if (el) el.textContent = sc.return_percentage + '%';
+      }
+      if (sc.description) {
+        const el = document.getElementById(`sc-${pfx}-desc`);
+        if (el) el.textContent = sc.description;
+      }
+    });
+  }
+
+  async function loadSales() {
+    const { data, error } = await supabaseClient
+      .from('project_sales')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .order('id', { ascending: true });
+
+    const tbody = document.getElementById('sales-overview-tbody');
+    if (!tbody) return;
+
+    if (error) console.error('loadSales:', error);
+    if (error || !data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#9B9B9B;padding:20px 0">Sales summary pending final accounting</td></tr>';
+      return;
     }
 
-    /* Distribution table */
-    buildDistributionTable(email);
+    let total = 0;
+    const rows = data.map(r => {
+      total += r.amount || 0;
+      return `<tr><td>${escHtml(r.item)}</td><td>${fmt(r.amount || 0)}</td></tr>`;
+    });
+    rows.push(`<tr class="row-total"><td>NET AVAILABLE FOR DISTRIBUTION</td><td>${fmt(total)}</td></tr>`);
+
+    tbody.innerHTML = rows.join('');
+  }
+
+  async function loadUpdates() {
+    const feed = document.getElementById('updates-feed');
+    if (!feed) return;
+
+    const { data, error } = await supabaseClient
+      .from('project_updates')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .order('published_at', { ascending: false });
+
+    if (error) { console.error('loadUpdates:', error); feed.innerHTML = ''; return; }
+
+    if (!data || data.length === 0) {
+      feed.innerHTML = '<p class="updates-footer" style="padding-top:40px">No updates yet. Check back soon.</p>';
+      return;
+    }
+
+    const badgeMap = {
+      Permitting:   'badge-permitting',
+      Construction: 'badge-construction',
+      Sales:        'badge-sales',
+      Finance:      'badge-finance',
+      General:      'badge-general'
+    };
+
+    function fmtUpdDate(iso) {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-');
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      return months[parseInt(m,10)-1] + ' ' + parseInt(d,10) + ', ' + y;
+    }
+
+    feed.innerHTML = data.map(u => {
+      const badgeClass = badgeMap[u.category] || 'badge-general';
+      const photo = u.photo_url
+        ? `<div class="upd-photo"><img src="${escHtml(u.photo_url)}" alt=""></div>`
+        : '';
+      return `
+        <div class="update-card-v2">
+          <div class="upd-meta">
+            <span class="upd-date">${escHtml(fmtUpdDate(u.published_at))}</span>
+            <span class="update-badge ${badgeClass}">${escHtml(u.category)}</span>
+          </div>
+          <div class="upd-title">${escHtml(u.title)}</div>
+          <div class="upd-body">${escHtml(u.body || '')}</div>
+          ${photo}
+        </div>`;
+    }).join('');
+  }
+
+  async function loadInvestorPosition(email) {
+    const { data, error } = await supabaseClient
+      .from('investor_positions')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .ilike('investor_email', email.toLowerCase())
+      .maybeSingle();
+
+    if (error) { console.error('loadInvestorPosition:', error); }
+
+    if (!data) {
+      // Fall back to hardcoded investor registry for amount_invested only
+      const inv = INVESTORS[email];
+      if (inv && inv.amount_invested != null) {
+        const posInvested = document.getElementById('pos-invested');
+        if (posInvested) posInvested.textContent = fmt(inv.amount_invested);
+      }
+      return;
+    }
+
+    const posInvested = document.getElementById('pos-invested');
+    if (posInvested && data.amount_invested != null) {
+      posInvested.textContent = fmt(data.amount_invested);
+    }
+
+    const posOwnership = document.getElementById('pos-ownership');
+    if (posOwnership && data.ownership_percentage != null) {
+      posOwnership.textContent = fmtPct(data.ownership_percentage);
+    }
+
+    const posDistrib = document.getElementById('pos-distribution');
+    if (posDistrib && data.distribution_amount != null) {
+      posDistrib.textContent = fmt(data.distribution_amount);
+    }
+
+    const posNetProfit = document.getElementById('pos-net-profit');
+    if (posNetProfit && data.amount_invested != null && data.distribution_amount != null) {
+      const profit = Number(data.distribution_amount) - Number(data.amount_invested);
+      posNetProfit.textContent = (profit >= 0 ? '+' : '') + fmt(profit);
+    }
+
+    if (data.join_date) {
+      const val = document.getElementById('pos-join-date');
+      if (val) val.textContent = fmtDate(data.join_date);
+    }
+  }
+
+  async function loadAllureData(email) {
+    await Promise.all([
+      loadProjectDetails(),
+      loadBudget(),
+      loadScenarios(),
+      loadSales(),
+      loadUpdates(),
+      loadInvestorPosition(email)
+    ]);
+  }
+
+  /* ── Render page header ── */
+  function renderPage(inv) {
+    document.getElementById('hdr-initials').textContent = inv.initials;
+    document.getElementById('hdr-name').textContent     = inv.name;
   }
 
   /* ── Sign out ── */
@@ -1354,13 +1761,10 @@
     window.location.href = 'dashboard.html';
   });
 
-  /* ── Session check ── */
+  /* ── Session check & init ── */
   (function init() {
     const raw = localStorage.getItem('em_session');
-    if (!raw) {
-      window.location.href = 'dashboard.html';
-      return;
-    }
+    if (!raw) { window.location.href = 'dashboard.html'; return; }
 
     let email;
     try {
@@ -1378,7 +1782,8 @@
       return;
     }
 
-    renderPage(inv, email);
+    renderPage(inv);
+    loadAllureData(email);
   })();
 </script>
 

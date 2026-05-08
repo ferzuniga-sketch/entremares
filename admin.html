@@ -329,6 +329,28 @@
       border-color: #C0392B;
     }
 
+    .btn-reorder {
+      font-family: inherit;
+      font-size: 12px;
+      line-height: 1;
+      color: #6B6B6B;
+      background: none;
+      border: 1px solid #E0E0DC;
+      border-radius: 6px;
+      padding: 4px 7px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reorder:hover:not(:disabled) {
+      background: #F0F0EC;
+      border-color: #BBBBB6;
+      color: #0D0D0D;
+    }
+    .btn-reorder:disabled {
+      opacity: 0.25;
+      cursor: default;
+    }
+
     .inline-edit-input {
       width: 130px;
       padding: 6px 10px;
@@ -347,7 +369,7 @@
       font-size: 12px;
       font-weight: 600;
       color: #FFFFFF;
-      background: #0D0D0D;
+      background: #1A7F4A;
       border: none;
       border-radius: 6px;
       padding: 5px 12px;
@@ -993,6 +1015,7 @@
           <button class="subnav-btn" data-subtab="sales">Sales Summary</button>
           <button class="subnav-btn" data-subtab="positions">Investor Positions</button>
           <button class="subnav-btn" data-subtab="highlights">Highlights</button>
+          <button class="subnav-btn" data-subtab="updates">Updates</button>
         </div>
       </div>
 
@@ -1241,6 +1264,57 @@
           <button class="btn-add" id="btn-add-highlight">+ Add Highlight</button>
           <button class="btn-save" id="btn-save-highlights">Save All</button>
         </div>
+      </div>
+
+      <div class="subtab-content" id="subtab-updates">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Updates</div>
+            <div class="sec-count" id="updates-count">Project news &amp; milestones</div>
+          </div>
+          <button class="btn-add" id="btn-add-update">+ Add Update</button>
+        </div>
+
+        <!-- Inline form (hidden by default) -->
+        <div id="update-form-wrap" style="display:none;background:#FAFAF8;border:1px solid #EEEEE9;border-radius:14px;padding:24px;margin-bottom:20px">
+          <div class="sec-heading" id="update-form-title" style="margin-bottom:18px;font-size:15px">New Update</div>
+          <input type="hidden" id="uf-id">
+          <div class="field" style="margin-bottom:14px">
+            <label>Title</label>
+            <input type="text" id="uf-title" placeholder="e.g. Foundation Complete">
+          </div>
+          <div class="form-grid-2" style="margin-bottom:14px">
+            <div class="field">
+              <label>Category</label>
+              <select id="uf-category">
+                <option value="Permitting">Permitting</option>
+                <option value="Construction">Construction</option>
+                <option value="Sales">Sales</option>
+                <option value="Finance">Finance</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="uf-date">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Body</label>
+            <textarea id="uf-body" rows="5" placeholder="Full update text…"></textarea>
+          </div>
+          <div class="field" style="margin-bottom:20px">
+            <label>Photo URL <span style="font-weight:400;color:#B0B0AA">(optional)</span></label>
+            <input type="text" id="uf-photo" placeholder="https://…">
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn-save" id="btn-save-update">Save Update</button>
+            <button class="btn-add" id="btn-cancel-update" style="background:#F5F5F3;color:#4B4B4B">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Updates list -->
+        <div id="updates-admin-list"></div>
       </div>
 
     </div>
@@ -2267,7 +2341,8 @@
         scenarios:  loadAllureScenarios,
         sales:      loadAllureSales,
         positions:  loadAllurePositions,
-        highlights: loadAllureHighlights
+        highlights: loadAllureHighlights,
+        updates:    loadAllureUpdates
       };
       if (loaders[btn.dataset.subtab]) loaders[btn.dataset.subtab]();
     });
@@ -2378,8 +2453,8 @@
      2. BUDGET
   ══════════════════════════ */
 
-  let budgetCache    = {};
-  let editingBudgetId = null;
+  let budgetCache = {};
+  let budgetCount = 0;
 
   async function loadAllureBudget() {
     const tbody = document.getElementById('budget-tbody');
@@ -2389,7 +2464,8 @@
       .from('project_budget')
       .select('*')
       .eq('project_name', ALLURE_PROJECT)
-      .order('id', { ascending: true });
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('id',         { ascending: true });
 
     if (error) { showToast('Failed to load budget: ' + error.message, true); return; }
     renderBudgetTable(data || []);
@@ -2397,6 +2473,7 @@
 
   function renderBudgetTable(data) {
     budgetCache = {};
+    budgetCount = data.length;
     data.forEach(r => { budgetCache[r.id] = r; });
 
     const tbody = document.getElementById('budget-tbody');
@@ -2409,9 +2486,10 @@
       return;
     }
 
+    const last = data.length - 1;
     let totalFore = 0, totalAct = 0;
 
-    tbody.innerHTML = data.map(r => {
+    tbody.innerHTML = data.map((r, i) => {
       const fore     = r.forecasted || 0;
       const act      = r.actual     || 0;
       const variance = fore - act;
@@ -2419,15 +2497,17 @@
       totalAct  += act;
       const vc = variance >= 0 ? 'color:#1A7F4A;font-weight:600' : 'color:#C0392B;font-weight:600';
       return `
-        <tr>
+        <tr data-id="${r.id}" data-sort="${i}">
           <td class="td-name">${escHtml(r.item)}</td>
           <td style="color:#6B6B6B">${escHtml(r.category || '')}</td>
           <td class="td-mono">${fmt(fore)}</td>
           <td class="td-mono">${fmt(act)}</td>
           <td class="td-mono" style="${vc}">${variance >= 0 ? '+' : ''}${fmt(variance)}</td>
           <td class="td-actions">
-            <button class="btn-edit"   onclick="openEditBudgetRow(${r.id})">Edit</button>
-            <button class="btn-delete" onclick="deleteBudgetRow(${r.id})">Delete</button>
+            <button class="btn-reorder" data-action="move-up"   ${i === 0    ? 'disabled' : ''}>↑</button>
+            <button class="btn-reorder" data-action="move-down" ${i === last ? 'disabled' : ''}>↓</button>
+            <button class="btn-edit"   data-action="edit">Edit</button>
+            <button class="btn-delete" data-action="delete">Delete</button>
           </td>
         </tr>
       `;
@@ -2449,23 +2529,9 @@
   }
 
   function openAddBudgetRow() {
-    editingBudgetId = null;
     document.getElementById('modal-budget-title').textContent = 'Add Budget Row';
     document.getElementById('modal-budget-save').textContent  = 'Add Row';
     ['br-item','br-category','br-forecasted','br-actual'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('modal-budget-row').classList.add('open');
-  }
-
-  function openEditBudgetRow(id) {
-    const r = budgetCache[id];
-    if (!r) return;
-    editingBudgetId = id;
-    document.getElementById('modal-budget-title').textContent = 'Edit Budget Row';
-    document.getElementById('modal-budget-save').textContent  = 'Save Row';
-    document.getElementById('br-item').value       = r.item        || '';
-    document.getElementById('br-category').value   = r.category    || '';
-    document.getElementById('br-forecasted').value = r.forecasted  || '';
-    document.getElementById('br-actual').value     = r.actual      || '';
     document.getElementById('modal-budget-row').classList.add('open');
   }
 
@@ -2484,13 +2550,8 @@
     const btn = document.getElementById('modal-budget-save');
     btn.disabled = true;
 
-    const payload = { project_name: ALLURE_PROJECT, item, category, forecasted, actual };
-    let error;
-    if (editingBudgetId !== null) {
-      ({ error } = await supabaseClient.from('project_budget').update(payload).eq('id', editingBudgetId));
-    } else {
-      ({ error } = await supabaseClient.from('project_budget').insert(payload));
-    }
+    const payload = { project_name: ALLURE_PROJECT, item, category, forecasted, actual, sort_order: budgetCount };
+    const { error } = await supabaseClient.from('project_budget').insert(payload);
 
     btn.disabled = false;
     if (error) { showToast('Save failed: ' + error.message, true); return; }
@@ -2499,13 +2560,80 @@
     loadAllureBudget();
   }
 
-  async function deleteBudgetRow(id) {
-    if (!confirm('Delete this budget row?')) return;
-    const { error } = await supabaseClient.from('project_budget').delete().eq('id', id);
-    if (error) { showToast('Delete failed: ' + error.message, true); return; }
-    showToast('Row deleted.');
-    loadAllureBudget();
-  }
+  document.getElementById('budget-tbody').addEventListener('click', async function(e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const row   = btn.closest('tr');
+    const rowId = row.dataset.id;
+
+    if (btn.dataset.action === 'move-up' || btn.dataset.action === 'move-down') {
+      const sibling = btn.dataset.action === 'move-up'
+        ? row.previousElementSibling
+        : row.nextElementSibling;
+      if (!sibling || !sibling.dataset.id) return;
+      const sibId   = sibling.dataset.id;
+      const sortA   = parseInt(row.dataset.sort, 10);
+      const sortB   = parseInt(sibling.dataset.sort, 10);
+      btn.disabled  = true;
+      const [r1, r2] = await Promise.all([
+        supabaseClient.from('project_budget').update({ sort_order: sortB }).eq('id', rowId),
+        supabaseClient.from('project_budget').update({ sort_order: sortA }).eq('id', sibId),
+      ]);
+      if (r1.error || r2.error) {
+        showToast('Reorder failed: ' + (r1.error || r2.error).message, true);
+        btn.disabled = false;
+        return;
+      }
+      loadAllureBudget();
+      return;
+    }
+
+    if (btn.dataset.action === 'delete') {
+      if (!window.confirm('Delete this budget row?')) return;
+      const { error } = await supabaseClient.from('project_budget').delete().eq('id', rowId);
+      if (error) { showToast('Delete failed: ' + error.message, true); return; }
+      showToast('Row deleted.');
+      loadAllureBudget();
+      return;
+    }
+
+    if (btn.dataset.action === 'edit') {
+      const r = budgetCache[rowId];
+      if (!r) return;
+      row.innerHTML = `
+        <td><input class="inline-input" value="${escHtml(r.item)}"></td>
+        <td><input class="inline-input" value="${escHtml(r.category || '')}"></td>
+        <td><input class="inline-input" type="number" step="0.01" value="${r.forecasted || 0}"></td>
+        <td><input class="inline-input" type="number" step="0.01" value="${r.actual || 0}"></td>
+        <td></td>
+        <td class="td-actions">
+          <button class="btn-save"   data-action="save">Save</button>
+          <button class="btn-cancel" data-action="cancel">Cancel</button>
+        </td>
+      `;
+      return;
+    }
+
+    if (btn.dataset.action === 'save') {
+      const inputs     = row.querySelectorAll('input');
+      const item       = inputs[0].value.trim();
+      const category   = inputs[1].value.trim();
+      const forecasted = parseFloat(inputs[2].value) || 0;
+      const actual     = parseFloat(inputs[3].value) || 0;
+      if (!item) { alert('Item name is required.'); return; }
+      btn.disabled = true;
+      const { error } = await supabaseClient.from('project_budget').update({ item, category, forecasted, actual }).eq('id', rowId);
+      btn.disabled = false;
+      if (error) { showToast('Save failed: ' + error.message, true); return; }
+      showToast('Budget row saved.');
+      loadAllureBudget();
+      return;
+    }
+
+    if (btn.dataset.action === 'cancel') {
+      loadAllureBudget();
+    }
+  });
 
   document.getElementById('btn-add-budget').addEventListener('click', openAddBudgetRow);
   document.getElementById('modal-budget-close').addEventListener('click', closeBudgetModal);
@@ -2526,10 +2654,10 @@
     if (error) { showToast('Failed to load scenarios: ' + error.message, true); return; }
 
     (data || []).forEach(sc => {
-      const pfx = { pessimistic: 'pess', base: 'base', optimistic: 'opt' }[sc.scenario_type];
+      const pfx = { pessimistic: 'pess', base: 'base', optimistic: 'opt' }[sc.scenario_name];
       if (!pfx) return;
       document.getElementById(`sc-${pfx}-name`).value   = sc.scenario_name || '';
-      document.getElementById(`sc-${pfx}-return`).value = sc.return_pct    || '';
+      document.getElementById(`sc-${pfx}-return`).value = sc.return_percentage    || '';
       document.getElementById(`sc-${pfx}-desc`).value   = sc.description   || '';
     });
   }
@@ -2539,19 +2667,30 @@
     if (!pfx) return;
 
     const payload = {
-      project_name:  ALLURE_PROJECT,
-      scenario_type: type,
-      scenario_name: document.getElementById(`sc-${pfx}-name`).value.trim(),
-      return_pct:    parseFloat(document.getElementById(`sc-${pfx}-return`).value) || null,
-      description:   document.getElementById(`sc-${pfx}-desc`).value.trim()
+      project_name:      ALLURE_PROJECT,
+      scenario_name:     type,
+      return_percentage: parseFloat(document.getElementById(`sc-${pfx}-return`).value) || null,
+      description:       document.getElementById(`sc-${pfx}-desc`).value.trim(),
     };
 
-    const { error } = await supabaseClient
+    const { data: existing, error: selErr } = await supabaseClient
       .from('project_scenarios')
-      .upsert(payload, { onConflict: 'project_name,scenario_type' });
+      .select('id')
+      .eq('project_name', ALLURE_PROJECT)
+      .eq('scenario_name', type)
+      .maybeSingle();
+
+    if (selErr) { showToast('Save failed: ' + selErr.message, true); return; }
+
+    let error;
+    if (existing) {
+      ({ error } = await supabaseClient.from('project_scenarios').update(payload).eq('id', existing.id));
+    } else {
+      ({ error } = await supabaseClient.from('project_scenarios').insert(payload));
+    }
 
     if (error) { showToast('Save failed: ' + error.message, true); return; }
-    showToast((payload.scenario_name || type) + ' scenario saved.');
+    showToast(type + ' scenario saved.');
   }
 
   /* ══════════════════════════
@@ -2681,14 +2820,14 @@
   let editingPositionId = null;
 
   const DEFAULT_POSITIONS = [
-    { investor_name: 'Groupe Reaction',      email: 'fredbusher@gmail.com',          amount_invested: 19845.75 },
-    { investor_name: 'Gilberto Padilla',      email: 'gilito.iii@gmail.com',          amount_invested: 25000 },
-    { investor_name: 'Alvaro Villasante',     email: 'alvaroilanes@gmail.com',        amount_invested: 25000 },
-    { investor_name: 'Alberto Cuellar',       email: 'cuellarolmos@gmail.com',        amount_invested: 20000 },
-    { investor_name: 'Sergio Gomez',          email: 'sergio.gmd@gmail.com',          amount_invested: 50000 },
-    { investor_name: 'Nacho Lucas',           email: 'Nacho.lucas@gmail.com',         amount_invested: 35000 },
-    { investor_name: 'Fernando Zúñiga',       email: 'ferzuniga@gmail.com',           amount_invested: 39370 },
-    { investor_name: 'Ma del Carmen Galindo', email: 'madelcarmen.galindo@zuksa.net', amount_invested: 13130 }
+    { investor_name: 'Groupe Reaction',      investor_email: 'fredbusher@gmail.com',          amount_invested: 19845.75 },
+    { investor_name: 'Gilberto Padilla',      investor_email: 'gilito.iii@gmail.com',          amount_invested: 25000 },
+    { investor_name: 'Alvaro Villasante',     investor_email: 'alvaroilanes@gmail.com',        amount_invested: 25000 },
+    { investor_name: 'Alberto Cuellar',       investor_email: 'cuellarolmos@gmail.com',        amount_invested: 20000 },
+    { investor_name: 'Sergio Gomez',          investor_email: 'sergio.gmd@gmail.com',          amount_invested: 50000 },
+    { investor_name: 'Nacho Lucas',           investor_email: 'Nacho.lucas@gmail.com',         amount_invested: 35000 },
+    { investor_name: 'Fernando Zúñiga',       investor_email: 'ferzuniga@gmail.com',           amount_invested: 39370 },
+    { investor_name: 'Ma del Carmen Galindo', investor_email: 'madelcarmen.galindo@zuksa.net', amount_invested: 13130 }
   ];
 
   async function loadAllurePositions() {
@@ -2725,23 +2864,22 @@
 
     const tbody = document.getElementById('positions-tbody');
     tbody.innerHTML = data.map(r => {
-      const pct      = totalInvested > 0 ? ((r.amount_invested || 0) / totalInvested * 100).toFixed(2) : '0.00';
       const joinDate = r.join_date ? new Date(r.join_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
       const exitDate = r.exit_date ? new Date(r.exit_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
       const distrib  = r.distribution_amount != null ? fmt(r.distribution_amount) : '—';
-      const idStr    = JSON.stringify(String(r.id));
+      const pctDisplay = r.ownership_percentage != null ? r.ownership_percentage + '%' : '—';
       return `
-        <tr>
+        <tr data-id="${escHtml(String(r.id))}">
           <td class="td-name">${escHtml(r.investor_name)}</td>
-          <td class="td-email">${escHtml(r.email || '')}</td>
+          <td class="td-email">${escHtml(r.investor_email || '')}</td>
           <td class="td-mono">${fmt(r.amount_invested || 0)}</td>
-          <td class="td-mono">${pct}%</td>
+          <td class="td-mono">${pctDisplay}</td>
           <td style="color:#6B6B6B;font-size:13px">${joinDate}</td>
           <td style="color:#6B6B6B;font-size:13px">${exitDate}</td>
           <td class="td-mono">${distrib}</td>
           <td class="td-actions">
-            <button class="btn-edit"   onclick="openEditPosition(${idStr})">Edit</button>
-            <button class="btn-delete" onclick="deletePosition(${idStr})">Delete</button>
+            <button class="btn-edit">Edit</button>
+            <button class="btn-delete">Delete</button>
           </td>
         </tr>
       `;
@@ -2767,7 +2905,7 @@
     document.getElementById('modal-position-title').textContent = 'Edit Investor Position';
     document.getElementById('modal-position-save').textContent  = 'Save Position';
     document.getElementById('ip-name').value         = r.investor_name      || '';
-    document.getElementById('ip-email').value        = r.email              || '';
+    document.getElementById('ip-email').value        = r.investor_email     || '';
     document.getElementById('ip-amount').value       = r.amount_invested    || '';
     document.getElementById('ip-distribution').value = r.distribution_amount != null ? r.distribution_amount : '';
     document.getElementById('ip-join-date').value    = r.join_date          || '';
@@ -2794,7 +2932,7 @@
     btn.disabled = true;
 
     const payload = {
-      project_name: ALLURE_PROJECT, investor_name: name, email,
+      project_name: ALLURE_PROJECT, investor_name: name, investor_email: email.toLowerCase(),
       amount_invested: amount, distribution_amount: distrib,
       join_date: joinDate, exit_date: exitDate
     };
@@ -2831,6 +2969,80 @@
   document.getElementById('modal-position-save').addEventListener('click', savePosition);
   document.getElementById('modal-position').addEventListener('click', function(e) { if (e.target === this) closePositionModal(); });
 
+  document.getElementById('positions-tbody').addEventListener('click', async function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const row = btn.closest('tr[data-id]');
+    if (!row) return;
+    const rowId = row.dataset.id;
+
+    if (btn.classList.contains('btn-delete')) {
+      if (!window.confirm('Delete this investor position?')) return;
+      if (String(rowId).startsWith('local-')) {
+        showToast('Please save to database first before deleting.', true); return;
+      }
+      const { error } = await supabaseClient.from('investor_positions').delete().eq('id', rowId);
+      if (error) { showToast('Delete failed: ' + error.message, true); return; }
+      showToast('Position deleted.');
+      loadAllurePositions();
+      return;
+    }
+
+    if (btn.classList.contains('btn-edit')) {
+      const r = positionsCache[rowId];
+      if (!r) return;
+      const lbl = t => `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#9B9B9B;margin-bottom:4px;">${t}</div>`;
+      row.innerHTML = `
+        <td colspan="8" style="padding:14px 18px;background:#F7F7F5;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px 16px;margin-bottom:12px;">
+            <div>${lbl('Name')}<input class="inline-edit-input" name="investor_name" style="width:100%" value="${escHtml(r.investor_name || '')}"></div>
+            <div>${lbl('Email')}<input class="inline-edit-input" name="investor_email" style="width:100%" value="${escHtml(r.investor_email || '')}"></div>
+            <div>${lbl('Amount Invested')}<input class="inline-edit-input" name="amount_invested" type="number" step="0.01" style="width:100%" value="${r.amount_invested || 0}"></div>
+            <div>${lbl('Ownership %')}<input class="inline-edit-input" name="ownership_percentage" type="number" step="0.0001" style="width:100%" value="${r.ownership_percentage != null ? r.ownership_percentage : ''}"></div>
+            <div>${lbl('Join Date')}<input class="inline-edit-input" name="join_date" type="date" style="width:100%" value="${r.join_date || ''}"></div>
+            <div>${lbl('Exit Date')}<input class="inline-edit-input" name="exit_date" type="date" style="width:100%" value="${r.exit_date || ''}"></div>
+            <div>${lbl('Distribution')}<input class="inline-edit-input" name="distribution_amount" type="number" step="0.01" style="width:100%" value="${r.distribution_amount != null ? r.distribution_amount : ''}"></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-save-inline">Save</button>
+            <button class="btn-cancel-inline">Cancel</button>
+          </div>
+        </td>
+      `;
+      return;
+    }
+
+    if (btn.classList.contains('btn-save-inline')) {
+      const q = name => row.querySelector(`[name="${name}"]`);
+      const name     = q('investor_name').value.trim();
+      const email    = q('investor_email').value.trim();
+      const amount   = parseFloat(q('amount_invested').value) || 0;
+      const ownerPct = q('ownership_percentage').value !== '' ? parseFloat(q('ownership_percentage').value) : null;
+      const joinDate = q('join_date').value || null;
+      const exitDate = q('exit_date').value || null;
+      const distribVal = q('distribution_amount').value;
+      const distrib  = distribVal !== '' ? parseFloat(distribVal) : null;
+      if (!name) { alert('Investor name is required.'); return; }
+      const updatePayload = {
+        investor_name: name, investor_email: email.toLowerCase(), amount_invested: amount,
+        ownership_percentage: ownerPct, join_date: joinDate,
+        exit_date: exitDate, distribution_amount: distrib
+      };
+      console.log('[investor_positions] update payload:', JSON.stringify(updatePayload), '| rowId:', rowId);
+      btn.disabled = true;
+      const { error } = await supabaseClient.from('investor_positions').update(updatePayload).eq('id', rowId);
+      btn.disabled = false;
+      if (error) { showToast('Save failed: ' + error.message, true); return; }
+      showToast('Position saved.');
+      loadAllurePositions();
+      return;
+    }
+
+    if (btn.classList.contains('btn-cancel-inline')) {
+      loadAllurePositions();
+    }
+  });
+
   /* ══════════════════════════
      6. HIGHLIGHTS
   ══════════════════════════ */
@@ -2845,7 +3057,15 @@
       .order('sort_order', { ascending: true });
 
     if (error) { showToast('Failed to load highlights: ' + error.message, true); return; }
-    highlightsData = (data || []).map((r, i) => ({ id: r.id, text: r.text, sort_order: r.sort_order ?? i }));
+    if (!data || data.length === 0) {
+      highlightsData = [
+        { id: null, highlight: 'June 2020 · PERMITTING · Permits Approved · All construction permits for Allure have been approved by the municipal authorities.', sort_order: 0 },
+        { id: null, highlight: 'March 2021 · CONSTRUCTION · Foundation Complete · The foundation work has been completed successfully. The structure is progressing ahead of schedule.', sort_order: 1 },
+        { id: null, highlight: 'December 2024 · SALES · Project Completed · Both townhouses have been sold and delivered. Final accounting is underway.', sort_order: 2 }
+      ];
+    } else {
+      highlightsData = data.map((r, i) => ({ id: r.id, highlight: r.highlight, sort_order: r.sort_order ?? i }));
+    }
     renderHighlights();
   }
 
@@ -2859,8 +3079,8 @@
       <div class="highlight-item">
         <button class="btn-arrow" onclick="moveHighlight(${i},-1)" ${i === 0 ? 'disabled' : ''}>↑</button>
         <button class="btn-arrow" onclick="moveHighlight(${i},1)"  ${i === highlightsData.length - 1 ? 'disabled' : ''}>↓</button>
-        <input type="text" class="highlight-input" value="${escHtml(h.text)}"
-               oninput="highlightsData[${i}].text=this.value" placeholder="Highlight text…">
+        <input type="text" class="highlight-input" value="${escHtml(h.highlight)}"
+               oninput="highlightsData[${i}].highlight=this.value" placeholder="Highlight text…">
         <button class="btn-delete" onclick="removeHighlight(${i})">Delete</button>
       </div>
     `).join('');
@@ -2879,7 +3099,7 @@
   }
 
   function addHighlight() {
-    highlightsData.push({ id: null, text: '', sort_order: highlightsData.length });
+    highlightsData.push({ id: null, highlight: '', sort_order: highlightsData.length });
     renderHighlights();
     const inputs = document.querySelectorAll('.highlight-input');
     if (inputs.length) inputs[inputs.length - 1].focus();
@@ -2899,8 +3119,8 @@
     }
 
     const rows = highlightsData
-      .filter(h => h.text.trim())
-      .map((h, i) => ({ project_name: ALLURE_PROJECT, text: h.text.trim(), sort_order: i }));
+      .filter(h => h.highlight.trim())
+      .map((h, i) => ({ project_name: ALLURE_PROJECT, highlight: h.highlight.trim(), sort_order: i }));
 
     if (rows.length > 0) {
       const { error: insErr } = await supabaseClient.from('project_highlights').insert(rows);
@@ -2917,6 +3137,140 @@
 
   document.getElementById('btn-add-highlight').addEventListener('click', addHighlight);
   document.getElementById('btn-save-highlights').addEventListener('click', saveAllHighlights);
+
+  /* ══════════════════════════════════════════
+     ALLURE — UPDATES
+  ══════════════════════════════════════════ */
+
+  const UPDATES_DEFAULTS = [
+    { title: 'Permits Approved',   category: 'Permitting',   published_at: '2023-06-01', body: 'All construction permits for Allure have been approved by the municipal authorities. Construction is scheduled to begin in the coming weeks.',  photo_url: null },
+    { title: 'Foundation Complete', category: 'Construction', published_at: '2024-03-01', body: 'The foundation work has been completed successfully. The structure is progressing ahead of schedule.',                                              photo_url: null },
+    { title: 'Project Completed',  category: 'Sales',        published_at: '2024-12-01', body: 'Both townhouses have been sold and delivered. Final accounting is underway and distribution will be processed shortly.',                             photo_url: null }
+  ];
+
+  let updatesData = [];
+
+  function fmtDateShort(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[parseInt(m,10)-1] + ' ' + parseInt(d,10) + ', ' + y;
+  }
+
+  async function loadAllureUpdates() {
+    const { data, error } = await supabaseClient
+      .from('project_updates')
+      .select('*')
+      .eq('project_name', ALLURE_PROJECT)
+      .order('published_at', { ascending: false });
+
+    if (error) { showToast('Failed to load updates: ' + error.message, true); return; }
+
+    if (!data || data.length === 0) {
+      const rows = UPDATES_DEFAULTS.map(u => ({ ...u, project_name: ALLURE_PROJECT }));
+      const { error: insErr } = await supabaseClient.from('project_updates').insert(rows);
+      if (insErr) { showToast('Failed to seed updates: ' + insErr.message, true); return; }
+      updatesData = rows.map((u, i) => ({ ...u, id: null }));
+      const { data: fresh } = await supabaseClient.from('project_updates').select('*').eq('project_name', ALLURE_PROJECT).order('published_at', { ascending: false });
+      updatesData = fresh || updatesData;
+    } else {
+      updatesData = data;
+    }
+
+    renderAdminUpdates();
+  }
+
+  function renderAdminUpdates() {
+    const list = document.getElementById('updates-admin-list');
+    const count = document.getElementById('updates-count');
+    if (count) count.textContent = updatesData.length + ' update' + (updatesData.length !== 1 ? 's' : '');
+
+    if (updatesData.length === 0) {
+      list.innerHTML = '<div class="empty-state">No updates yet. Add one above.</div>';
+      return;
+    }
+
+    list.innerHTML = updatesData.map((u, i) => `
+      <div class="highlight-item" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:10px;width:100%">
+          <span style="font-size:11px;color:#9B9B9B;font-weight:500">${escHtml(fmtDateShort(u.published_at))}</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border-radius:100px;padding:3px 9px;background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC">${escHtml(u.category)}</span>
+          <div style="flex:1"></div>
+          <button class="btn-arrow" onclick="openUpdateForm(${i})">Edit</button>
+          <button class="btn-delete" onclick="deleteUpdate(${i})">Delete</button>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:#0D0D0D">${escHtml(u.title)}</div>
+        <div style="font-size:13px;color:#6B6B6B">${escHtml((u.body || '').slice(0, 100))}${u.body && u.body.length > 100 ? '…' : ''}</div>
+      </div>
+    `).join('');
+  }
+
+  function openUpdateForm(idx) {
+    const formWrap = document.getElementById('update-form-wrap');
+    const titleEl  = document.getElementById('update-form-title');
+    document.getElementById('uf-id').value       = idx !== undefined ? (updatesData[idx].id ?? '') : '';
+    document.getElementById('uf-title').value    = idx !== undefined ? (updatesData[idx].title    || '') : '';
+    document.getElementById('uf-category').value = idx !== undefined ? (updatesData[idx].category || 'General') : 'General';
+    document.getElementById('uf-date').value     = idx !== undefined ? (updatesData[idx].published_at || todayISO()) : todayISO();
+    document.getElementById('uf-body').value     = idx !== undefined ? (updatesData[idx].body     || '') : '';
+    document.getElementById('uf-photo').value    = idx !== undefined ? (updatesData[idx].photo_url || '') : '';
+    titleEl.textContent = idx !== undefined ? 'Edit Update' : 'New Update';
+    document.getElementById('btn-save-update').dataset.editIdx = idx !== undefined ? idx : '';
+    formWrap.style.display = 'block';
+    formWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function todayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  document.getElementById('btn-add-update').addEventListener('click', () => openUpdateForm());
+  document.getElementById('btn-cancel-update').addEventListener('click', () => {
+    document.getElementById('update-form-wrap').style.display = 'none';
+  });
+
+  document.getElementById('btn-save-update').addEventListener('click', async () => {
+    const btn      = document.getElementById('btn-save-update');
+    const editIdx  = btn.dataset.editIdx;
+    const title    = document.getElementById('uf-title').value.trim();
+    const category = document.getElementById('uf-category').value;
+    const date     = document.getElementById('uf-date').value;
+    const body     = document.getElementById('uf-body').value.trim();
+    const photoUrl = document.getElementById('uf-photo').value.trim() || null;
+
+    if (!title || !date) { showToast('Title and date are required.', true); return; }
+
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const payload = { project_name: ALLURE_PROJECT, title, category, published_at: date, body, photo_url: photoUrl };
+
+    let dbErr;
+    if (editIdx !== '' && updatesData[editIdx]?.id) {
+      const { error } = await supabaseClient.from('project_updates').update(payload).eq('id', updatesData[editIdx].id);
+      dbErr = error;
+    } else {
+      const { error } = await supabaseClient.from('project_updates').insert(payload);
+      dbErr = error;
+    }
+
+    btn.disabled = false; btn.textContent = 'Save Update';
+    if (dbErr) { showToast('Save failed: ' + dbErr.message, true); return; }
+
+    document.getElementById('update-form-wrap').style.display = 'none';
+    showToast('Update saved.');
+    loadAllureUpdates();
+  });
+
+  async function deleteUpdate(idx) {
+    if (!confirm('Delete this update?')) return;
+    const u = updatesData[idx];
+    if (u.id) {
+      const { error } = await supabaseClient.from('project_updates').delete().eq('id', u.id);
+      if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    }
+    showToast('Update deleted.');
+    loadAllureUpdates();
+  }
 </script>
 
 </body>

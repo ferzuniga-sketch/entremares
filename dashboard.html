@@ -1567,7 +1567,7 @@
       const { data, error } = await supabaseClient
         .from('commitments')
         .select('amount')
-        .eq('investor_email', email)
+        .ilike('investor_email', email.toLowerCase())
         .eq('project_name', 'Real del Monte');
 
       if (error || !data || data.length === 0) {
@@ -1583,6 +1583,29 @@
       console.error('Failed to load commitment status:', err);
       document.getElementById('active-investments-section').style.display = 'none';
     }
+  }
+
+  async function loadAllureBalance(email) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('investor_positions')
+        .select('distribution_amount')
+        .eq('project_name', 'Allure')
+        .ilike('investor_email', email.toLowerCase())
+        .maybeSingle();
+
+      if (error || !data || data.distribution_amount == null) return;
+
+      currentInvestor.wallet = Number(data.distribution_amount);
+      set('wallet-balance', fmt(currentInvestor.wallet));
+    } catch (err) {
+      console.error('Failed to load Allure balance:', err);
+    }
+  }
+
+  async function loadDashboardData(email) {
+    await loadAllureBalance(email);
+    loadCommitmentStatus(email);
   }
 
   /* ── Investor database ── */
@@ -1775,9 +1798,9 @@
       </div>
     `).join('');
 
-    /* Funding bar and commitment status — live from Supabase */
+    /* Funding bar and live balance — from Supabase */
     setTimeout(() => updateFundingProgress(), 150);
-    loadCommitmentStatus(email || currentInvestorEmail);
+    loadDashboardData(email || currentInvestorEmail);
   }
 
   /* ── Modal functions ── */
