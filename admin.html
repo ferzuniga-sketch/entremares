@@ -752,13 +752,6 @@
       border-bottom: none !important;
     }
 
-    .highlight-list {
-      background: #FFFFFF;
-      border: 1px solid #EEEEE9;
-      border-radius: 14px;
-      overflow: hidden;
-    }
-
     .highlight-item {
       display: flex;
       align-items: center;
@@ -768,21 +761,6 @@
     }
 
     .highlight-item:last-child { border-bottom: none; }
-
-    .highlight-input {
-      flex: 1;
-      padding: 8px 12px;
-      font-family: inherit;
-      font-size: 14px;
-      color: #0D0D0D;
-      background: transparent;
-      border: 1.5px solid transparent;
-      border-radius: 8px;
-      outline: none;
-      transition: border-color 0.15s, background 0.15s;
-    }
-
-    .highlight-input:focus { border-color: #0D0D0D; background: #FFFFFF; }
 
     .btn-arrow {
       font-family: inherit;
@@ -1014,7 +992,6 @@
           <button class="subnav-btn" data-subtab="scenarios">Return Scenarios</button>
           <button class="subnav-btn" data-subtab="sales">Sales Summary</button>
           <button class="subnav-btn" data-subtab="positions">Investor Positions</button>
-          <button class="subnav-btn" data-subtab="highlights">Highlights</button>
           <button class="subnav-btn" data-subtab="updates">Updates</button>
         </div>
       </div>
@@ -1248,21 +1225,6 @@
             </thead>
             <tbody id="positions-tbody"></tbody>
           </table>
-        </div>
-      </div>
-
-      <!-- ── HIGHLIGHTS ── -->
-      <div class="subtab-content" id="subtab-highlights">
-        <div class="sec-top">
-          <div>
-            <div class="sec-heading">Highlights</div>
-            <div class="sec-count">Key selling points and features</div>
-          </div>
-        </div>
-        <div class="highlight-list" id="highlight-list"></div>
-        <div style="margin-top:12px;display:flex;gap:10px">
-          <button class="btn-add" id="btn-add-highlight">+ Add Highlight</button>
-          <button class="btn-save" id="btn-save-highlights">Save All</button>
         </div>
       </div>
 
@@ -2341,7 +2303,6 @@
         scenarios:  loadAllureScenarios,
         sales:      loadAllureSales,
         positions:  loadAllurePositions,
-        highlights: loadAllureHighlights,
         updates:    loadAllureUpdates
       };
       if (loaders[btn.dataset.subtab]) loaders[btn.dataset.subtab]();
@@ -3042,101 +3003,6 @@
       loadAllurePositions();
     }
   });
-
-  /* ══════════════════════════
-     6. HIGHLIGHTS
-  ══════════════════════════ */
-
-  let highlightsData = [];
-
-  async function loadAllureHighlights() {
-    const { data, error } = await supabaseClient
-      .from('project_highlights')
-      .select('*')
-      .eq('project_name', ALLURE_PROJECT)
-      .order('sort_order', { ascending: true });
-
-    if (error) { showToast('Failed to load highlights: ' + error.message, true); return; }
-    if (!data || data.length === 0) {
-      highlightsData = [
-        { id: null, highlight: 'June 2020 · PERMITTING · Permits Approved · All construction permits for Allure have been approved by the municipal authorities.', sort_order: 0 },
-        { id: null, highlight: 'March 2021 · CONSTRUCTION · Foundation Complete · The foundation work has been completed successfully. The structure is progressing ahead of schedule.', sort_order: 1 },
-        { id: null, highlight: 'December 2024 · SALES · Project Completed · Both townhouses have been sold and delivered. Final accounting is underway.', sort_order: 2 }
-      ];
-    } else {
-      highlightsData = data.map((r, i) => ({ id: r.id, highlight: r.highlight, sort_order: r.sort_order ?? i }));
-    }
-    renderHighlights();
-  }
-
-  function renderHighlights() {
-    const list = document.getElementById('highlight-list');
-    if (highlightsData.length === 0) {
-      list.innerHTML = '<div style="padding:30px;text-align:center;color:#B0B0AA;font-size:14px">No highlights yet. Add one below.</div>';
-      return;
-    }
-    list.innerHTML = highlightsData.map((h, i) => `
-      <div class="highlight-item">
-        <button class="btn-arrow" onclick="moveHighlight(${i},-1)" ${i === 0 ? 'disabled' : ''}>↑</button>
-        <button class="btn-arrow" onclick="moveHighlight(${i},1)"  ${i === highlightsData.length - 1 ? 'disabled' : ''}>↓</button>
-        <input type="text" class="highlight-input" value="${escHtml(h.highlight)}"
-               oninput="highlightsData[${i}].highlight=this.value" placeholder="Highlight text…">
-        <button class="btn-delete" onclick="removeHighlight(${i})">Delete</button>
-      </div>
-    `).join('');
-  }
-
-  function moveHighlight(idx, dir) {
-    const ni = idx + dir;
-    if (ni < 0 || ni >= highlightsData.length) return;
-    [highlightsData[idx], highlightsData[ni]] = [highlightsData[ni], highlightsData[idx]];
-    renderHighlights();
-  }
-
-  function removeHighlight(idx) {
-    highlightsData.splice(idx, 1);
-    renderHighlights();
-  }
-
-  function addHighlight() {
-    highlightsData.push({ id: null, highlight: '', sort_order: highlightsData.length });
-    renderHighlights();
-    const inputs = document.querySelectorAll('.highlight-input');
-    if (inputs.length) inputs[inputs.length - 1].focus();
-  }
-
-  async function saveAllHighlights() {
-    const btn = document.getElementById('btn-save-highlights');
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
-
-    const { error: delErr } = await supabaseClient
-      .from('project_highlights').delete().eq('project_name', ALLURE_PROJECT);
-
-    if (delErr) {
-      showToast('Save failed: ' + delErr.message, true);
-      btn.disabled = false; btn.textContent = 'Save All'; return;
-    }
-
-    const rows = highlightsData
-      .filter(h => h.highlight.trim())
-      .map((h, i) => ({ project_name: ALLURE_PROJECT, highlight: h.highlight.trim(), sort_order: i }));
-
-    if (rows.length > 0) {
-      const { error: insErr } = await supabaseClient.from('project_highlights').insert(rows);
-      if (insErr) {
-        showToast('Save failed: ' + insErr.message, true);
-        btn.disabled = false; btn.textContent = 'Save All'; return;
-      }
-    }
-
-    btn.disabled = false; btn.textContent = 'Save All';
-    showToast('Highlights saved.');
-    loadAllureHighlights();
-  }
-
-  document.getElementById('btn-add-highlight').addEventListener('click', addHighlight);
-  document.getElementById('btn-save-highlights').addEventListener('click', saveAllHighlights);
 
   /* ══════════════════════════════════════════
      ALLURE — UPDATES
