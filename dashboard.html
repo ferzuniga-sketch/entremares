@@ -635,6 +635,10 @@
     /* ══════════════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+    }
+
     @media (max-width: 960px) {
       .stats-row { grid-template-columns: repeat(3, 1fr); }
       .mid-row { grid-template-columns: 1fr; }
@@ -1171,14 +1175,14 @@
         <div class="stat-note">First contribution</div>
       </div>
       <div class="stat">
-        <div class="stat-lbl">Total Invested</div>
-        <div class="stat-val" id="stat-total-invested">—</div>
-        <div class="stat-note">2 projects</div>
-      </div>
-      <div class="stat">
         <div class="stat-lbl">Total Returns</div>
         <div class="stat-val green" id="stat-total-returns">—</div>
-        <div class="stat-note" id="stat-avg-return">—</div>
+        <div class="stat-note">33.01% avg return</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Net Distribution</div>
+        <div class="stat-val green" id="stat-net-distribution">—</div>
+        <div class="stat-note">After withholding tax</div>
       </div>
       <div class="stat">
         <div class="stat-lbl">Projects Completed</div>
@@ -1197,9 +1201,8 @@
 
       <div class="wallet">
         <div>
-          <div class="wallet-lbl">Available Balance</div>
+          <div class="wallet-lbl">Available Balance to Invest</div>
           <div class="wallet-amount" id="wallet-balance">—</div>
-          <div class="wallet-note">Ready to invest</div>
         </div>
         <button class="btn-invest" id="btn-invest">Invest Now &rarr;</button>
       </div>
@@ -1311,7 +1314,7 @@
             <div class="inv-fig-val green" id="inv-kabil-profit">—</div>
           </div>
         </div>
-        <div class="inv-period">Jun 2020 &ndash; Dec 2022 &nbsp;&middot;&nbsp; 30 months</div>
+        <div class="inv-period" id="inv-kabil-period">Jun 2020 &ndash; Dec 2022 &nbsp;&middot;&nbsp; 30 months</div>
         <button class="btn-opp" onclick="window.location.href='kabil.html'">View Details &rarr;</button>
       </div>
 
@@ -1339,7 +1342,7 @@
             <div class="inv-fig-val green" id="inv-allure-profit">—</div>
           </div>
         </div>
-        <div class="inv-period">Jan 2023 &ndash; Dec 2024 &nbsp;&middot;&nbsp; 24 months</div>
+        <div class="inv-period" id="inv-allure-period">Jan 2023 &ndash; Dec 2024 &nbsp;&middot;&nbsp; 24 months</div>
         <button class="btn-opp" onclick="window.location.href='allure.html'">View Details &rarr;</button>
       </div>
 
@@ -1520,6 +1523,10 @@
   const BASE_RAISED = 250000; // commitments captured before live tracking
   const GOAL = 800000;
 
+  // Return multipliers — from project_details.actual_return (gross) and project_details.net_return (net, to be added)
+  const ALLURE_GROSS_MULTIPLIER = 1.3431;
+  const ALLURE_NET_MULTIPLIER   = 1.3088;
+
   async function saveCommitmentToSupabase() {
     try {
       const { error } = await supabaseClient.from('commitments').insert({
@@ -1589,23 +1596,69 @@
     try {
       const { data, error } = await supabaseClient
         .from('investor_positions')
-        .select('distribution_amount')
+        .select('amount_invested, distribution_amount')
         .eq('project_name', 'Allure')
         .ilike('investor_email', email.toLowerCase())
         .maybeSingle();
 
-      if (error || !data || data.distribution_amount == null) return;
+      if (error || !data || data.amount_invested == null) return;
 
-      currentInvestor.wallet = Number(data.distribution_amount);
-      set('wallet-balance', fmt(currentInvestor.wallet));
+      const gross = Number(data.amount_invested) * ALLURE_GROSS_MULTIPLIER;
+      const net   = Number(data.amount_invested) * ALLURE_NET_MULTIPLIER;
+      currentInvestor.wallet = gross;
+      set('wallet-balance', fmt(gross));
+      set('stat-net-distribution', '+' + fmt(net));
     } catch (err) {
       console.error('Failed to load Allure balance:', err);
     }
   }
 
+  async function loadProjectDetails() {
+    const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function fmtMonthYear(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T12:00:00');
+      return MONTH[d.getMonth()] + ' ' + d.getFullYear();
+    }
+    function setPeriod(id, startDate, endDate, months) {
+      const range = (startDate && endDate)
+        ? fmtMonthYear(startDate) + ' – ' + fmtMonthYear(endDate)
+        : null;
+      const el = document.getElementById(id);
+      if (range) el.innerHTML = range + ' &nbsp;&middot;&nbsp; ' + months + ' months';
+      else el.innerHTML = el.innerHTML.replace(/\d+ months/, months + ' months');
+    }
+
+    // Hardcoded fallbacks
+    const fallback = {
+      Kabil:  { actual_return: 31.71, duration_months: 30, start_date: null, end_date: null },
+      Allure: { actual_return: 34.31, duration_months: 36, start_date: null, end_date: null }
+    };
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('project_details')
+        .select('project_name, actual_return, duration_months, start_date, end_date')
+        .in('project_name', ['Allure', 'Kabil']);
+
+      if (!error && data) {
+        data.forEach(row => { if (fallback[row.project_name]) Object.assign(fallback[row.project_name], row); });
+      }
+    } catch (_) {}
+
+    const k = fallback.Kabil;
+    set('inv-kabil-pct', '+' + Number(k.actual_return).toFixed(2) + '%');
+    setPeriod('inv-kabil-period', k.start_date, k.end_date, k.duration_months);
+
+    const a = fallback.Allure;
+    set('inv-allure-pct', '+' + Number(a.actual_return).toFixed(2) + '%');
+    setPeriod('inv-allure-period', a.start_date, a.end_date, a.duration_months);
+  }
+
   async function loadDashboardData(email) {
     await loadAllureBalance(email);
     loadCommitmentStatus(email);
+    loadProjectDetails();
   }
 
   /* ── Investor database ── */
@@ -1739,14 +1792,10 @@
     }));
 
     /* Stats */
-    const totalInvested = inv.kabil.invested + inv.allure.invested;
-    const totalReturns  = inv.kabil.profit   + inv.allure.profit;
-    const avgReturn     = totalReturns / totalInvested * 100;
+    const totalReturns = inv.kabil.profit + inv.allure.profit;
 
     set('stat-kabil-investment', fmt(inv.kabil.invested));
-    set('stat-total-invested',  fmt(totalInvested));
     set('stat-total-returns',   '+' + fmt(totalReturns));
-    set('stat-avg-return',      avgReturn.toFixed(1) + '% average');
 
     /* Wallet */
     set('wallet-balance', fmt(inv.wallet));

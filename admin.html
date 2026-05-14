@@ -990,9 +990,10 @@
           <button class="subnav-btn active" data-subtab="details">Project Details</button>
           <button class="subnav-btn" data-subtab="budget">Budget</button>
           <button class="subnav-btn" data-subtab="scenarios">Return Scenarios</button>
-          <button class="subnav-btn" data-subtab="sales">Sales Summary</button>
+          <button class="subnav-btn" data-subtab="sales">Proceeds &amp; Sales</button>
           <button class="subnav-btn" data-subtab="positions">Investor Positions</button>
           <button class="subnav-btn" data-subtab="updates">Updates</button>
+          <button class="subnav-btn" data-subtab="capital">Capital Structure</button>
         </div>
       </div>
 
@@ -1033,6 +1034,10 @@
               <input type="text" id="pd-category" placeholder="Residential">
             </div>
             <div class="field">
+              <label>Size</label>
+              <input type="text" id="pd-size-sqm" placeholder="e.g. 250 m²">
+            </div>
+            <div class="field">
               <label>Start Date</label>
               <input type="date" id="pd-start-date">
             </div>
@@ -1052,11 +1057,11 @@
             </div>
             <div class="field">
               <label>Target Return (%)</label>
-              <input type="number" id="pd-target-return" placeholder="0.0" step="0.1">
+              <input type="number" id="pd-target-return" placeholder="24.11" step="0.01">
             </div>
             <div class="field">
               <label>Actual Return (%)</label>
-              <input type="number" id="pd-actual-return" placeholder="0.0" step="0.1">
+              <input type="number" id="pd-actual-return" placeholder="34.31" step="0.01">
             </div>
           </div>
           <div class="field" style="margin-top:14px">
@@ -1145,7 +1150,7 @@
             </div>
             <div class="field" style="margin-top:10px">
               <label>Return (%)</label>
-              <input type="number" id="sc-base-return" placeholder="0.0" step="0.1">
+              <input type="number" id="sc-base-return" placeholder="24.11" step="0.01">
             </div>
             <div class="field" style="margin-top:10px">
               <label>Description</label>
@@ -1176,11 +1181,11 @@
         </div>
       </div>
 
-      <!-- ── SALES SUMMARY ── -->
+      <!-- ── PROCEEDS & SALES ── -->
       <div class="subtab-content" id="subtab-sales">
         <div class="sec-top">
           <div>
-            <div class="sec-heading">Sales Summary</div>
+            <div class="sec-heading">Proceeds &amp; Sales</div>
             <div class="sec-count" id="sales-count">Loading…</div>
           </div>
           <button class="btn-add" id="btn-add-sales">+ Add Item</button>
@@ -1190,8 +1195,10 @@
             <thead>
               <tr>
                 <th>Item</th>
-                <th>Amount</th>
-                <th></th>
+                <th>Forecasted</th>
+                <th>Actual</th>
+                <th>Variance</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="sales-tbody"></tbody>
@@ -1277,6 +1284,34 @@
 
         <!-- Updates list -->
         <div id="updates-admin-list"></div>
+      </div>
+
+      <!-- ── CAPITAL STRUCTURE ── -->
+      <div class="subtab-content" id="subtab-capital">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Capital Structure</div>
+            <div class="sec-count" id="capital-count">Loading…</div>
+          </div>
+          <button class="btn-add" id="btn-add-capital">+ Add Row</button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Type</th>
+                <th>Forecasted</th>
+                <th>Actual</th>
+                <th>Variance</th>
+                <th>Is Total</th>
+                <th>Sort Order</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="capital-tbody"></tbody>
+          </table>
+        </div>
       </div>
 
     </div>
@@ -1504,11 +1539,17 @@
     <div class="modal-body">
       <div class="field">
         <label>Item Name</label>
-        <input type="text" id="si-item" placeholder="e.g. Unit A-101">
+        <input type="text" id="si-item" placeholder="e.g. Brokerage Fee">
       </div>
-      <div class="field" style="margin-top:14px">
-        <label>Amount ($)</label>
-        <input type="number" id="si-amount" placeholder="0" step="0.01">
+      <div class="form-grid-2" style="margin-top:14px">
+        <div class="field">
+          <label>Forecasted ($)</label>
+          <input type="number" id="si-forecasted" placeholder="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Actual ($)</label>
+          <input type="number" id="si-actual" placeholder="0" step="0.01">
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1559,6 +1600,49 @@
     <div class="modal-footer">
       <button class="btn-cancel" id="modal-position-cancel">Cancel</button>
       <button class="btn-save" id="modal-position-save">Save Position</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     MODAL — CAPITAL STRUCTURE ROW
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-capital-row">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-capital-title">Add Capital Structure Row</div>
+      <button class="modal-close" id="modal-capital-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Item Name</label>
+        <input type="text" id="cr-item" placeholder="e.g. EntreOceanos (80%)">
+      </div>
+      <div class="form-grid-2" style="margin-top:14px">
+        <div class="field">
+          <label>Forecasted ($)</label>
+          <input type="number" id="cr-forecasted" placeholder="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Actual ($)</label>
+          <input type="number" id="cr-actual" placeholder="0" step="0.01">
+        </div>
+      </div>
+      <div class="form-grid-2" style="margin-top:14px">
+        <div class="field">
+          <label>Sort Order</label>
+          <input type="number" id="cr-sort" placeholder="0" step="1" min="0">
+        </div>
+        <div class="field" style="display:flex;align-items:center;gap:10px;padding-top:26px">
+          <input type="checkbox" id="cr-is-total" style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
+          <label for="cr-is-total" style="text-transform:none;font-size:13px;letter-spacing:0;font-weight:500;cursor:pointer">Bold / total row</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="modal-capital-cancel">Cancel</button>
+      <button class="btn-save" id="modal-capital-save">Save Row</button>
     </div>
   </div>
 </div>
@@ -1677,7 +1761,7 @@
       status: 'Completed',
       raised: 432559.12,
       capex: 432559.12,
-      targetReturn: '30%',
+      targetReturn: '24.11%',
       timeline: '24 months'
     },
     {
@@ -2303,7 +2387,8 @@
         scenarios:  loadAllureScenarios,
         sales:      loadAllureSales,
         positions:  loadAllurePositions,
-        updates:    loadAllureUpdates
+        updates:    loadAllureUpdates,
+        capital:    loadAllureCapital
       };
       if (loaders[btn.dataset.subtab]) loaders[btn.dataset.subtab]();
     });
@@ -2328,6 +2413,7 @@
     document.getElementById('pd-address').value         = data.address           || '';
     document.getElementById('pd-status').value          = data.status            || 'Active';
     document.getElementById('pd-category').value        = data.category          || '';
+    document.getElementById('pd-size-sqm').value        = data.size_sqm          || '';
     document.getElementById('pd-start-date').value      = data.start_date        || '';
     document.getElementById('pd-end-date').value        = data.end_date          || '';
     document.getElementById('pd-duration').value        = data.duration_months   || '';
@@ -2351,6 +2437,7 @@
       address:           document.getElementById('pd-address').value.trim(),
       status:            document.getElementById('pd-status').value,
       category:          document.getElementById('pd-category').value.trim(),
+      size_sqm:          document.getElementById('pd-size-sqm').value.trim() || null,
       start_date:        document.getElementById('pd-start-date').value  || null,
       end_date:          document.getElementById('pd-end-date').value    || null,
       duration_months:   parseInt(document.getElementById('pd-duration').value)       || null,
@@ -2655,82 +2742,129 @@
   }
 
   /* ══════════════════════════
-     4. SALES SUMMARY
+     4. PROCEEDS & SALES
   ══════════════════════════ */
 
   let salesCache    = {};
+  let salesCount    = 0;
   let editingSalesId = null;
+
+  const DEFAULT_SALES = [
+    { item: 'Gross Sales Revenue',            forecasted: 800000, actual: 800000, sort_order: 0 },
+    { item: 'Brokerage Fee',                  forecasted: 0,      actual: 0,      sort_order: 1 },
+    { item: 'Corporate Tax (Mexico)',         forecasted: 0,      actual: 0,      sort_order: 2 },
+    { item: 'Withholding Tax (WTH)',          forecasted: 0,      actual: 0,      sort_order: 3 },
+    { item: 'Success Fee',                    forecasted: 0,      actual: 0,      sort_order: 4 },
+    { item: 'NET AVAILABLE FOR DISTRIBUTION', forecasted: 800000, actual: 800000, sort_order: 999 }
+  ];
 
   async function loadAllureSales() {
     const tbody = document.getElementById('sales-tbody');
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
 
     const { data, error } = await supabaseClient
       .from('project_sales')
       .select('*')
       .eq('project_name', ALLURE_PROJECT)
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('id', { ascending: true });
 
     if (error) { showToast('Failed to load sales: ' + error.message, true); return; }
-    renderSalesTable(data || []);
+
+    let rows = data || [];
+
+    if (rows.length === 0) {
+      const seeds = DEFAULT_SALES.map(s => ({ ...s, project_name: ALLURE_PROJECT }));
+      const { data: inserted, error: seedErr } = await supabaseClient
+        .from('project_sales').insert(seeds).select();
+      if (seedErr) { showToast('Failed to seed items: ' + seedErr.message, true); return; }
+      rows = inserted || seeds;
+    }
+
+    renderSalesTable(rows);
+  }
+
+  function calcNet(data) {
+    const gross = data.find(r => r.item === 'Gross Sales Revenue');
+    const deds  = data.filter(r => r.item !== 'Gross Sales Revenue' && r.item !== 'NET AVAILABLE FOR DISTRIBUTION');
+    return {
+      forecasted: (gross?.forecasted || 0) - deds.reduce((s, r) => s + (r.forecasted || 0), 0),
+      actual:     (gross?.actual     || 0) - deds.reduce((s, r) => s + (r.actual     || 0), 0)
+    };
   }
 
   function renderSalesTable(data) {
     salesCache = {};
-    data.forEach(r => { salesCache[r.id] = r; });
+    data.forEach(r => { salesCache[String(r.id)] = r; });
+    salesCount = data.filter(r => r.item !== 'NET AVAILABLE FOR DISTRIBUTION').length;
 
     const tbody = document.getElementById('sales-tbody');
     const tfoot = document.getElementById('sales-tfoot');
 
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="empty-state">No sales items yet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No items yet.</td></tr>';
       tfoot.innerHTML = '';
       document.getElementById('sales-count').textContent = '0 items';
       return;
     }
 
-    let total = 0;
-    tbody.innerHTML = data.map(r => {
-      total += r.amount || 0;
-      return `
-        <tr>
-          <td class="td-name">${escHtml(r.item)}</td>
-          <td class="td-mono">${fmt(r.amount || 0)}</td>
-          <td class="td-actions">
-            <button class="btn-edit"   onclick="openEditSalesItem(${r.id})">Edit</button>
-            <button class="btn-delete" onclick="deleteSalesItem(${r.id})">Delete</button>
-          </td>
-        </tr>
-      `;
+    const net = calcNet(data);
+    const netRowIdx = data.findIndex(r => r.item === 'NET AVAILABLE FOR DISTRIBUTION');
+    const lastMovable = netRowIdx !== -1 ? netRowIdx - 1 : data.length - 1;
+    const last = data.length - 1;
+
+    tbody.innerHTML = data.map((r, i) => {
+      const isNet = r.item === 'NET AVAILABLE FOR DISTRIBUTION';
+      const fore  = isNet ? net.forecasted : (r.forecasted || 0);
+      const act   = isNet ? net.actual     : (r.actual     || 0);
+      const variance = act - fore;
+      const vc = variance > 0 ? 'color:#1A7F4A;font-weight:600' : (variance < 0 ? 'color:#C0392B;font-weight:600' : 'color:#9B9B9B');
+      const rowStyle = isNet ? 'font-weight:700;border-top:2px solid #E8E8E4;' : '';
+
+      const orderBtns = isNet ? '' : `
+        <button class="btn-reorder" data-action="move-up"   ${i === 0            ? 'disabled' : ''}>↑</button>
+        <button class="btn-reorder" data-action="move-down" ${i >= lastMovable   ? 'disabled' : ''}>↓</button>`;
+      const crudBtns = isNet ? '' : `
+        <button class="btn-edit"   data-action="edit">Edit</button>
+        <button class="btn-delete" data-action="delete">Delete</button>`;
+
+      return `<tr data-id="${escHtml(String(r.id))}" data-sort="${i}" style="${rowStyle}">
+        <td style="font-weight:${isNet ? '700' : 'normal'}">${escHtml(r.item)}</td>
+        <td class="td-mono">${fmt(fore)}</td>
+        <td class="td-mono">${fmt(act)}</td>
+        <td class="td-mono" style="${vc}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
+        <td class="td-actions">${orderBtns}${crudBtns}</td>
+      </tr>`;
     }).join('');
 
-    tfoot.innerHTML = `
-      <tr class="tr-totals">
-        <td>TOTAL</td>
-        <td class="td-mono">${fmt(total)}</td>
-        <td></td>
-      </tr>
-    `;
+    tfoot.innerHTML = '';
+    document.getElementById('sales-count').textContent = salesCount + ' item' + (salesCount !== 1 ? 's' : '');
 
-    document.getElementById('sales-count').textContent = data.length + ' item' + (data.length !== 1 ? 's' : '') + ' · ' + fmt(total);
+    if (netRowIdx !== -1 && data[netRowIdx].id) {
+      supabaseClient.from('project_sales')
+        .update({ forecasted: net.forecasted, actual: net.actual })
+        .eq('id', data[netRowIdx].id)
+        .then(({ error }) => { if (error) console.error('NET update failed:', error.message); });
+    }
   }
 
   function openAddSalesItem() {
     editingSalesId = null;
-    document.getElementById('modal-sales-title').textContent = 'Add Sales Item';
+    document.getElementById('modal-sales-title').textContent = 'Add Item';
     document.getElementById('modal-sales-save').textContent  = 'Add Item';
-    ['si-item','si-amount'].forEach(id => document.getElementById(id).value = '');
+    ['si-item','si-forecasted','si-actual'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('modal-sales-item').classList.add('open');
   }
 
   function openEditSalesItem(id) {
-    const r = salesCache[id];
+    const r = salesCache[String(id)];
     if (!r) return;
-    editingSalesId = id;
-    document.getElementById('modal-sales-title').textContent = 'Edit Sales Item';
+    editingSalesId = String(id);
+    document.getElementById('modal-sales-title').textContent = 'Edit Item';
     document.getElementById('modal-sales-save').textContent  = 'Save Item';
-    document.getElementById('si-item').value   = r.item   || '';
-    document.getElementById('si-amount').value = r.amount || '';
+    document.getElementById('si-item').value       = r.item        || '';
+    document.getElementById('si-forecasted').value = r.forecasted  != null ? r.forecasted : 0;
+    document.getElementById('si-actual').value     = r.actual      != null ? r.actual : 0;
     document.getElementById('modal-sales-item').classList.add('open');
   }
 
@@ -2739,31 +2873,25 @@
   }
 
   async function saveSalesItem() {
-    const item   = document.getElementById('si-item').value.trim();
-    const amount = parseFloat(document.getElementById('si-amount').value) || 0;
+    const item       = document.getElementById('si-item').value.trim();
+    const forecasted = parseFloat(document.getElementById('si-forecasted').value) || 0;
+    const actual     = parseFloat(document.getElementById('si-actual').value)     || 0;
     if (!item) { alert('Item name is required.'); return; }
 
     const btn = document.getElementById('modal-sales-save');
     btn.disabled = true;
-    const payload = { project_name: ALLURE_PROJECT, item, amount };
+    const payload = { project_name: ALLURE_PROJECT, item, forecasted, actual };
     let error;
     if (editingSalesId !== null) {
       ({ error } = await supabaseClient.from('project_sales').update(payload).eq('id', editingSalesId));
     } else {
+      payload.sort_order = salesCount;
       ({ error } = await supabaseClient.from('project_sales').insert(payload));
     }
     btn.disabled = false;
     if (error) { showToast('Save failed: ' + error.message, true); return; }
     closeSalesModal();
-    showToast('Sales item saved.');
-    loadAllureSales();
-  }
-
-  async function deleteSalesItem(id) {
-    if (!confirm('Delete this sales item?')) return;
-    const { error } = await supabaseClient.from('project_sales').delete().eq('id', id);
-    if (error) { showToast('Delete failed: ' + error.message, true); return; }
-    showToast('Item deleted.');
+    showToast('Item saved.');
     loadAllureSales();
   }
 
@@ -2772,6 +2900,48 @@
   document.getElementById('modal-sales-cancel').addEventListener('click', closeSalesModal);
   document.getElementById('modal-sales-save').addEventListener('click', saveSalesItem);
   document.getElementById('modal-sales-item').addEventListener('click', function(e) { if (e.target === this) closeSalesModal(); });
+
+  document.getElementById('sales-tbody').addEventListener('click', async function(e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const row   = btn.closest('tr[data-id]');
+    if (!row) return;
+    const rowId = row.dataset.id;
+    const action = btn.dataset.action;
+
+    if (action === 'move-up' || action === 'move-down') {
+      const sibling = action === 'move-up' ? row.previousElementSibling : row.nextElementSibling;
+      if (!sibling || !sibling.dataset.id) return;
+      const sibId = sibling.dataset.id;
+      const sortA = parseInt(row.dataset.sort, 10);
+      const sortB = parseInt(sibling.dataset.sort, 10);
+      btn.disabled = true;
+      const [r1, r2] = await Promise.all([
+        supabaseClient.from('project_sales').update({ sort_order: sortB }).eq('id', rowId),
+        supabaseClient.from('project_sales').update({ sort_order: sortA }).eq('id', sibId)
+      ]);
+      if (r1.error || r2.error) {
+        showToast('Reorder failed: ' + (r1.error || r2.error).message, true);
+        btn.disabled = false;
+        return;
+      }
+      loadAllureSales();
+      return;
+    }
+
+    if (action === 'delete') {
+      if (!confirm('Delete this item?')) return;
+      const { error } = await supabaseClient.from('project_sales').delete().eq('id', rowId);
+      if (error) { showToast('Delete failed: ' + error.message, true); return; }
+      showToast('Item deleted.');
+      loadAllureSales();
+      return;
+    }
+
+    if (action === 'edit') {
+      openEditSalesItem(rowId);
+    }
+  });
 
   /* ══════════════════════════
      5. INVESTOR POSITIONS
@@ -3137,6 +3307,181 @@
     showToast('Update deleted.');
     loadAllureUpdates();
   }
+
+  /* ══════════════════════════
+     7. CAPITAL STRUCTURE
+  ══════════════════════════ */
+
+  let capitalCache    = {};
+  let capitalCount    = 0;
+  let editingCapitalId = null;
+
+  async function loadAllureCapital() {
+    const tbody = document.getElementById('capital-tbody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+
+    const { data, error } = await supabaseClient
+      .from('project_capital_structure')
+      .select('*')
+      .eq('project_name', ALLURE_PROJECT)
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('id',         { ascending: true });
+
+    if (error) { showToast('Failed to load capital structure: ' + error.message, true); return; }
+    renderCapitalAdminTable(data || []);
+  }
+
+  function capitalRowType(item) {
+    const spv  = new Set(['EntreOceanos (80%)', 'AEDIFIKA (20%)', 'Total Entremares']);
+    const eo   = new Set(['EntreOceanos Ops CAPEX', 'TOTAL RAISED']);
+    const both = spv.has(item) && eo.has(item);
+    if (both)      return { label: 'Both',                  style: 'color:#6B24A8;background:#F5EEFF;border:1px solid #D9C0F5' };
+    if (spv.has(item)) return { label: 'Entremares SPV',   style: 'color:#1A5FA8;background:#EEF4FD;border:1px solid #BDD3F5' };
+    if (eo.has(item))  return { label: 'EntreOceanos Holding', style: 'color:#1A7F4A;background:#F0FBF5;border:1px solid #C3E8D2' };
+    return { label: '—', style: 'color:#B0B0AA' };
+  }
+
+  function renderCapitalAdminTable(data) {
+    capitalCache = {};
+    capitalCount = data.length;
+    data.forEach(r => { capitalCache[r.id] = r; });
+
+    const tbody = document.getElementById('capital-tbody');
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No rows yet.</td></tr>';
+      document.getElementById('capital-count').textContent = '0 rows';
+      return;
+    }
+
+    const last = data.length - 1;
+
+    tbody.innerHTML = data.map((r, i) => {
+      const fore     = r.forecasted || 0;
+      const act      = r.actual     || 0;
+      const variance = fore - act;
+      const vc        = variance >= 0 ? 'color:#1A7F4A;font-weight:600' : 'color:#C0392B;font-weight:600';
+      const boldStyle = r.is_total ? 'font-weight:700' : 'font-weight:normal';
+      const type      = capitalRowType(r.item);
+      const typeBadge = `<span style="font-size:10px;font-weight:700;letter-spacing:0.04em;border-radius:100px;padding:3px 9px;white-space:nowrap;${type.style}">${type.label}</span>`;
+      return `
+        <tr data-id="${r.id}" data-sort="${i}" style="${r.is_total ? 'background:#FAFAF8' : ''}">
+          <td style="${boldStyle}">${escHtml(r.item)}</td>
+          <td>${typeBadge}</td>
+          <td class="td-mono" style="${boldStyle}">${fmt(fore)}</td>
+          <td class="td-mono" style="${boldStyle}">${fmt(act)}</td>
+          <td class="td-mono" style="${vc}">${variance >= 0 ? '+' : ''}${fmt(variance)}</td>
+          <td style="text-align:center;color:#1A7F4A;font-weight:700">${r.is_total ? '✓' : ''}</td>
+          <td style="color:#9B9B9B">${r.sort_order ?? i}</td>
+          <td class="td-actions">
+            <button class="btn-reorder" data-action="move-up"   ${i === 0    ? 'disabled' : ''}>↑</button>
+            <button class="btn-reorder" data-action="move-down" ${i === last ? 'disabled' : ''}>↓</button>
+            <button class="btn-edit"    data-action="edit">Edit</button>
+            <button class="btn-delete"  data-action="delete">Delete</button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('capital-count').textContent = data.length + ' row' + (data.length !== 1 ? 's' : '');
+  }
+
+  function openAddCapitalRow() {
+    editingCapitalId = null;
+    document.getElementById('modal-capital-title').textContent = 'Add Capital Structure Row';
+    document.getElementById('modal-capital-save').textContent  = 'Add Row';
+    ['cr-item', 'cr-forecasted', 'cr-actual'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('cr-sort').value       = capitalCount;
+    document.getElementById('cr-is-total').checked = false;
+    document.getElementById('modal-capital-row').classList.add('open');
+  }
+
+  function closeCapitalModal() {
+    document.getElementById('modal-capital-row').classList.remove('open');
+  }
+
+  async function saveCapitalRow() {
+    const item       = document.getElementById('cr-item').value.trim();
+    const forecasted = parseFloat(document.getElementById('cr-forecasted').value) || 0;
+    const actual     = parseFloat(document.getElementById('cr-actual').value)     || 0;
+    const sortOrder  = parseInt(document.getElementById('cr-sort').value)         || 0;
+    const isTotal    = document.getElementById('cr-is-total').checked;
+
+    if (!item) { alert('Item name is required.'); return; }
+
+    const btn = document.getElementById('modal-capital-save');
+    btn.disabled = true;
+
+    const payload = { project_name: ALLURE_PROJECT, item, forecasted, actual, is_total: isTotal, sort_order: sortOrder };
+
+    let error;
+    if (editingCapitalId !== null) {
+      ({ error } = await supabaseClient.from('project_capital_structure').update(payload).eq('id', editingCapitalId));
+    } else {
+      ({ error } = await supabaseClient.from('project_capital_structure').insert(payload));
+    }
+
+    btn.disabled = false;
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
+    closeCapitalModal();
+    showToast('Row saved.');
+    loadAllureCapital();
+  }
+
+  document.getElementById('btn-add-capital').addEventListener('click', openAddCapitalRow);
+  document.getElementById('modal-capital-close').addEventListener('click', closeCapitalModal);
+  document.getElementById('modal-capital-cancel').addEventListener('click', closeCapitalModal);
+  document.getElementById('modal-capital-save').addEventListener('click', saveCapitalRow);
+  document.getElementById('modal-capital-row').addEventListener('click', function(e) { if (e.target === this) closeCapitalModal(); });
+
+  document.getElementById('capital-tbody').addEventListener('click', async function(e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const row   = btn.closest('tr');
+    const rowId = row.dataset.id;
+
+    if (btn.dataset.action === 'move-up' || btn.dataset.action === 'move-down') {
+      const sibling = btn.dataset.action === 'move-up' ? row.previousElementSibling : row.nextElementSibling;
+      if (!sibling || !sibling.dataset.id) return;
+      const sibId = sibling.dataset.id;
+      const sortA = parseInt(row.dataset.sort, 10);
+      const sortB = parseInt(sibling.dataset.sort, 10);
+      btn.disabled = true;
+      const [r1, r2] = await Promise.all([
+        supabaseClient.from('project_capital_structure').update({ sort_order: sortB }).eq('id', rowId),
+        supabaseClient.from('project_capital_structure').update({ sort_order: sortA }).eq('id', sibId)
+      ]);
+      if (r1.error || r2.error) {
+        showToast('Reorder failed: ' + (r1.error || r2.error).message, true);
+        btn.disabled = false;
+        return;
+      }
+      loadAllureCapital();
+      return;
+    }
+
+    if (btn.dataset.action === 'delete') {
+      if (!confirm('Delete this row?')) return;
+      const { error } = await supabaseClient.from('project_capital_structure').delete().eq('id', rowId);
+      if (error) { showToast('Delete failed: ' + error.message, true); return; }
+      showToast('Row deleted.');
+      loadAllureCapital();
+      return;
+    }
+
+    if (btn.dataset.action === 'edit') {
+      const r = capitalCache[rowId];
+      if (!r) return;
+      editingCapitalId = rowId;
+      document.getElementById('modal-capital-title').textContent = 'Edit Capital Structure Row';
+      document.getElementById('modal-capital-save').textContent  = 'Save Row';
+      document.getElementById('cr-item').value       = r.item       || '';
+      document.getElementById('cr-forecasted').value = r.forecasted != null ? r.forecasted : 0;
+      document.getElementById('cr-actual').value     = r.actual     != null ? r.actual : 0;
+      document.getElementById('cr-sort').value       = r.sort_order != null ? r.sort_order : 0;
+      document.getElementById('cr-is-total').checked = !!r.is_total;
+      document.getElementById('modal-capital-row').classList.add('open');
+    }
+  });
 </script>
 
 </body>

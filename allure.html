@@ -81,6 +81,9 @@
     .gallery-placeholder { aspect-ratio: 4/3; background: #EEEEE9; border: 1px solid #E0E0DC; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #C0C0BC; font-size: 11px; font-weight: 500; }
 
     /* ══ TAB 2: FINANCIALS ══ */
+    .fin-subtitle { font-size: 13px; color: #6B6B6B; margin-bottom: 14px; line-height: 1.5; }
+    .fin-note { font-size: 12px; color: #9B9B9B; margin-top: 12px; line-height: 1.65; font-style: italic; }
+    .budget-table .row-net td { font-weight: 700; background: #EAEAE5; border-top: 2px solid #E0E0DA; padding-top: 14px; padding-bottom: 14px; }
     .budget-table { width: 100%; border-collapse: collapse; }
     .budget-table th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; padding: 16px 0 12px; text-align: left; border-bottom: 1px solid #EEEEE9; }
     .budget-table th:first-child { padding-left: 28px; }
@@ -190,6 +193,22 @@
     .doc-dl { flex-shrink: 0; width: 30px; height: 30px; border-radius: 7px; background: #F5F5F3; border: 1px solid #E8E8E4; display: flex; align-items: center; justify-content: center; color: #6B6B6B; text-decoration: none; transition: all 0.15s; }
     .doc-dl:hover { background: #0D0D0D; color: #FFFFFF; border-color: #0D0D0D; }
 
+    /* ══ PERFORMANCE VS TARGET ══ */
+    .perf-table-wrap { background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
+    .perf-table { width: 100%; border-collapse: collapse; }
+    .perf-table thead tr { border-bottom: 1px solid #EEEEE9; }
+    .perf-table thead th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; padding: 14px 20px 10px; text-align: left; }
+    .perf-table thead th:first-child { padding-left: 28px; width: 40%; }
+    .perf-table thead th:not(:first-child) { text-align: right; }
+    .perf-table tbody td { font-size: 13px; padding: 11px 20px; border-bottom: 1px solid #F5F5F2; color: #0D0D0D; }
+    .perf-table tbody td:first-child { padding-left: 28px; font-weight: 500; color: #4A4A4A; }
+    .perf-table tbody td:not(:first-child) { text-align: right; font-weight: 500; }
+    .perf-table tbody tr:last-child td { border-bottom: none; }
+    .perf-green { color: #1A7F4A !important; font-weight: 700 !important; }
+    .perf-amber { color: #B8860B !important; font-weight: 700 !important; }
+    .perf-red   { color: #C0392B !important; font-weight: 700 !important; }
+    .perf-note  { font-size: 12px; font-style: italic; color: #9B9B9B; line-height: 1.6; }
+
     /* ══ RESPONSIVE ══ */
     @media (max-width: 960px) {
       .project-layout { grid-template-columns: 1fr; }
@@ -235,7 +254,7 @@
     <div class="hero-subtitle" id="hero-subtitle">Tijuana, Mexico &nbsp;&middot;&nbsp; Jan 2023 &ndash; Dec 2024</div>
     <div class="hero-key-results">
       <span class="kchip kchip-gray"  id="kr-duration">— months</span>
-      <span class="kchip kchip-green" id="kr-return">—% Total Return</span>
+      <span class="kchip kchip-green" id="kr-return">30.88% Net Return</span>
       <span class="kchip kchip-green">Both Units Sold</span>
       <span class="kchip kchip-blue"  id="kr-status">Completed</span>
     </div>
@@ -258,7 +277,7 @@
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="overview"       onclick="switchTab('overview')">Overview</button>
         <button class="tab-btn"        data-tab="financials"     onclick="switchTab('financials')">Financials</button>
-        <button class="tab-btn"        data-tab="my-investment"  onclick="switchTab('my-investment')">My Investment</button>
+        <button class="tab-btn"        data-tab="returns"  onclick="switchTab('returns')">Returns</button>
         <button class="tab-btn"        data-tab="updates"        onclick="switchTab('updates')">Updates</button>
       </div>
 
@@ -353,8 +372,58 @@
       <!-- ══ TAB 2: FINANCIALS ══ -->
       <div id="tab-financials" class="tab-content">
 
+        <!-- 1: Capital Structure -->
         <div class="section">
-          <div class="sec-title">Project Budget</div>
+          <div class="sec-title">Capital Structure</div>
+
+          <!-- Card 1: Entremares SPV -->
+          <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+            <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
+              <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREMARES — Mexican SPV</div>
+              <div style="font-size:12px;color:#9B9B9B;margin-top:2px">Capital contributions to the project entity</div>
+            </div>
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Partner</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                  <th>Stake</th>
+                </tr>
+              </thead>
+              <tbody id="capital-spv-tbody">
+                <tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Card 2: EntreOceanos Holding -->
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
+              <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREOCÉANOS — Panama Holding</div>
+              <div style="font-size:12px;color:#9B9B9B;margin-top:2px">Total capital raised from investors</div>
+            </div>
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                </tr>
+              </thead>
+              <tbody id="capital-eo-tbody">
+                <tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="fin-note" style="font-style:normal">EntreOceanos holds 80% of Entremares. AEDIFIKA holds the remaining 20% as construction equity partner.</p>
+        </div>
+
+        <!-- 2: Project Budget (Entremares Level) -->
+        <div class="section">
+          <div class="sec-title">Project Budget (Entremares Level)</div>
+          <p class="fin-subtitle">Total construction and development costs at the Mexican SPV level</p>
           <div class="card" style="padding:0;overflow:hidden">
             <table class="budget-table">
               <thead>
@@ -373,6 +442,7 @@
           </div>
         </div>
 
+        <!-- 3: Return Scenarios -->
         <div class="section">
           <div class="sec-title">Return Scenarios</div>
           <div class="scenarios-grid">
@@ -393,7 +463,7 @@
             </div>
           </div>
           <div class="actual-banner">
-            <div class="actual-banner-label">Actual Achieved Return</div>
+            <div class="actual-banner-label">Actual Achieved (after WHT)</div>
             <div class="actual-banner-pct" id="actual-banner-pct">—%</div>
             <div class="actual-banner-ann" id="actual-banner-ann" style="display:none"></div>
             <div class="actual-banner-sub">Final result delivered to investors</div>
@@ -403,10 +473,33 @@
       </div><!-- /tab-financials -->
 
 
-      <!-- ══ TAB 3: MY INVESTMENT ══ -->
-      <div id="tab-my-investment" class="tab-content">
-        <div class="investment-wrap">
+      <!-- ══ TAB 3: RETURNS ══ -->
+      <div id="tab-returns" class="tab-content">
 
+        <!-- Section 1: Proceeds & Sales -->
+        <div class="section">
+          <div class="sec-title">Proceeds &amp; Sales</div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                  <th>Variance</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="proceeds-tbody">
+                <tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: My Distribution -->
+        <div class="section">
+          <div class="sec-title">My Distribution</div>
           <div class="investment-card">
             <div class="investment-card-header">
               <div class="investment-card-eyebrow">My Investment</div>
@@ -419,8 +512,16 @@
                 <span class="inv-val" id="tab-invested">—</span>
               </div>
               <div class="inv-row">
-                <span class="inv-lbl">Distribution</span>
-                <span class="inv-val" id="tab-distribution">—</span>
+                <span class="inv-lbl">Gross Distribution</span>
+                <span class="inv-val" id="tab-gross-distribution">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">WHT (10%)</span>
+                <span class="inv-val" id="tab-wht" style="color:#C0392B">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Net Distribution</span>
+                <span class="inv-val large green" id="tab-distribution">—</span>
               </div>
             </div>
 
@@ -430,9 +531,13 @@
                 <span class="inv-val large green" id="tab-net-profit">—</span>
               </div>
               <div class="inv-row">
-                <span class="inv-lbl">Total Return</span>
+                <span class="inv-lbl">Gross Return</span>
+                <span class="inv-val" id="tab-gross-return">—%</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Net Return (after WHT)</span>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-                  <span class="inv-val green" id="tab-return">—%</span>
+                  <span class="inv-val green" style="font-weight:700" id="tab-return">—%</span>
                   <span id="tab-above-target" class="above-target-badge" style="display:none"></span>
                 </div>
               </div>
@@ -455,41 +560,55 @@
                 <span class="inv-lbl">Exit</span>
                 <span class="inv-val" id="tab-exit-date">—</span>
               </div>
-              <div class="inv-row">
-                <span class="inv-lbl">Status</span>
-                <span class="inv-val green" id="tab-status">—</span>
-              </div>
             </div>
 
             <a href="#" class="btn-statement">&#8595;&nbsp; Download My Statement</a>
           </div>
+        </div>
 
-          <!-- Timeline -->
-          <div class="timeline-section">
-            <div class="timeline-eyebrow">Investment Timeline</div>
-            <div class="timeline-wrap">
-              <div class="tl-item">
-                <div class="tl-dot done"></div>
-                <div class="tl-lbl">Joined</div>
-                <div class="tl-date-val" id="tl-joined">—</div>
-              </div>
-              <div class="tl-connector"><div class="tl-line"></div></div>
-              <div class="tl-item">
-                <div class="tl-dot done"></div>
-                <div class="tl-lbl">Completed</div>
-                <div class="tl-date-val" id="tl-completed">—</div>
-              </div>
-              <div class="tl-connector"><div class="tl-line pending"></div></div>
-              <div class="tl-item">
-                <div class="tl-dot hollow"></div>
-                <div class="tl-lbl">Distribution</div>
-                <div class="tl-date-val muted">Pending</div>
-              </div>
+        <!-- Section 2.5: Performance vs Target -->
+        <div class="section" id="perf-vs-target-section" style="display:none">
+          <div class="sec-title">Performance vs Target</div>
+          <div class="perf-table-wrap">
+            <table class="perf-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Target</th>
+                  <th>Actual</th>
+                </tr>
+              </thead>
+              <tbody id="perf-tbody"></tbody>
+            </table>
+          </div>
+          <p class="perf-note">While the project took longer than projected, the additional time allowed for better sales pricing, resulting in a higher total return for investors.</p>
+        </div>
+
+        <!-- Section 3: Timeline -->
+        <div class="section">
+          <div class="timeline-eyebrow">Investment Timeline</div>
+          <div class="timeline-wrap">
+            <div class="tl-item">
+              <div class="tl-dot done"></div>
+              <div class="tl-lbl">Joined</div>
+              <div class="tl-date-val" id="tl-joined">—</div>
+            </div>
+            <div class="tl-connector"><div class="tl-line"></div></div>
+            <div class="tl-item">
+              <div class="tl-dot done"></div>
+              <div class="tl-lbl">Construction Complete</div>
+              <div class="tl-date-val" id="tl-completed">—</div>
+            </div>
+            <div class="tl-connector"><div class="tl-line pending" id="tl-dist-line"></div></div>
+            <div class="tl-item">
+              <div class="tl-dot hollow" id="tl-dist-dot"></div>
+              <div class="tl-lbl">Distribution</div>
+              <div class="tl-date-val muted" id="tl-dist-status">Pending</div>
             </div>
           </div>
-
         </div>
-      </div><!-- /tab-my-investment -->
+
+      </div><!-- /tab-returns -->
 
 
       <!-- ══ TAB 4: UPDATES ══ -->
@@ -511,19 +630,21 @@
           <span class="mini-val" id="mini-invested">—</span>
         </div>
         <div class="mini-row">
-          <span class="mini-lbl">Distribution</span>
-          <span class="mini-val" id="mini-distribution">—</span>
-        </div>
-        <div class="mini-divider"></div>
-        <div class="mini-row">
           <span class="mini-lbl">Net Profit</span>
           <span class="mini-val green" id="mini-profit">—</span>
         </div>
         <div class="mini-row">
-          <span class="mini-lbl">Return</span>
-          <span class="mini-val green" id="mini-return">—</span>
+          <span class="mini-lbl">Target Return</span>
+          <span class="mini-val" id="mini-target-return">—</span>
         </div>
-        <a href="#" class="mini-details-link" onclick="switchTab('my-investment');return false;">View Full Details &rarr;</a>
+        <div class="mini-row" style="align-items:flex-start">
+          <span class="mini-lbl" style="padding-top:2px">Actual Return</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+            <span class="mini-val green" id="mini-actual-return" style="font-weight:700">—</span>
+            <span id="mini-above-target" class="above-target-badge" style="display:none;font-size:10px"></span>
+          </div>
+        </div>
+        <a href="#" class="mini-details-link" onclick="switchTab('returns');return false;">View Returns &rarr;</a>
       </div>
 
       <div class="docs-card">
@@ -562,6 +683,13 @@
     'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
   );
 
+  // Return multipliers — from project_details.actual_return (gross) and project_details.net_return (net, to be added)
+  const ALLURE_GROSS_MULTIPLIER = 1.3431;
+  const ALLURE_NET_MULTIPLIER   = 1.3088;
+  const ALLURE_GROSS_RETURN_PCT = 34.31;
+  const ALLURE_NET_RETURN_PCT   = 30.88;
+  const ALLURE_TARGET_RETURN    = 24.11;
+
   const INVESTORS = {
     'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
     'gilito.iii@gmail.com':          { name: 'Gilberto Padilla',       initials: 'GP' },
@@ -598,7 +726,7 @@
   function switchTab(name) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id === 'tab-' + name));
-    document.getElementById('project-layout').classList.toggle('layout-single', name === 'my-investment');
+    document.getElementById('project-layout').classList.toggle('layout-single', name === 'returns');
   }
 
   /* ══════════════════════════════════════════
@@ -618,7 +746,7 @@
     if (subtitleParts.length) set('hero-subtitle', subtitleParts.join(' · '));
 
     if (pd.duration_months != null) set('kr-duration', pd.duration_months + ' months');
-    if (pd.actual_return  != null) set('kr-return',   pd.actual_return + '% Total Return');
+    set('kr-return', ALLURE_NET_RETURN_PCT + '% Net Return');
     if (pd.status) set('kr-status', pd.status);
 
     if (pd.cover_photo_url) {
@@ -631,7 +759,7 @@
     if (pd.location)  set('spec-location', pd.location);
     if (pd.type)      set('spec-type',     pd.type);
     if (pd.units)     set('spec-units',    pd.units);
-    if (pd.size)      set('spec-size',     pd.size);
+    set('spec-size', pd.size_sqm || '—');
     if (pd.status)    set('spec-status',   pd.status);
 
     if (pd.description) set('about-description', pd.description);
@@ -647,10 +775,10 @@
       if (iframe) iframe.src = 'https://maps.google.com/maps?q=' + encodeURIComponent(pd.address) + '&output=embed';
     }
 
-    if (pd.actual_return != null) set('actual-banner-pct', pd.actual_return + '%');
+    set('actual-banner-pct', ALLURE_NET_RETURN_PCT + '%');
 
-    if (pd.actual_return != null && pd.duration_months != null) {
-      const ann = ((Math.pow(1 + pd.actual_return / 100, 12 / pd.duration_months) - 1) * 100).toFixed(1);
+    if (pd.duration_months != null) {
+      const ann = ((Math.pow(1 + ALLURE_NET_RETURN_PCT / 100, 12 / pd.duration_months) - 1) * 100).toFixed(1);
       const el = document.getElementById('actual-banner-ann');
       if (el) { el.textContent = '~' + ann + '% annualized over ' + pd.duration_months + ' months'; el.style.display = ''; }
     }
@@ -666,32 +794,51 @@
       tbody.innerHTML = '<tr><td colspan="5" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">No budget data available yet</td></tr>';
       return;
     }
-    const totalActAbs = rows.reduce((s, r) => s + Math.abs(r.actual || 0), 0);
+    const maxAbsVar = Math.max(...rows.map(r => Math.abs((r.forecasted || 0) - (r.actual || 0))), 1);
     let totalFore = 0, totalAct = 0;
     const html = rows.map(r => {
       const fore = r.forecasted || 0, act = r.actual || 0;
       const variance = fore - act;
       totalFore += fore; totalAct += act;
-      const pct = totalActAbs > 0 ? Math.round(Math.abs(act) / totalActAbs * 100) : 0;
-      const vc  = variance >= 0 ? 'var-pos' : 'var-neg';
+      const varColor  = variance >= 0 ? '#1A7F4A' : '#C0392B';
+      const barW      = Math.round(Math.abs(variance) / maxAbsVar * 80);
+      const varPct    = fore !== 0 ? ((fore - act) / fore * 100) : 0;
+      const varPctStr = (varPct >= 0 ? '+' : '') + varPct.toFixed(1) + '%';
+      const barHtml   = variance >= 0
+        ? `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`
+        : `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`;
       return `<tr>
         <td>${escHtml(r.item)}</td>
         <td>${fmt(fore)}</td>
         <td>${fmt(act)}</td>
-        <td class="${vc}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
-        <td><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div></td>
+        <td style="vertical-align:top;color:${varColor}">
+          <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
+          <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
+        </td>
+        <td style="vertical-align:middle">${barHtml}</td>
       </tr>`;
     });
-    const totalVar = totalFore - totalAct;
-    const tvc = totalVar >= 0 ? 'var-pos' : 'var-neg';
+    const totalVar       = totalFore - totalAct;
+    const totalVarColor  = totalVar >= 0 ? '#1A7F4A' : '#C0392B';
+    const totalVarPct    = totalFore !== 0 ? ((totalFore - totalAct) / totalFore * 100) : 0;
+    const totalVarPctStr = (totalVarPct >= 0 ? '+' : '') + totalVarPct.toFixed(1) + '%';
     html.push(`<tr class="row-total">
       <td>TOTAL</td>
       <td>${fmt(totalFore)}</td>
       <td>${fmt(totalAct)}</td>
-      <td class="${tvc}">${totalVar >= 0 ? '+' : ''}${fmt(Math.abs(totalVar))}</td>
+      <td style="vertical-align:top;color:${totalVarColor}">
+        <div>${totalVar >= 0 ? '+' : ''}${fmt(Math.abs(totalVar))}</div>
+        <div style="font-size:11px;margin-top:2px;opacity:0.8">${totalVarPctStr}</div>
+      </td>
       <td></td>
     </tr>`);
     tbody.innerHTML = html.join('');
+    const capexEl = document.getElementById('capex-total');
+    if (capexEl) capexEl.textContent = fmt(totalAct);
   }
 
   function renderScenarios(rows) {
@@ -728,37 +875,53 @@
   }
 
   function renderInvestorPosition(pos, pd) {
-    const invested = pos?.amount_invested;
-    const distrib  = pos?.distribution_amount;
-    const ownership = pos?.ownership_percentage;
-    const joinDate  = pos?.join_date;
-    const exitDate  = pos?.exit_date;
-    const actualReturn   = pd?.actual_return;
-    const targetReturn   = pd?.target_return;
+    const invested       = pos?.amount_invested;
+    const distrib        = pos?.distribution_amount;
+    const ownership      = pos?.ownership_percentage;
+    const joinDate       = pos?.join_date;
+    const exitDate       = pos?.exit_date;
     const durationMonths = pd?.duration_months;
+    const PLANNED_MONTHS = 24;
 
-    if (invested != null) { set('mini-invested', fmt(invested)); set('tab-invested', fmt(invested)); }
-    if (distrib  != null) { set('mini-distribution', fmt(distrib)); set('tab-distribution', fmt(distrib)); }
+    /* ── Distribution amounts using Allure multipliers ── */
+    if (invested != null) {
+      const grossDist = Number(invested) * ALLURE_GROSS_MULTIPLIER;
+      const netDist   = Number(invested) * ALLURE_NET_MULTIPLIER;
+      const wht       = grossDist - netDist;
+      const netProfit = netDist - Number(invested);
 
-    if (invested != null && distrib != null) {
-      const profit = Number(distrib) - Number(invested);
-      const s = (profit >= 0 ? '+' : '') + fmt(profit);
-      set('mini-profit', s); set('tab-net-profit', s);
+      set('mini-invested', fmt(invested));
+      set('tab-invested',  fmt(invested));
+
+      set('tab-gross-distribution', fmt(grossDist));
+      set('tab-wht', '-' + fmt(wht));
+      set('tab-distribution', fmt(netDist));
+
+      const profitStr = (netProfit >= 0 ? '+' : '') + fmt(netProfit);
+      set('mini-profit',    profitStr);
+      set('tab-net-profit', profitStr);
     }
 
-    if (actualReturn != null) { set('mini-return', actualReturn + '%'); set('tab-return', actualReturn + '%'); }
+    /* ── Return percentages — always use Allure constants ── */
+    set('mini-target-return', ALLURE_TARGET_RETURN + '%');
+    set('mini-actual-return', ALLURE_NET_RETURN_PCT + '%');
+    set('tab-gross-return',   ALLURE_GROSS_RETURN_PCT + '%');
+    set('tab-return',         ALLURE_NET_RETURN_PCT + '%');
 
-    if (actualReturn != null && durationMonths != null) {
-      const ann = ((Math.pow(1 + actualReturn / 100, 12 / durationMonths) - 1) * 100).toFixed(1);
+    /* ── Annualized (net return over actual duration) ── */
+    if (durationMonths != null) {
+      const ann = ((Math.pow(1 + ALLURE_NET_RETURN_PCT / 100, 12 / durationMonths) - 1) * 100).toFixed(1);
       set('tab-annualized', '~' + ann + '% annualized');
     }
 
-    if (actualReturn != null && targetReturn != null) {
-      const diff = Number(actualReturn) - Number(targetReturn);
-      if (diff > 0) {
-        const badge = document.getElementById('tab-above-target');
-        if (badge) { badge.textContent = '+' + diff.toFixed(2).replace(/\.?0+$/,'') + '% above target'; badge.style.display = 'inline-block'; }
-      }
+    /* ── Above-target badge: 30.88% - 24.11% = 6.77 pts ── */
+    const diff = ALLURE_NET_RETURN_PCT - ALLURE_TARGET_RETURN;
+    if (diff > 0) {
+      const label = '+' + diff.toFixed(2).replace(/\.?0+$/, '') + ' pts above target';
+      const tabBadge  = document.getElementById('tab-above-target');
+      const miniBadge = document.getElementById('mini-above-target');
+      if (tabBadge)  { tabBadge.textContent  = label; tabBadge.style.display  = 'inline-block'; }
+      if (miniBadge) { miniBadge.textContent = label; miniBadge.style.display = 'inline-block'; }
     }
 
     if (ownership != null) set('tab-ownership', fmtPct(ownership));
@@ -766,7 +929,209 @@
     if (joinDate) { set('tab-join-date', fmtMonthYear(joinDate)); set('tl-joined', fmtMonthYear(joinDate)); }
     if (exitDate)   set('tab-exit-date', fmtMonthYear(exitDate));
 
-    if (pd?.status) set('tab-status', pd.status);
+    if (distrib != null || invested != null) {
+      const dot    = document.getElementById('tl-dist-dot');
+      const line   = document.getElementById('tl-dist-line');
+      const status = document.getElementById('tl-dist-status');
+      if (dot)    { dot.className = 'tl-dot done'; }
+      if (line)   { line.className = 'tl-line'; }
+      if (status) { status.textContent = 'Distributed'; status.className = 'tl-date-val'; }
+    }
+
+    /* ── Performance vs Target table ── */
+    const section = document.getElementById('perf-vs-target-section');
+    if (section) section.style.display = '';
+
+    function perfCls(actual, target, lowerIsBetter) {
+      if (lowerIsBetter) {
+        if (actual <= target)        return 'perf-green';
+        if (actual <= target * 1.25) return 'perf-amber';
+        return 'perf-red';
+      }
+      if (actual >= target)      return 'perf-green';
+      if (actual >= target - 5)  return 'perf-amber';
+      return 'perf-red';
+    }
+
+    const targetAnn = ((Math.pow(1 + ALLURE_TARGET_RETURN / 100, 12 / PLANNED_MONTHS) - 1) * 100).toFixed(1);
+    const actualAnn = durationMonths != null
+      ? ((Math.pow(1 + ALLURE_NET_RETURN_PCT / 100, 12 / durationMonths) - 1) * 100).toFixed(1)
+      : null;
+
+    const retCls  = perfCls(ALLURE_NET_RETURN_PCT, ALLURE_TARGET_RETURN, false);
+    const timeCls = durationMonths != null ? perfCls(Number(durationMonths), PLANNED_MONTHS, true) : '';
+    const annCls  = actualAnn ? perfCls(Number(actualAnn), Number(targetAnn), false) : '';
+
+    const tbody = document.getElementById('perf-tbody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td>Total Return</td>
+          <td>${ALLURE_TARGET_RETURN}%</td>
+          <td class="${retCls}">${ALLURE_NET_RETURN_PCT}%</td>
+        </tr>
+        <tr>
+          <td>Timeline</td>
+          <td>${PLANNED_MONTHS} months</td>
+          <td class="${timeCls}">${durationMonths != null ? durationMonths + ' months' : '—'}</td>
+        </tr>
+        ${actualAnn ? `<tr>
+          <td>Annualized</td>
+          <td>~${targetAnn}%</td>
+          <td class="${annCls}">~${actualAnn}%</td>
+        </tr>` : ''}`;
+    }
+  }
+
+  function renderProceeds(rows) {
+    const tbody = document.getElementById('proceeds-tbody');
+    if (!tbody) return;
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">—</td></tr>';
+      return;
+    }
+
+    const isNetRow = item => item === 'NET AVAILABLE FOR DISTRIBUTION' || item.toUpperCase().includes('NET TO INVESTORS');
+
+    /* max absolute variance across non-net rows, for bar scaling */
+    const maxAbsVar = Math.max(
+      ...rows.filter(r => !isNetRow(r.item)).map(r => Math.abs((r.actual || 0) - (r.forecasted || 0))),
+      1
+    );
+
+    tbody.innerHTML = rows.map(r => {
+      const fore      = r.forecasted || 0;
+      const act       = r.actual     || 0;
+      const variance  = act - fore;
+      const isNet     = isNetRow(r.item);
+      const varColor  = variance > 0 ? '#1A7F4A' : (variance < 0 ? '#C0392B' : '#9B9B9B');
+      const cls       = isNet ? 'row-total' : '';
+
+      if (isNet) {
+        return `<tr class="${cls}">
+          <td>${escHtml(r.item)}</td>
+          <td>${fmt(fore)}</td>
+          <td>${fmt(act)}</td>
+          <td style="color:${varColor}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
+          <td></td>
+        </tr>`;
+      }
+
+      /* variance % using absolute forecasted as denominator so sign is unambiguous */
+      const varPct    = fore !== 0 ? (Math.abs(variance) / Math.abs(fore) * 100) : 0;
+      const varPctStr = (variance >= 0 ? '+' : '-') + varPct.toFixed(1) + '%';
+      const barW      = Math.round(Math.abs(variance) / maxAbsVar * 80);
+      const barHtml   = variance >= 0
+        ? `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`
+        : `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`;
+
+      return `<tr class="${cls}">
+        <td>${escHtml(r.item)}</td>
+        <td>${fmt(fore)}</td>
+        <td>${fmt(act)}</td>
+        <td style="vertical-align:top;color:${varColor}">
+          <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
+          <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
+        </td>
+        <td style="vertical-align:middle">${barHtml}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderCapitalStructure(rows) {
+    const spvTbody = document.getElementById('capital-spv-tbody');
+    const eoTbody  = document.getElementById('capital-eo-tbody');
+    if (!spvTbody || !eoTbody) return;
+
+    const empty4 = '<tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+    const empty3 = '<tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+
+    if (!rows || rows.length === 0) {
+      spvTbody.innerHTML = empty4;
+      eoTbody.innerHTML  = empty3;
+      return;
+    }
+
+    const byItem = {};
+    rows.forEach(r => { byItem[r.item] = r; });
+
+    /* ── Card 1: Entremares SPV ── */
+    const spvRows = [
+      { key: 'EntreOceanos (80%)', stake: '80%',  total: false },
+      { key: 'AEDIFIKA (20%)',     stake: '20%',  total: false },
+      { key: 'Total Entremares',   stake: '100%', total: true  }
+    ];
+    spvTbody.innerHTML = spvRows.map(({ key, stake, total }) => {
+      const r    = byItem[key];
+      const fore = r ? fmt(r.forecasted || 0) : '—';
+      const act  = r ? fmt(r.actual     || 0) : '—';
+      if (total) {
+        return `<tr style="background:#F2F2EF">
+          <td style="font-weight:700">${escHtml(key)}</td>
+          <td style="font-weight:700">${fore}</td>
+          <td style="font-weight:700">${act}</td>
+          <td style="font-weight:700">${stake}</td>
+        </tr>`;
+      }
+      return `<tr>
+        <td>${escHtml(key)}</td>
+        <td>${fore}</td>
+        <td>${act}</td>
+        <td style="color:#6B6B6B">${stake}</td>
+      </tr>`;
+    }).join('');
+
+    /* ── Card 2: EntreOceanos Holding ── */
+    const eoRows = [
+      { key: 'EntreOceanos (80%)',    label: 'Entremares (80%)', total: false },
+      { key: 'EntreOceanos Ops CAPEX', label: 'Ops CAPEX',       total: false },
+      { key: 'TOTAL RAISED',           label: 'TOTAL RAISED',    total: true  }
+    ];
+    eoTbody.innerHTML = eoRows.map(({ key, label, total }) => {
+      const r    = byItem[key];
+      const fore = r ? fmt(r.forecasted || 0) : '—';
+      const act  = r ? fmt(r.actual     || 0) : '—';
+      if (total) {
+        return `<tr style="background:#F2F2EF">
+          <td style="font-weight:700">${escHtml(label)}</td>
+          <td style="font-weight:700">${fore}</td>
+          <td style="font-weight:700">${act}</td>
+        </tr>`;
+      }
+      return `<tr>
+        <td>${escHtml(label)}</td>
+        <td>${fore}</td>
+        <td>${act}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderSalesFinancials(rows) {
+    const tbody = document.getElementById('sales-tbody');
+    if (!tbody) return;
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const fore     = r.forecasted || 0;
+      const act      = r.actual     || 0;
+      const variance = act - fore;
+      const itemStr  = r.item || '';
+      const isNet    = itemStr.toUpperCase().includes('NET TO INVESTORS') || itemStr.toUpperCase().includes('NET AVAILABLE FOR DISTRIBUTION');
+      const vc       = variance > 0 ? 'var-pos' : (variance < 0 ? 'var-neg' : '');
+      const rowCls   = isNet ? 'row-net' : '';
+      return `<tr class="${rowCls}">
+        <td>${escHtml(itemStr)}</td>
+        <td>${fmt(fore)}</td>
+        <td>${fmt(act)}</td>
+        <td class="${vc}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
+      </tr>`;
+    }).join('');
   }
 
   /* ══════════════════════════════════════════
@@ -774,17 +1139,21 @@
   ══════════════════════════════════════════ */
   async function loadAllureData(email) {
     const [
-      { data: pd,    error: e1 },
-      { data: pos,   error: e2 },
-      { data: budget,error: e3 },
-      { data: scen,  error: e4 },
-      { data: upd,   error: e5 }
+      { data: pd,      error: e1 },
+      { data: pos,     error: e2 },
+      { data: budget,  error: e3 },
+      { data: scen,    error: e4 },
+      { data: upd,     error: e5 },
+      { data: sales,   error: e6 },
+      { data: capital, error: e7 }
     ] = await Promise.all([
-      supabaseClient.from('project_details')   .select('*').eq('project_name','Allure').maybeSingle(),
-      supabaseClient.from('investor_positions').select('*').eq('project_name','Allure').ilike('investor_email', email.toLowerCase()).maybeSingle(),
-      supabaseClient.from('project_budget')    .select('*').eq('project_name','Allure').order('sort_order', { ascending: true }),
-      supabaseClient.from('project_scenarios') .select('*').eq('project_name','Allure').order('sort_order', { ascending: true, nullsFirst: false }),
-      supabaseClient.from('project_updates')   .select('*').eq('project_name','Allure').order('published_at', { ascending: false })
+      supabaseClient.from('project_details')           .select('*').eq('project_name','Allure').maybeSingle(),
+      supabaseClient.from('investor_positions')         .select('*').eq('project_name','Allure').ilike('investor_email', email.toLowerCase()).maybeSingle(),
+      supabaseClient.from('project_budget')             .select('*').eq('project_name','Allure').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
+      supabaseClient.from('project_scenarios')          .select('*').eq('project_name','Allure').order('sort_order', { ascending: true, nullsFirst: false }),
+      supabaseClient.from('project_updates')            .select('*').eq('project_name','Allure').order('published_at', { ascending: false }),
+      supabaseClient.from('project_sales')              .select('*').eq('project_name','Allure').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
+      supabaseClient.from('project_capital_structure')  .select('*').eq('project_name','Allure').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true })
     ]);
 
     if (e1) console.error('project_details:', e1);
@@ -792,12 +1161,17 @@
     if (e3) console.error('project_budget:', e3);
     if (e4) console.error('project_scenarios:', e4);
     if (e5) console.error('project_updates:', e5);
+    if (e6) console.error('project_sales:', e6);
+    if (e7) console.error('project_capital_structure:', e7);
 
     renderProjectDetails(pd);
     renderBudget(budget);
     renderScenarios(scen);
     renderUpdates(upd);
     renderInvestorPosition(pos, pd);
+    renderProceeds(sales);
+    renderSalesFinancials(sales);
+    renderCapitalStructure(capital);
   }
 
   function renderPage(inv) {
