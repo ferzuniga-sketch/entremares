@@ -80,6 +80,27 @@
     .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .gallery-placeholder { aspect-ratio: 4/3; background: #EEEEE9; border: 1px solid #E0E0DC; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #C0C0BC; font-size: 11px; font-weight: 500; }
 
+    /* ── Gallery real items ── */
+    .gallery-item { position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; }
+    .gallery-item-media { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; transition: transform 0.2s; }
+    .gallery-item:hover .gallery-item-media { transform: scale(1.03); }
+    .gallery-item-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .gallery-item-caption { font-size: 11px; color: #6B6B6B; margin-top: 6px; line-height: 1.4; }
+    @media (max-width: 680px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) { .gallery-grid { grid-template-columns: 1fr; } }
+
+    /* ── Lightbox ── */
+    #gallery-lightbox { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; flex-direction: column; }
+    #gallery-lightbox.open { display: flex; }
+    #gallery-lightbox-media { max-width: 90vw; max-height: 82vh; border-radius: 8px; object-fit: contain; display: block; }
+    #gallery-lightbox-caption { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 14px; text-align: center; max-width: 600px; }
+    #gallery-lightbox-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; line-height: 1; opacity: 0.7; }
+    #gallery-lightbox-close:hover { opacity: 1; }
+    #gallery-lightbox-prev, #gallery-lightbox-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.12); border: none; color: #fff; font-size: 22px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    #gallery-lightbox-prev { left: 20px; }
+    #gallery-lightbox-next { right: 20px; }
+    #gallery-lightbox-prev:hover, #gallery-lightbox-next:hover { background: rgba(255,255,255,0.28); }
+
     /* ══ TAB 2: FINANCIALS ══ */
     .fin-subtitle { font-size: 13px; color: #6B6B6B; margin-bottom: 14px; line-height: 1.5; }
     .fin-note { font-size: 12px; color: #9B9B9B; margin-top: 12px; line-height: 1.65; font-style: italic; }
@@ -350,7 +371,8 @@
 
         <div class="section">
           <div class="sec-title">Project Photos</div>
-          <div class="gallery-grid">
+          <div class="gallery-grid" id="overview-gallery-grid">
+            <!-- filled by loadGallery() -->
             <div class="gallery-placeholder">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               Photo 1
@@ -675,6 +697,15 @@
 
 </main>
 
+
+<!-- ── Lightbox ── -->
+<div id="gallery-lightbox" role="dialog" aria-modal="true">
+  <button id="gallery-lightbox-close" aria-label="Close">&times;</button>
+  <button id="gallery-lightbox-prev" aria-label="Previous">&#8249;</button>
+  <!-- media injected here -->
+  <button id="gallery-lightbox-next" aria-label="Next">&#8250;</button>
+  <div id="gallery-lightbox-caption"></div>
+</div>
 
 <script>
   const { createClient } = window.supabase;
@@ -1144,6 +1175,123 @@
   }
 
   /* ══════════════════════════════════════════
+     GALLERY
+  ══════════════════════════════════════════ */
+  let galleryItems = [];
+  let lightboxIdx  = 0;
+
+  async function loadGallery() {
+    const { data, error } = await supabaseClient
+      .from('project_gallery')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('id', { ascending: true });
+
+    if (error || !data || data.length === 0) return; // keep placeholders on error/empty
+
+    galleryItems = data;
+    const grid = document.getElementById('overview-gallery-grid');
+    if (!grid) return;
+
+    grid.innerHTML = data.map((item, idx) => {
+      const isVideo = item.file_type === 'video';
+      const caption = item.caption ? `<div class="gallery-item-caption">${escHtml(item.caption)}</div>` : '';
+      if (isVideo) {
+        return `<div>
+          <div class="gallery-item" data-idx="${idx}">
+            <video class="gallery-item-media" src="${escHtml(item.url)}" muted preload="metadata"></video>
+            <div class="gallery-item-play">
+              <svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="22" fill="rgba(0,0,0,0.45)"/><polygon points="17,13 35,22 17,31" fill="white"/></svg>
+            </div>
+          </div>
+          ${caption}
+        </div>`;
+      }
+      return `<div>
+        <div class="gallery-item" data-idx="${idx}">
+          <img class="gallery-item-media" src="${escHtml(item.url)}" alt="${escHtml(item.caption || '')}" loading="lazy">
+        </div>
+        ${caption}
+      </div>`;
+    }).join('');
+
+    grid.querySelectorAll('.gallery-item').forEach(el => {
+      el.addEventListener('click', () => openLightbox(parseInt(el.dataset.idx, 10)));
+    });
+  }
+
+  function openLightbox(idx) {
+    if (!galleryItems.length) return;
+    lightboxIdx = idx;
+    const lb = document.getElementById('gallery-lightbox');
+    if (!lb) return;
+    lb.classList.add('open');
+    renderLightboxMedia();
+    document.addEventListener('keydown', lightboxKeyHandler);
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById('gallery-lightbox');
+    if (!lb) return;
+    lb.classList.remove('open');
+    const existing = document.getElementById('gallery-lightbox-media');
+    if (existing) { existing.pause && existing.pause(); existing.remove(); }
+    document.removeEventListener('keydown', lightboxKeyHandler);
+  }
+
+  function renderLightboxMedia() {
+    const lb      = document.getElementById('gallery-lightbox');
+    const capEl   = document.getElementById('gallery-lightbox-caption');
+    const existing = document.getElementById('gallery-lightbox-media');
+    if (existing) { existing.pause && existing.pause(); existing.remove(); }
+
+    const item    = galleryItems[lightboxIdx];
+    const isVideo = item.file_type === 'video';
+    const prev    = document.getElementById('gallery-lightbox-prev');
+    const next    = document.getElementById('gallery-lightbox-next');
+
+    let mediaEl;
+    if (isVideo) {
+      mediaEl = document.createElement('video');
+      mediaEl.id       = 'gallery-lightbox-media';
+      mediaEl.src      = item.url;
+      mediaEl.controls = true;
+      mediaEl.autoplay = true;
+      mediaEl.style.maxWidth  = '90vw';
+      mediaEl.style.maxHeight = '82vh';
+      mediaEl.style.borderRadius = '8px';
+    } else {
+      mediaEl = document.createElement('img');
+      mediaEl.id  = 'gallery-lightbox-media';
+      mediaEl.src = item.url;
+      mediaEl.alt = item.caption || '';
+    }
+
+    lb.insertBefore(mediaEl, document.getElementById('gallery-lightbox-caption'));
+    if (capEl) capEl.textContent = item.caption || '';
+    if (prev) prev.style.display = lightboxIdx > 0 ? '' : 'none';
+    if (next) next.style.display = lightboxIdx < galleryItems.length - 1 ? '' : 'none';
+  }
+
+  function lightboxKeyHandler(e) {
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowLeft'  && lightboxIdx > 0)                    { lightboxIdx--; renderLightboxMedia(); }
+    if (e.key === 'ArrowRight' && lightboxIdx < galleryItems.length - 1) { lightboxIdx++; renderLightboxMedia(); }
+  }
+
+  (function initLightboxButtons() {
+    const lb   = document.getElementById('gallery-lightbox');
+    const prev = document.getElementById('gallery-lightbox-prev');
+    const next = document.getElementById('gallery-lightbox-next');
+    const cls  = document.getElementById('gallery-lightbox-close');
+    if (lb)   lb.addEventListener('click',  e => { if (e.target === lb) closeLightbox(); });
+    if (cls)  cls.addEventListener('click', () => closeLightbox());
+    if (prev) prev.addEventListener('click', () => { if (lightboxIdx > 0) { lightboxIdx--; renderLightboxMedia(); } });
+    if (next) next.addEventListener('click', () => { if (lightboxIdx < galleryItems.length - 1) { lightboxIdx++; renderLightboxMedia(); } });
+  })();
+
+  /* ══════════════════════════════════════════
      LOAD ALL DATA
   ══════════════════════════════════════════ */
   async function loadAllureData(email) {
@@ -1201,6 +1349,7 @@
     if (!inv) { await supabaseClient.auth.signOut(); window.location.href = 'dashboard.html'; return; }
     renderPage(inv);
     loadAllureData(email);
+    loadGallery();
   })();
 </script>
 
