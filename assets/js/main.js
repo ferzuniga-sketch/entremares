@@ -135,9 +135,20 @@
             };
 
             if (window.emailjs) {
-                // TODO: Replace with real EmailJS service_id, template_id and public_key
                 try {
-                    await emailjs.sendForm('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', applyForm);
+                    const firstName       = document.getElementById('firstName').value.trim();
+                    const lastName        = document.getElementById('lastName').value.trim();
+                    const email           = document.getElementById('email').value.trim();
+                    const country         = document.getElementById('country').value.trim();
+                    const investmentAmount = document.getElementById('investmentAmount').value;
+                    const message         = document.getElementById('message').value.trim();
+                    await emailjs.send("service_x6mgiqm", "template_pvaei2l", {
+                        name: firstName + " " + lastName,
+                        email,
+                        country,
+                        investment_amount: investmentAmount,
+                        message
+                    });
                     showSuccess();
                 } catch (err) {
                     btn.disabled = false;
