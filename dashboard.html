@@ -1135,10 +1135,14 @@
     </div>
 
     <div class="login-error" id="login-error">
-      Incorrect email or password. Please try again.
+      Invalid email or password.
     </div>
 
     <button class="btn-login" id="btn-login">Sign In</button>
+
+    <div style="text-align:center;margin-top:14px;">
+      <a id="lnk-forgot" href="#" style="font-size:13px;color:#6B6B6B;text-decoration:none;">Forgot password?</a>
+    </div>
 
   </div>
 </div>
@@ -1315,7 +1319,6 @@
           </div>
         </div>
         <div class="inv-period" id="inv-kabil-period">Jun 2020 &ndash; Dec 2022 &nbsp;&middot;&nbsp; 30 months</div>
-        <button class="btn-opp" onclick="window.location.href='kabil.html'">View Details &rarr;</button>
       </div>
 
       <!-- Allure -->
@@ -1403,7 +1406,7 @@
       </div>
 
       <div class="modal-ownership dim" id="modal-ownership">
-        <span class="modal-ownership-lbl">Your project ownership</span>
+        <span class="modal-ownership-lbl">Your EntreOceanos Stake</span>
         <span class="modal-ownership-val" id="modal-ownership-val">Enter an amount</span>
       </div>
 
@@ -1601,10 +1604,19 @@
         .ilike('investor_email', email.toLowerCase())
         .maybeSingle();
 
-      if (error || !data || data.amount_invested == null) return;
+      if (error || !data) return;
 
-      const gross = Number(data.amount_invested) * ALLURE_GROSS_MULTIPLIER;
-      const net   = Number(data.amount_invested) * ALLURE_NET_MULTIPLIER;
+      let gross, net;
+      if (data.distribution_amount != null) {
+        net   = Number(data.distribution_amount);
+        gross = net * (ALLURE_GROSS_MULTIPLIER / ALLURE_NET_MULTIPLIER);
+      } else if (data.amount_invested != null) {
+        gross = Number(data.amount_invested) * ALLURE_GROSS_MULTIPLIER;
+        net   = Number(data.amount_invested) * ALLURE_NET_MULTIPLIER;
+      } else {
+        return;
+      }
+
       currentInvestor.wallet = gross;
       set('wallet-balance', fmt(gross));
       set('stat-net-distribution', '+' + fmt(net));
@@ -1664,7 +1676,6 @@
   /* ── Investor database ── */
   const INVESTORS = {
     'fredbusher@gmail.com': {
-      password: 'entremares2024',
       name: 'Groupe Reaction',
       initials: 'GR',
       wallet: 33982.96,
@@ -1672,7 +1683,6 @@
       allure: { invested: 26140.74, profit: 7842.22 }
     },
     'gilito.iii@gmail.com': {
-      password: 'entremares2024',
       name: 'Gilberto Padilla',
       initials: 'GP',
       wallet: 42808.86,
@@ -1680,7 +1690,6 @@
       allure: { invested: 32929.89, profit: 9878.97 }
     },
     'alvaroilanes@gmail.com': {
-      password: 'entremares2024',
       name: 'Alvaro Villasante',
       initials: 'AV',
       wallet: 32500,
@@ -1688,7 +1697,6 @@
       allure: { invested: 25000, profit: 7500 }
     },
     'cuellarolmos@gmail.com': {
-      password: 'entremares2024',
       name: 'Alberto Cuellar',
       initials: 'AC',
       wallet: 34247.10,
@@ -1696,7 +1704,6 @@
       allure: { invested: 26343.92, profit: 7903.18 }
     },
     'sergio.gmd@gmail.com': {
-      password: 'entremares2024',
       name: 'Sergio Gomez',
       initials: 'SG',
       wallet: 85617.73,
@@ -1704,7 +1711,6 @@
       allure: { invested: 65859.79, profit: 19757.94 }
     },
     'nacho.lucas@gmail.com': {
-      password: 'entremares2024',
       name: 'Nacho Lucas',
       initials: 'NL',
       wallet: 59932.41,
@@ -1712,7 +1718,6 @@
       allure: { invested: 46101.85, profit: 13830.56 }
     },
     'ferzuniga@gmail.com': {
-      password: 'entremares2024',
       name: 'Fernando Zuniga',
       initials: 'FZ',
       wallet: 247504.60,
@@ -1720,7 +1725,6 @@
       allure: { invested: 190388.15,  profit: 57116.45 }
     },
     'madelcarmen.galindo@zuksa.net': {
-      password: 'entremares2024',
       name: 'Ma del Carmen Galindo',
       initials: 'MG',
       wallet: 25733.21,
@@ -1738,31 +1742,107 @@
     document.getElementById(id).textContent = val;
   }
 
-  /* ── Login ── */
-  function attemptLogin() {
-    const email    = document.getElementById('inp-email').value.trim().toLowerCase();
-    const password = document.getElementById('inp-password').value;
-    const errEl    = document.getElementById('login-error');
+  function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
-    if (email === 'admin@entremares.com' && password === 'entremares2024') {
-      window.location.href = 'admin.html';
-      return;
-    }
+  /* ── Activity timeline ── */
+  async function loadActivityTimeline(email) {
+    if (!email) return;
+    const timelineEl = document.getElementById('timeline');
+    try {
+      const { data, error } = await supabaseClient
+        .from('investor_activity')
+        .select('*')
+        .ilike('investor_email', email)
+        .order('activity_date', { ascending: false });
 
-    const inv = INVESTORS[email];
-    if (inv && inv.password === password) {
-      errEl.style.display = 'none';
-      localStorage.setItem('em_session', JSON.stringify({ email }));
-      renderDashboard(inv, email);
-    } else {
-      errEl.style.display = 'block';
-      document.getElementById('inp-password').value = '';
-      document.getElementById('inp-password').focus();
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        timelineEl.innerHTML = '<div style="padding:30px;text-align:center;color:#B0B0AA;font-size:14px">No recent activity</div>';
+        return;
+      }
+
+      const DOT_COLOR = { Investment: 'black', Return: 'green', Distribution: 'green' };
+      const BADGE_STYLE = {
+        Investment:   'background:#F0F0EE;color:#0D0D0D;border:1px solid #E0E0DC',
+        Return:       'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
+        Distribution: 'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
+        Update:       'background:#FFF7E6;color:#9B5D00;border:1px solid #FFE0A3',
+        Document:     'background:#EEF4FD;color:#1A5FA8;border:1px solid #BDD3F5',
+        Other:        'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC'
+      };
+      const ACT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      function fmtActDate(iso) {
+        if (!iso) return '';
+        const d = new Date(iso + 'T12:00:00');
+        return ACT_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+      }
+
+      timelineEl.innerHTML = data.map(a => {
+        const dot    = DOT_COLOR[a.activity_type]   || 'gray';
+        const bdg    = BADGE_STYLE[a.activity_type] || 'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC';
+        const isPos  = a.activity_type === 'Return' || a.activity_type === 'Distribution';
+        const parts  = [a.project_name, fmtActDate(a.activity_date)].filter(Boolean);
+        const amtHtml = a.amount != null
+          ? `<span class="tl-amt ${isPos ? 'pos' : 'neg'}">${isPos ? '+' : '&minus;'}${fmt(a.amount)}</span>`
+          : '';
+        return `
+          <div class="tl-item">
+            <div class="tl-dot ${dot}"></div>
+            <div class="tl-body">
+              <div>
+                <div class="tl-desc"><span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;margin-right:7px;${bdg}">${escHtml(a.activity_type)}</span>${escHtml(a.description || '')}</div>
+                <div class="tl-date">${escHtml(parts.join(' · '))}</div>
+              </div>
+              ${amtHtml}
+            </div>
+          </div>`;
+      }).join('');
+    } catch (err) {
+      console.error('Failed to load activity:', err);
+      timelineEl.innerHTML = '<div style="padding:30px;text-align:center;color:#B0B0AA;font-size:14px">No recent activity</div>';
     }
   }
 
-  function signOut() {
-    localStorage.removeItem('em_session');
+  /* ── Login ── */
+  async function attemptLogin() {
+    const email    = document.getElementById('inp-email').value.trim().toLowerCase();
+    const password = document.getElementById('inp-password').value;
+    const errEl    = document.getElementById('login-error');
+    const btn      = document.getElementById('btn-login');
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    errEl.style.display = 'none';
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+
+    if (error || !data.user) {
+      errEl.style.display = 'block';
+      document.getElementById('inp-password').value = '';
+      document.getElementById('inp-password').focus();
+      return;
+    }
+
+    const userEmail = data.user.email.toLowerCase();
+    const inv = INVESTORS[userEmail];
+    if (!inv) {
+      errEl.style.display = 'block';
+      await supabaseClient.auth.signOut();
+      return;
+    }
+
+    errEl.style.display = 'none';
+    renderDashboard(inv, userEmail);
+  }
+
+  async function signOut() {
+    await supabaseClient.auth.signOut();
     document.getElementById('dashboard').style.display    = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('inp-email').value    = '';
@@ -1786,8 +1866,7 @@
     /* Welcome */
     const first = inv.name.split(' ')[0];
     set('welcome-name', 'Welcome back, ' + first);
-    const d = new Date(2026, 4, 2);
-    set('welcome-date', d.toLocaleDateString('en-US', {
+    set('welcome-date', new Date().toLocaleDateString('en-US', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     }));
 
@@ -1812,40 +1891,9 @@
     set('inv-allure-pct',      '+' + allurePct + '%');
     set('inv-allure-profit',   '+' + fmt(inv.allure.profit));
 
-    /* Timeline */
-    const kabilTotal  = inv.kabil.invested  + inv.kabil.profit;
-    const allureTotal = inv.allure.invested + inv.allure.profit;
-
-    const events = [
-      { dot: 'green', desc: 'Return received — Allure',
-        date: 'December 2024 · Capital + profit',
-        amt: allureTotal, pos: true },
-      { dot: 'black', desc: 'Reinvestment committed — Allure',
-        date: 'January 2023',
-        amt: inv.allure.invested, pos: false },
-      { dot: 'green', desc: 'Return received — Kabil',
-        date: 'December 2022 · Capital + profit',
-        amt: kabilTotal, pos: true },
-      { dot: 'black', desc: 'Initial investment — Kabil',
-        date: 'June 2020',
-        amt: inv.kabil.invested, pos: false },
-      { dot: 'gray',  desc: 'Initial deposit',
-        date: 'June 2020',
-        amt: inv.kabil.invested, pos: true }
-    ];
-
-    document.getElementById('timeline').innerHTML = events.map(e => `
-      <div class="tl-item">
-        <div class="tl-dot ${e.dot}"></div>
-        <div class="tl-body">
-          <div>
-            <div class="tl-desc">${e.desc}</div>
-            <div class="tl-date">${e.date}</div>
-          </div>
-          <span class="tl-amt ${e.pos ? 'pos' : 'neg'}">${e.pos ? '+' : '&minus;'}${fmt(e.amt)}</span>
-        </div>
-      </div>
-    `).join('');
+    /* Timeline — loaded async from investor_activity */
+    document.getElementById('timeline').innerHTML = '<div style="padding:20px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</div>';
+    loadActivityTimeline(email || currentInvestorEmail);
 
     /* Funding bar and live balance — from Supabase */
     setTimeout(() => updateFundingProgress(), 150);
@@ -2019,17 +2067,13 @@
   });
 
   /* ── Restore session ── */
-  (function checkSession() {
-    const raw = localStorage.getItem('em_session');
-    if (!raw) return;
-    try {
-      const { email } = JSON.parse(raw);
-      const inv = INVESTORS[email];
-      if (inv) renderDashboard(inv, email);
-      else localStorage.removeItem('em_session');
-    } catch (_) {
-      localStorage.removeItem('em_session');
-    }
+  (async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+    const email = session.user.email.toLowerCase();
+    const inv = INVESTORS[email];
+    if (inv) renderDashboard(inv, email);
+    else await supabaseClient.auth.signOut();
   })();
 </script>
 

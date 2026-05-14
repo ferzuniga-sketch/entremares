@@ -549,7 +549,7 @@
 
             <div class="inv-section">
               <div class="inv-row">
-                <span class="inv-lbl">Ownership</span>
+                <span class="inv-lbl">EntreOceanos Stake</span>
                 <span class="inv-val" id="tab-ownership">—</span>
               </div>
               <div class="inv-row">
@@ -883,15 +883,24 @@
     const durationMonths = pd?.duration_months;
     const PLANNED_MONTHS = 24;
 
-    /* ── Distribution amounts using Allure multipliers ── */
-    if (invested != null) {
-      const grossDist = Number(invested) * ALLURE_GROSS_MULTIPLIER;
-      const netDist   = Number(invested) * ALLURE_NET_MULTIPLIER;
+    /* ── Distribution amounts: use stored distribution_amount if available ── */
+    if (invested != null || distrib != null) {
+      let grossDist, netDist;
+      if (distrib != null) {
+        netDist   = Number(distrib);
+        grossDist = netDist * (ALLURE_GROSS_MULTIPLIER / ALLURE_NET_MULTIPLIER);
+      } else {
+        grossDist = Number(invested) * ALLURE_GROSS_MULTIPLIER;
+        netDist   = Number(invested) * ALLURE_NET_MULTIPLIER;
+      }
       const wht       = grossDist - netDist;
-      const netProfit = netDist - Number(invested);
+      const base      = invested != null ? Number(invested) : netDist / ALLURE_NET_MULTIPLIER;
+      const netProfit = netDist - base;
 
-      set('mini-invested', fmt(invested));
-      set('tab-invested',  fmt(invested));
+      if (invested != null) {
+        set('mini-invested', fmt(invested));
+        set('tab-invested',  fmt(invested));
+      }
 
       set('tab-gross-distribution', fmt(grossDist));
       set('tab-wht', '-' + fmt(wht));
@@ -1179,20 +1188,17 @@
     document.getElementById('hdr-name').textContent     = inv.name;
   }
 
-  document.getElementById('btn-signout').addEventListener('click', function() {
-    localStorage.removeItem('em_session');
+  document.getElementById('btn-signout').addEventListener('click', async function() {
+    await supabaseClient.auth.signOut();
     window.location.href = 'dashboard.html';
   });
 
-  (function init() {
-    const raw = localStorage.getItem('em_session');
-    if (!raw) { window.location.href = 'dashboard.html'; return; }
-    let email;
-    try { email = JSON.parse(raw).email; } catch(_) {
-      localStorage.removeItem('em_session'); window.location.href = 'dashboard.html'; return;
-    }
+  (async function init() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { window.location.href = 'dashboard.html'; return; }
+    const email = session.user.email.toLowerCase();
     const inv = INVESTORS[email];
-    if (!inv) { localStorage.removeItem('em_session'); window.location.href = 'dashboard.html'; return; }
+    if (!inv) { await supabaseClient.auth.signOut(); window.location.href = 'dashboard.html'; return; }
     renderPage(inv);
     loadAllureData(email);
   })();

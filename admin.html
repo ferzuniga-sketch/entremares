@@ -469,6 +469,13 @@
       border: 1px solid #DDD6FE;
     }
 
+    .badge-investment   { color: #0D0D0D; background: #F0F0EE; border: 1px solid #E0E0DC; }
+    .badge-return       { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
+    .badge-distribution { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
+    .badge-update       { color: #9B5D00; background: #FFF7E6; border: 1px solid #FFE0A3; }
+    .badge-document     { color: #1A5FA8; background: #EEF4FD; border: 1px solid #BDD3F5; }
+    .badge-other        { color: #6B6B6B; background: #F5F5F3; border: 1px solid #E0E0DC; }
+
     /* ── Summary card (Commitments) ── */
     .summary-strip {
       background: #FFFFFF;
@@ -866,6 +873,7 @@
         <button class="tab-btn" data-tab="projects">Projects</button>
         <button class="tab-btn" data-tab="commitments">Commitments</button>
         <button class="tab-btn" data-tab="allure">Allure</button>
+        <button class="tab-btn" data-tab="activity">Activity</button>
       </div>
     </div>
 
@@ -1223,7 +1231,7 @@
                 <th>Investor Name</th>
                 <th>Email</th>
                 <th>Amount Invested</th>
-                <th>Ownership %</th>
+                <th>EntreOceanos Stake</th>
                 <th>Join Date</th>
                 <th>Exit Date</th>
                 <th>Distribution</th>
@@ -1314,6 +1322,36 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- ═══════════════════════════
+         TAB: ACTIVITY
+    ═══════════════════════════ -->
+    <div class="tab-content" id="tab-activity">
+      <div class="sec-top">
+        <div>
+          <div class="sec-heading">Activity</div>
+          <div class="sec-count" id="activity-count">Loading…</div>
+        </div>
+        <button class="btn-add" id="btn-add-activity">+ Add Activity</button>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Investor Email</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Project</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="activity-tbody"></tbody>
+        </table>
+      </div>
     </div>
 
   </main>
@@ -1643,6 +1681,72 @@
     <div class="modal-footer">
       <button class="btn-cancel" id="modal-capital-cancel">Cancel</button>
       <button class="btn-save" id="modal-capital-save">Save Row</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ══════════════════════════════════════════
+     MODAL — ACTIVITY
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-activity">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-activity-title">Add Activity</div>
+      <button class="modal-close" id="modal-activity-close">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field">
+        <label>Investor</label>
+        <select id="act-investor">
+          <option value="">Select investor…</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Activity Type</label>
+        <select id="act-type">
+          <option value="Investment">Investment</option>
+          <option value="Distribution">Distribution</option>
+          <option value="Return">Return</option>
+          <option value="Update">Update</option>
+          <option value="Document">Document</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="act-description" placeholder="e.g. Initial investment in Kabil project">
+      </div>
+
+      <div class="field">
+        <label>Amount ($) <span style="font-weight:400;color:#B0B0AA">(optional)</span></label>
+        <input type="number" id="act-amount" placeholder="0.00" step="0.01">
+      </div>
+
+      <div class="field">
+        <label>Project</label>
+        <select id="act-project">
+          <option value="">None</option>
+          <option value="Allure">Allure</option>
+          <option value="Kabil">Kabil</option>
+          <option value="Real del Monte">Real del Monte</option>
+          <option value="General">General</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="act-date">
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="modal-activity-cancel">Cancel</button>
+      <button class="btn-save" id="modal-activity-save">Add Activity</button>
     </div>
   </div>
 </div>
@@ -2156,6 +2260,7 @@
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
       if (btn.dataset.tab === 'commitments') loadCommitmentsFromSupabase();
       if (btn.dataset.tab === 'allure')      loadAllureDetails();
+      if (btn.dataset.tab === 'activity')    loadActivities();
     });
   });
 
@@ -2990,14 +3095,39 @@
 
   function renderPositionsTable(data) {
     positionsCache = {};
-    let totalInvested = 0;
-    data.forEach(r => { positionsCache[r.id] = r; totalInvested += r.amount_invested || 0; });
+    let totalInvested = 0, totalStake = 0, totalDistrib = 0;
+    data.forEach(r => {
+      positionsCache[r.id] = r;
+      totalInvested += r.amount_invested       || 0;
+      totalStake    += r.ownership_percentage  || 0;
+      totalDistrib  += r.distribution_amount   || 0;
+    });
+
+    /* ── Ownership warning banner ── */
+    let warnEl = document.getElementById('positions-ownership-warning');
+    if (!warnEl) {
+      warnEl = document.createElement('div');
+      warnEl.id = 'positions-ownership-warning';
+      warnEl.style.cssText = 'margin-bottom:16px;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;display:none;';
+      const wrap = document.querySelector('#subtab-positions .sec-top');
+      if (wrap) wrap.after(warnEl);
+    }
+    const stakePct = Math.round(totalStake * 10000) / 10000;
+    if (data.length > 0 && Math.abs(stakePct - 100) > 0.001) {
+      warnEl.style.display = 'block';
+      warnEl.style.background = '#FEF0EE';
+      warnEl.style.border = '1px solid #F5C6C1';
+      warnEl.style.color  = '#C0392B';
+      warnEl.textContent  = '⚠️ Total EntreOceanos Stake is ' + stakePct.toFixed(4).replace(/\.?0+$/, '') + '% — must equal 100%';
+    } else {
+      warnEl.style.display = 'none';
+    }
 
     const tbody = document.getElementById('positions-tbody');
-    tbody.innerHTML = data.map(r => {
-      const joinDate = r.join_date ? new Date(r.join_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
-      const exitDate = r.exit_date ? new Date(r.exit_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
-      const distrib  = r.distribution_amount != null ? fmt(r.distribution_amount) : '—';
+    const rows = data.map(r => {
+      const joinDate   = r.join_date ? new Date(r.join_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
+      const exitDate   = r.exit_date ? new Date(r.exit_date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
+      const distribFmt = r.distribution_amount != null ? fmt(r.distribution_amount) : '—';
       const pctDisplay = r.ownership_percentage != null ? r.ownership_percentage + '%' : '—';
       return `
         <tr data-id="${escHtml(String(r.id))}">
@@ -3007,14 +3137,28 @@
           <td class="td-mono">${pctDisplay}</td>
           <td style="color:#6B6B6B;font-size:13px">${joinDate}</td>
           <td style="color:#6B6B6B;font-size:13px">${exitDate}</td>
-          <td class="td-mono">${distrib}</td>
+          <td class="td-mono">${distribFmt}</td>
           <td class="td-actions">
             <button class="btn-edit">Edit</button>
             <button class="btn-delete">Delete</button>
           </td>
-        </tr>
-      `;
-    }).join('');
+        </tr>`;
+    });
+
+    /* ── Totals row ── */
+    const stakeOk  = Math.abs(stakePct - 100) <= 0.001;
+    const stakeClr = stakeOk ? '#1A7F4A' : '#C0392B';
+    rows.push(`
+      <tr style="background:#FAFAF8;border-top:2px solid #E8E8E4;">
+        <td colspan="2" style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#9B9B9B">Totals</td>
+        <td class="td-mono" style="font-weight:700">${fmt(totalInvested)}</td>
+        <td class="td-mono" style="font-weight:700;color:${stakeClr}">${stakePct.toFixed(4).replace(/\.?0+$/, '')}%</td>
+        <td colspan="2"></td>
+        <td class="td-mono" style="font-weight:700">${totalDistrib > 0 ? fmt(totalDistrib) : '—'}</td>
+        <td></td>
+      </tr>`);
+
+    tbody.innerHTML = rows.join('');
 
     document.getElementById('positions-count').textContent =
       data.length + ' investor' + (data.length !== 1 ? 's' : '') + ' · ' + fmt(totalInvested) + ' total';
@@ -3129,7 +3273,7 @@
             <div>${lbl('Name')}<input class="inline-edit-input" name="investor_name" style="width:100%" value="${escHtml(r.investor_name || '')}"></div>
             <div>${lbl('Email')}<input class="inline-edit-input" name="investor_email" style="width:100%" value="${escHtml(r.investor_email || '')}"></div>
             <div>${lbl('Amount Invested')}<input class="inline-edit-input" name="amount_invested" type="number" step="0.01" style="width:100%" value="${r.amount_invested || 0}"></div>
-            <div>${lbl('Ownership %')}<input class="inline-edit-input" name="ownership_percentage" type="number" step="0.0001" style="width:100%" value="${r.ownership_percentage != null ? r.ownership_percentage : ''}"></div>
+            <div>${lbl('EntreOceanos Stake %')}<input class="inline-edit-input" name="ownership_percentage" type="number" step="0.0001" style="width:100%" value="${r.ownership_percentage != null ? r.ownership_percentage : ''}"></div>
             <div>${lbl('Join Date')}<input class="inline-edit-input" name="join_date" type="date" style="width:100%" value="${r.join_date || ''}"></div>
             <div>${lbl('Exit Date')}<input class="inline-edit-input" name="exit_date" type="date" style="width:100%" value="${r.exit_date || ''}"></div>
             <div>${lbl('Distribution')}<input class="inline-edit-input" name="distribution_amount" type="number" step="0.01" style="width:100%" value="${r.distribution_amount != null ? r.distribution_amount : ''}"></div>
@@ -3432,6 +3576,216 @@
   document.getElementById('modal-capital-cancel').addEventListener('click', closeCapitalModal);
   document.getElementById('modal-capital-save').addEventListener('click', saveCapitalRow);
   document.getElementById('modal-capital-row').addEventListener('click', function(e) { if (e.target === this) closeCapitalModal(); });
+
+  /* ══════════════════════════
+     8. ACTIVITY
+  ══════════════════════════ */
+
+  let activitiesCache   = {};
+  let editingActivityId = null;
+
+  const KABIL_SEED_DATA = [
+    { email: 'fredbusher@gmail.com',          kabilAmount: 19845.75, kabilDist: 26140.74 },
+    { email: 'gilito.iii@gmail.com',          kabilAmount: 25000,    kabilDist: 32929.89 },
+    { email: 'alvaroilanes@gmail.com',        kabilAmount: 25000,    kabilDist: 32929.89 },
+    { email: 'cuellarolmos@gmail.com',        kabilAmount: 20000,    kabilDist: 26343.92 },
+    { email: 'sergio.gmd@gmail.com',          kabilAmount: 50000,    kabilDist: 65859.79 },
+    { email: 'nacho.lucas@gmail.com',         kabilAmount: 35000,    kabilDist: 46101.85 },
+    { email: 'ferzuniga@gmail.com',           kabilAmount: 39370,    kabilDist: 190388.15 },
+    { email: 'madelcarmen.galindo@zuksa.net', kabilAmount: 13130,    kabilDist: 19794.78 }
+  ];
+
+  async function seedActivitiesIfEmpty() {
+    const { data: existing } = await supabaseClient.from('investor_activity').select('id').limit(1);
+    if (existing && existing.length > 0) return;
+
+    const { data: positions } = await supabaseClient
+      .from('investor_positions')
+      .select('investor_email, amount_invested')
+      .eq('project_name', 'Allure');
+
+    const allureAmounts = {};
+    if (positions) {
+      positions.forEach(p => { allureAmounts[p.investor_email.toLowerCase()] = p.amount_invested; });
+    }
+
+    const activities = [];
+    for (const inv of KABIL_SEED_DATA) {
+      const allureAmt = allureAmounts[inv.email] ?? null;
+      activities.push({ investor_email: inv.email, activity_type: 'Investment',
+        description: 'Initial investment in Kabil project',
+        amount: inv.kabilAmount, project_name: 'Kabil', activity_date: '2020-06-01' });
+      activities.push({ investor_email: inv.email, activity_type: 'Return',
+        description: 'Capital and returns from Kabil project',
+        amount: inv.kabilDist, project_name: 'Kabil', activity_date: '2022-12-01' });
+      activities.push({ investor_email: inv.email, activity_type: 'Investment',
+        description: 'Reinvestment into Allure project',
+        amount: allureAmt, project_name: 'Allure', activity_date: '2023-04-01' });
+    }
+
+    const { error } = await supabaseClient.from('investor_activity').insert(activities);
+    if (error) showToast('Failed to seed activities: ' + error.message, true);
+    else showToast('Initial activity records created.');
+  }
+
+  async function loadActivities() {
+    const tbody = document.getElementById('activity-tbody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+
+    await seedActivitiesIfEmpty();
+
+    const { data, error } = await supabaseClient
+      .from('investor_activity')
+      .select('*')
+      .order('activity_date', { ascending: false });
+
+    if (error) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#C0392B;padding:40px 20px">' + escHtml(error.message) + '</td></tr>';
+      return;
+    }
+    renderActivitiesTable(data || []);
+  }
+
+  function activityTypeBadge(type) {
+    const map = {
+      Investment: 'badge-investment', Return: 'badge-return',
+      Distribution: 'badge-distribution', Update: 'badge-update',
+      Document: 'badge-document', Other: 'badge-other'
+    };
+    return `<span class="badge ${map[type] || 'badge-other'}">${escHtml(type || '')}</span>`;
+  }
+
+  function renderActivitiesTable(data) {
+    activitiesCache = {};
+    data.forEach(a => { activitiesCache[a.id] = a; });
+
+    const count = document.getElementById('activity-count');
+    count.textContent = data.length + ' record' + (data.length !== 1 ? 's' : '');
+
+    const ACT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function fmtActDate(iso) {
+      if (!iso) return '—';
+      const [y, m, d] = iso.split('-');
+      return ACT_MONTHS[parseInt(m,10)-1] + ' ' + parseInt(d,10) + ', ' + y;
+    }
+
+    const tbody = document.getElementById('activity-tbody');
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No activity records yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(a => `
+      <tr data-id="${escHtml(String(a.id))}">
+        <td class="td-email">${escHtml(a.investor_email || '')}</td>
+        <td>${activityTypeBadge(a.activity_type)}</td>
+        <td>${escHtml(a.description || '')}</td>
+        <td class="td-mono">${a.amount != null ? fmt(a.amount) : '—'}</td>
+        <td style="color:#6B6B6B">${escHtml(a.project_name || '—')}</td>
+        <td style="color:#9B9B9B;font-size:13px">${fmtActDate(a.activity_date)}</td>
+        <td class="td-actions">
+          <button class="btn-edit" data-action="edit-activity">Edit</button>
+          <button class="btn-delete" data-action="delete-activity">Delete</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function buildInvestorOptions(selectedEmail) {
+    return '<option value="">Select investor…</option>'
+      + INVESTORS_DATA.map(inv =>
+          `<option value="${escHtml(inv.email)}"${inv.email === selectedEmail ? ' selected' : ''}>${escHtml(inv.name)} — ${escHtml(inv.email)}</option>`
+        ).join('');
+  }
+
+  function openAddActivity() {
+    editingActivityId = null;
+    document.getElementById('modal-activity-title').textContent = 'Add Activity';
+    document.getElementById('modal-activity-save').textContent  = 'Add Activity';
+    document.getElementById('act-investor').innerHTML = buildInvestorOptions('');
+    document.getElementById('act-type').value = 'Investment';
+    document.getElementById('act-description').value = '';
+    document.getElementById('act-amount').value = '';
+    document.getElementById('act-project').value = '';
+    document.getElementById('act-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('modal-activity').classList.add('open');
+  }
+
+  function openEditActivity(id) {
+    const a = activitiesCache[id];
+    if (!a) return;
+    editingActivityId = id;
+    document.getElementById('modal-activity-title').textContent = 'Edit Activity';
+    document.getElementById('modal-activity-save').textContent  = 'Save Activity';
+    document.getElementById('act-investor').innerHTML = buildInvestorOptions(a.investor_email || '');
+    document.getElementById('act-type').value        = a.activity_type  || 'Other';
+    document.getElementById('act-description').value = a.description    || '';
+    document.getElementById('act-amount').value      = a.amount != null  ? a.amount : '';
+    document.getElementById('act-project').value     = a.project_name   || '';
+    document.getElementById('act-date').value        = a.activity_date  || '';
+    document.getElementById('modal-activity').classList.add('open');
+  }
+
+  function closeActivityModal() {
+    document.getElementById('modal-activity').classList.remove('open');
+  }
+
+  async function saveActivity() {
+    const email  = document.getElementById('act-investor').value;
+    const type   = document.getElementById('act-type').value;
+    const desc   = document.getElementById('act-description').value.trim();
+    const amtRaw = document.getElementById('act-amount').value;
+    const amount = amtRaw !== '' ? parseFloat(amtRaw) : null;
+    const project= document.getElementById('act-project').value || null;
+    const date   = document.getElementById('act-date').value;
+
+    if (!email) { alert('Please select an investor.'); return; }
+    if (!desc)  { alert('Description is required.');  return; }
+    if (!date)  { alert('Date is required.');          return; }
+
+    const btn = document.getElementById('modal-activity-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const payload = { investor_email: email, activity_type: type, description: desc,
+      amount, project_name: project, activity_date: date };
+
+    let error;
+    if (editingActivityId !== null) {
+      ({ error } = await supabaseClient.from('investor_activity').update(payload).eq('id', editingActivityId));
+    } else {
+      ({ error } = await supabaseClient.from('investor_activity').insert(payload));
+    }
+
+    btn.disabled = false;
+    btn.textContent = editingActivityId !== null ? 'Save Activity' : 'Add Activity';
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
+    closeActivityModal();
+    showToast('Activity saved.');
+    loadActivities();
+  }
+
+  document.getElementById('btn-add-activity').addEventListener('click', openAddActivity);
+  document.getElementById('modal-activity-close').addEventListener('click', closeActivityModal);
+  document.getElementById('modal-activity-cancel').addEventListener('click', closeActivityModal);
+  document.getElementById('modal-activity-save').addEventListener('click', saveActivity);
+  document.getElementById('modal-activity').addEventListener('click', function(e) { if (e.target === this) closeActivityModal(); });
+
+  document.getElementById('activity-tbody').addEventListener('click', async function(e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const row = btn.closest('tr[data-id]');
+    if (!row) return;
+    const id = row.dataset.id;
+
+    if (btn.dataset.action === 'edit-activity') {
+      openEditActivity(id);
+    } else if (btn.dataset.action === 'delete-activity') {
+      if (!confirm('Delete this activity record?')) return;
+      const { error } = await supabaseClient.from('investor_activity').delete().eq('id', id);
+      if (error) { showToast('Delete failed: ' + error.message, true); return; }
+      showToast('Activity deleted.');
+      loadActivities();
+    }
+  });
 
   document.getElementById('capital-tbody').addEventListener('click', async function(e) {
     const btn = e.target.closest('button[data-action]');
