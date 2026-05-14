@@ -15,6 +15,33 @@
         /* Page-specific overrides */
         .hero { min-height: 100vh; }
         .hero-content { padding-top: 0; }
+
+        /* Sign In button in nav */
+        .nav-signin {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 18px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            letter-spacing: 0.025em;
+            color: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 3px;
+            transition: all var(--ease);
+            white-space: nowrap;
+        }
+        .nav.scrolled .nav-signin {
+            color: var(--gray-600);
+            border-color: var(--gray-200);
+        }
+        .nav-signin:hover {
+            color: var(--white);
+            border-color: rgba(255, 255, 255, 0.55);
+        }
+        .nav.scrolled .nav-signin:hover {
+            color: var(--black);
+            border-color: var(--black);
+        }
     </style>
 </head>
 <body>
@@ -31,6 +58,7 @@
                 <a href="projects.html" class="nav-link" role="menuitem">Projects</a>
                 <a href="#how-it-works" class="nav-link" role="menuitem">How it works</a>
                 <a href="#team" class="nav-link" role="menuitem">Team</a>
+                <a href="dashboard.html" class="nav-signin" role="menuitem">Sign In</a>
                 <a href="apply.html" class="nav-cta" role="menuitem">Apply Now</a>
             </div>
 
@@ -47,6 +75,7 @@
         <a href="projects.html" class="mobile-link">Projects</a>
         <a href="#how-it-works" class="mobile-link">How it works</a>
         <a href="#team" class="mobile-link">Team</a>
+        <a href="dashboard.html" class="mobile-link">Sign In</a>
         <a href="apply.html" class="mobile-cta">Apply Now →</a>
     </div>
 
@@ -78,7 +107,7 @@
 
                 <div class="hero-actions fade-up" style="transition-delay: 0.24s">
                     <a href="apply.html" class="btn btn-white">Request Access</a>
-                    <a href="projects.html" class="btn btn-ghost-white">View Projects</a>
+                    <a href="dashboard.html" class="btn btn-ghost-white">View Projects</a>
                 </div>
 
                 <div class="hero-social-proof fade-up" style="transition-delay: 0.34s">

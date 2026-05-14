@@ -3,18 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apply — Entremares</title>
-    <meta name="description" content="Apply to join the Entremares private investment club. Limited spots for accredited investors interested in premium real estate development in Mexico and Latin America.">
+    <title>Apply to Invest — Entremares</title>
+    <meta name="description" content="Apply to join Entremares — a private network of accredited investors accessing exclusive real estate opportunities in Mexico and Latin America.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/styles.css">
+
+    <style>
+        /* Force nav into scrolled (light) state — no dark hero on this page */
+        .nav {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 1px 0 var(--gray-200);
+        }
+        .nav-logo { color: var(--black); }
+        .logo-mark { background: var(--black) !important; color: var(--white) !important; }
+        .nav-link { color: var(--gray-600) !important; }
+        .nav-link:hover { color: var(--black) !important; }
+        .nav-cta { background: var(--black) !important; color: var(--white) !important; }
+        .nav-toggle span { background: var(--black) !important; }
+
+        /* Sign In button in nav */
+        .nav-signin {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 18px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            letter-spacing: 0.025em;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
+            border-radius: 3px;
+            transition: all var(--ease);
+            white-space: nowrap;
+        }
+        .nav-signin:hover {
+            color: var(--black);
+            border-color: var(--black);
+        }
+
+        /* Page note below hero subtitle */
+        .page-note {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.42);
+            font-style: italic;
+            font-family: var(--font-serif);
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-note::before {
+            content: '';
+            display: block;
+            width: 18px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.22);
+            flex-shrink: 0;
+        }
+
+        /* Centered form wrapper */
+        .apply-form-wrap {
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        /* Side-by-side row (first / last name) */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 480px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        /* Feedback message */
+        .form-feedback {
+            display: none;
+            padding: 13px 16px;
+            border-radius: 3px;
+            font-size: 0.875rem;
+            line-height: 1.55;
+            margin-bottom: 16px;
+        }
+        .form-feedback:not(:empty) { display: block; }
+        .form-feedback.success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .form-feedback.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Simple footer */
+        .footer-simple {
+            background: var(--white);
+            border-top: 1px solid var(--gray-200);
+            padding: 32px 0;
+            text-align: center;
+        }
+        .footer-simple p {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+    </style>
 </head>
 <body>
 
     <!-- ===== Navigation ===== -->
-    <nav class="nav scrolled" id="nav" role="navigation" aria-label="Main navigation">
+    <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
         <div class="nav-container">
             <a href="index.html" class="nav-logo" aria-label="Entremares home">
                 <div class="logo-mark" aria-hidden="true">E</div>
@@ -25,7 +129,8 @@
                 <a href="projects.html" class="nav-link" role="menuitem">Projects</a>
                 <a href="index.html#how-it-works" class="nav-link" role="menuitem">How it works</a>
                 <a href="index.html#team" class="nav-link" role="menuitem">Team</a>
-                <a href="apply.html" class="nav-cta" style="background: var(--black); color: var(--white);" role="menuitem" aria-current="page">Apply Now</a>
+                <a href="dashboard.html" class="nav-signin" role="menuitem">Sign In</a>
+                <a href="apply.html" class="nav-cta" role="menuitem" aria-current="page">Apply Now</a>
             </div>
 
             <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
@@ -37,268 +142,147 @@
     </nav>
 
     <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu" role="menu">
+    <div class="mobile-menu" id="mobileMenu" role="menu" aria-hidden="true">
         <a href="projects.html" class="mobile-link">Projects</a>
         <a href="index.html#how-it-works" class="mobile-link">How it works</a>
         <a href="index.html#team" class="mobile-link">Team</a>
-        <a href="apply.html" class="mobile-cta" aria-current="page">Apply Now →</a>
+        <a href="dashboard.html" class="mobile-link">Sign In</a>
+        <a href="apply.html" class="mobile-cta">Apply Now →</a>
     </div>
 
-    <!-- ===== Page Hero ===== -->
+    <!-- ===== Hero ===== -->
     <header class="page-hero" role="banner">
-        <div class="container page-hero-content">
-            <div class="eyebrow eyebrow-light fade-up">Applications Open</div>
-            <h1 class="page-title fade-up" style="transition-delay: 0.08s">
-                Join the<br><em>inner circle.</em>
-            </h1>
-            <p class="page-lead fade-up" style="transition-delay: 0.16s">
-                We review every application personally. If there's a fit, we'll reach out within 48 hours with next steps.
-            </p>
+        <div class="page-hero-content">
+            <div class="container">
+                <div class="eyebrow eyebrow-light fade-up">Private Access</div>
+                <h1 class="page-title fade-up" style="transition-delay: 0.08s">
+                    Apply to Invest
+                </h1>
+                <p class="page-lead fade-up" style="transition-delay: 0.16s">
+                    Join our private network of accredited investors and access exclusive real estate opportunities in Mexico and Latin America.
+                </p>
+                <p class="page-note fade-up" style="transition-delay: 0.22s">
+                    We review all applications personally. You'll hear from us within 2–3 business days.
+                </p>
+            </div>
         </div>
     </header>
 
-    <!-- ===== Apply Body ===== -->
-    <main class="apply-body" id="main">
+    <!-- ===== Application Form ===== -->
+    <main class="apply-body" id="main" aria-label="Application form">
         <div class="container">
-            <div class="apply-layout">
+            <div class="apply-form-wrap">
 
-                <!-- Info column -->
-                <div class="apply-info-col fade-up">
+                <div class="form-card fade-up">
+                    <h2 class="form-card-title">Your Application</h2>
+                    <p class="form-card-sub">All fields marked * are required.</p>
 
-                    <h2 class="apply-info-title">Who we're looking for</h2>
-                    <p class="apply-info-p">
-                        Entremares is a private club — not a fund, not a platform. We work with a small number of trusted investors who value direct project participation, transparent communication, and long-term relationships over transactional deals.
-                    </p>
+                    <form id="applyForm" novalidate>
 
-                    <h2 class="apply-info-title">What to expect</h2>
-                    <p class="apply-info-p">
-                        Once approved, you'll receive a full project brief: location, architectural plans, budget breakdown, timeline, and projected returns. You decide whether to participate and at what level. There's no pressure to commit to any specific deal.
-                    </p>
-
-                    <div class="trust-list" aria-label="Trust indicators">
-                        <div class="trust-item">
-                            <div class="trust-icon" aria-hidden="true">
-                                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1.5 5.5L3.5 7.5L8.5 2.5"/>
-                                </svg>
-                            </div>
-                            <span>Personal review by founding partners — no automated screening</span>
-                        </div>
-                        <div class="trust-item">
-                            <div class="trust-icon" aria-hidden="true">
-                                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1.5 5.5L3.5 7.5L8.5 2.5"/>
-                                </svg>
-                            </div>
-                            <span>Full transparency on every project: costs, returns, timeline</span>
-                        </div>
-                        <div class="trust-item">
-                            <div class="trust-icon" aria-hidden="true">
-                                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1.5 5.5L3.5 7.5L8.5 2.5"/>
-                                </svg>
-                            </div>
-                            <span>Digital shareholders loan agreement — clear, legally sound</span>
-                        </div>
-                        <div class="trust-item">
-                            <div class="trust-icon" aria-hidden="true">
-                                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1.5 5.5L3.5 7.5L8.5 2.5"/>
-                                </svg>
-                            </div>
-                            <span>Investor updates every 1–2 months throughout construction</span>
-                        </div>
-                        <div class="trust-item">
-                            <div class="trust-icon" aria-hidden="true">
-                                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1.5 5.5L3.5 7.5L8.5 2.5"/>
-                                </svg>
-                            </div>
-                            <span>You are never obligated to invest in any particular project</span>
-                        </div>
-                        <div class="trust-item">
-                            <div class="trust-icon" aria-hidden="true">
-                                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1.5 5.5L3.5 7.5L8.5 2.5"/>
-                                </svg>
-                            </div>
-                            <span>Your information is never shared with third parties</span>
-                        </div>
-                    </div>
-
-                    <!-- Stats row -->
-                    <div class="apply-stats-row" aria-label="Track record at a glance">
-                        <div class="apply-stat">
-                            <div class="apply-stat-val">$1.1M+</div>
-                            <div class="apply-stat-lbl">Deployed</div>
-                        </div>
-                        <div class="apply-stat">
-                            <div class="apply-stat-val">20%</div>
-                            <div class="apply-stat-lbl">Avg. Return</div>
-                        </div>
-                        <div class="apply-stat">
-                            <div class="apply-stat-val">8</div>
-                            <div class="apply-stat-lbl">Investors</div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Form card -->
-                <div class="fade-up" style="transition-delay: 0.1s">
-                    <div class="form-card">
-                        <h2 class="form-card-title">Request Access</h2>
-                        <p class="form-card-sub">We'll review your profile and respond within 48 hours.</p>
-
-                        <form id="applyForm" novalidate>
-
+                        <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label" for="fullName">Full Name</label>
+                                <label class="form-label" for="firstName">First Name *</label>
                                 <input
                                     type="text"
-                                    id="fullName"
-                                    name="fullName"
+                                    id="firstName"
+                                    name="first_name"
                                     class="form-input"
-                                    placeholder="Your full name"
+                                    placeholder="Fernando"
                                     required
-                                    autocomplete="name"
+                                    autocomplete="given-name"
                                 >
                             </div>
-
                             <div class="form-group">
-                                <label class="form-label" for="email">Email Address</label>
+                                <label class="form-label" for="lastName">Last Name *</label>
                                 <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
+                                    type="text"
+                                    id="lastName"
+                                    name="last_name"
                                     class="form-input"
-                                    placeholder="you@example.com"
+                                    placeholder="Zuniga"
                                     required
-                                    autocomplete="email"
+                                    autocomplete="family-name"
                                 >
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="country">Country of Residence</label>
-                                <select id="country" name="country" class="form-select" required>
-                                    <option value="" disabled selected>Select your country</option>
-                                    <optgroup label="Most common">
-                                        <option value="MX">Mexico</option>
-                                        <option value="US">United States</option>
-                                        <option value="PA">Panama</option>
-                                        <option value="CO">Colombia</option>
-                                        <option value="AR">Argentina</option>
-                                        <option value="CA">Canada</option>
-                                    </optgroup>
-                                    <optgroup label="Other regions">
-                                        <option value="BR">Brazil</option>
-                                        <option value="CL">Chile</option>
-                                        <option value="PE">Peru</option>
-                                        <option value="GT">Guatemala</option>
-                                        <option value="CR">Costa Rica</option>
-                                        <option value="ES">Spain</option>
-                                        <option value="GB">United Kingdom</option>
-                                        <option value="OTHER">Other</option>
-                                    </optgroup>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label" for="email">Email Address *</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="form-input"
+                                placeholder="you@example.com"
+                                required
+                                autocomplete="email"
+                            >
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="investAmount">Approximate Investment Interest</label>
-                                <select id="investAmount" name="investAmount" class="form-select" required>
-                                    <option value="" disabled selected>Select a range</option>
-                                    <option value="10k-50k">$10,000 – $50,000 USD</option>
-                                    <option value="50k-150k">$50,000 – $150,000 USD</option>
-                                    <option value="150k-500k">$150,000 – $500,000 USD</option>
-                                    <option value="500k+">$500,000+ USD</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label" for="country">Country of Residence *</label>
+                            <input
+                                type="text"
+                                id="country"
+                                name="country"
+                                class="form-input"
+                                placeholder="United States"
+                                required
+                                autocomplete="country-name"
+                            >
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="source">How Did You Hear About Us?</label>
-                                <select id="source" name="source" class="form-select" required>
-                                    <option value="" disabled selected>Select an option</option>
-                                    <option value="referral">Referred by an investor</option>
-                                    <option value="linkedin">LinkedIn</option>
-                                    <option value="google">Google Search</option>
-                                    <option value="social">Social Media</option>
-                                    <option value="event">Event or Conference</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label" for="investmentAmount">Interested Investment Amount *</label>
+                            <select id="investmentAmount" name="investment_amount" class="form-select" required>
+                                <option value="" disabled selected>Select a range…</option>
+                                <option value="$25,000 - $50,000">$25,000 – $50,000</option>
+                                <option value="$50,000 - $100,000">$50,000 – $100,000</option>
+                                <option value="$100,000 - $250,000">$100,000 – $250,000</option>
+                                <option value="$250,000+">$250,000+</option>
+                            </select>
+                        </div>
 
-                            <div class="form-divider">Optional</div>
+                        <div class="form-group">
+                            <label class="form-label" for="message">Additional Questions / Message</label>
+                            <textarea
+                                id="message"
+                                name="message"
+                                class="form-textarea"
+                                placeholder="Tell us about your investment experience or any questions you have."
+                            ></textarea>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="message">Anything else you'd like us to know?</label>
-                                <textarea
-                                    id="message"
-                                    name="message"
-                                    class="form-textarea"
-                                    placeholder="Your background, investment experience, specific questions…"
-                                    rows="4"
-                                ></textarea>
-                            </div>
+                        <div id="formFeedback" class="form-feedback" role="alert" aria-live="polite"></div>
 
-                            <button type="submit" class="form-submit">Submit Application</button>
+                        <button type="submit" class="form-submit">Submit Application</button>
 
-                            <p class="form-note">
-                                By submitting, you confirm you are an accredited investor. Your information is kept private and never shared.
-                            </p>
+                        <p class="form-note">
+                            Your information is kept strictly private and never shared with third parties.
+                        </p>
 
-                        </form>
-                    </div>
+                    </form>
                 </div>
 
-            </div><!-- /.apply-layout -->
-        </div><!-- /.container -->
+            </div>
+        </div>
     </main>
 
     <!-- ===== Footer ===== -->
-    <footer class="footer" role="contentinfo">
+    <footer class="footer-simple" role="contentinfo">
         <div class="container">
-            <div class="footer-grid">
-
-                <div>
-                    <div class="footer-logo">
-                        <div class="logo-mark" style="background: var(--black); color: var(--white);" aria-hidden="true">E</div>
-                        Entremares
-                    </div>
-                    <p class="footer-tagline">
-                        A private real estate investment club connecting trusted investors with premium residential development in Mexico and Latin America.
-                    </p>
-                    <div class="footer-locations">
-                        <span>Panama City, Panama</span>
-                        <span>Tijuana, Baja California, Mexico</span>
-                    </div>
-                </div>
-
-                <div>
-                    <span class="footer-col-label">Navigate</span>
-                    <div class="footer-links">
-                        <a href="projects.html" class="footer-link">Projects</a>
-                        <a href="index.html#how-it-works" class="footer-link">How it works</a>
-                        <a href="index.html#team" class="footer-link">The Team</a>
-                        <a href="apply.html" class="footer-link">Apply</a>
-                    </div>
-                </div>
-
-                <div>
-                    <span class="footer-col-label">Contact</span>
-                    <div class="footer-links">
-                        <a href="mailto:info@entremares.com" class="footer-link">info@entremares.com</a>
-                        <span class="footer-link" style="cursor: default;">Est. 2020</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="footer-bottom">
-                <p class="footer-copy">© 2026 Entremares. All rights reserved. Private investment club. Not a public offering.</p>
-                <p class="footer-legal">For accredited investors only. Past returns are not indicative of future results. All investments carry risk. Project participation is by invitation following personal review.</p>
-            </div>
+            <p>© 2025 Entremares. Private Investment Club.</p>
         </div>
     </footer>
+
+    <!-- EmailJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        // TODO: Replace with real EmailJS service_id, template_id and public_key
+        (function () {
+            emailjs.init('YOUR_PUBLIC_KEY');
+        })();
+    </script>
 
     <script src="assets/js/main.js"></script>
 </body>
