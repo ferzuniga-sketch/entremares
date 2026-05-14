@@ -1106,6 +1106,20 @@
       .modal-presets { grid-template-columns: repeat(2, 1fr); }
       .modal-amount-input { font-size: 18px; }
     }
+
+    #admin-link {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #999;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      z-index: 10;
+    }
+
+    #admin-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -1843,6 +1857,8 @@
 
   async function signOut() {
     await supabaseClient.auth.signOut();
+    const adminLink = document.getElementById('admin-link');
+    if (adminLink) adminLink.remove();
     document.getElementById('dashboard').style.display    = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('inp-email').value    = '';
@@ -1890,6 +1906,17 @@
     set('inv-allure-invested', fmt(inv.allure.invested));
     set('inv-allure-pct',      '+' + allurePct + '%');
     set('inv-allure-profit',   '+' + fmt(inv.allure.profit));
+
+    /* Admin link — only for Fernando */
+    const existingAdmin = document.getElementById('admin-link');
+    if (existingAdmin) existingAdmin.remove();
+    if (email && email.toLowerCase() === 'ferzuniga@gmail.com') {
+      const adminLink = document.createElement('a');
+      adminLink.id   = 'admin-link';
+      adminLink.href = 'admin.html';
+      adminLink.textContent = 'Admin Panel';
+      document.body.appendChild(adminLink);
+    }
 
     /* Timeline — loaded async from investor_activity */
     document.getElementById('timeline').innerHTML = '<div style="padding:20px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</div>';
