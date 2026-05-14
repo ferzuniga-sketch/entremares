@@ -3892,6 +3892,36 @@
 
   let galleryData = [];
 
+  window.moveGalleryItem = async function(id, direction) {
+    console.log('Gallery reorder clicked', id, direction);
+    const idx = galleryData.findIndex(g => String(g.id) === String(id));
+    if (idx === -1) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= galleryData.length) return;
+    const a     = galleryData[idx];
+    const b     = galleryData[targetIdx];
+    const sortA = a.sort_order ?? idx;
+    const sortB = b.sort_order ?? targetIdx;
+    const [r1, r2] = await Promise.all([
+      supabaseClient.from('project_gallery').update({ sort_order: sortB }).eq('id', a.id),
+      supabaseClient.from('project_gallery').update({ sort_order: sortA }).eq('id', b.id)
+    ]);
+    if (r1.error || r2.error) { showToast('Reorder failed.', true); return; }
+    loadAllureGallery();
+  };
+
+  window.deleteGalleryItem = async function(id, path) {
+    if (!confirm('Delete this item?')) return;
+    if (path) {
+      const { error: storErr } = await supabaseClient.storage.from('project-assets').remove([path]);
+      if (storErr) console.warn('Storage delete error:', storErr.message);
+    }
+    const { error } = await supabaseClient.from('project_gallery').delete().eq('id', id);
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    showToast('Item deleted.');
+    loadAllureGallery();
+  };
+
   async function loadAllureGallery() {
     const grid  = document.getElementById('gallery-admin-grid');
     const count = document.getElementById('gallery-count');
@@ -3917,21 +3947,23 @@
       grid.innerHTML = '<div style="color:#9B9B9B;font-size:13px;padding:8px 0">No gallery items yet. Upload photos or videos above.</div>';
       return;
     }
+    const last = galleryData.length - 1;
     grid.innerHTML = galleryData.map((item, idx) => {
+      const sort    = item.sort_order ?? idx;
       const isVideo = item.file_type === 'video';
       const thumbHtml = isVideo
         ? `<video src="${escAdminHtml(item.url)}" style="width:100%;height:100%;object-fit:cover" muted preload="metadata"></video>
            <div class="play-overlay"><svg width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="none"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.5)"/><polygon points="10,8 18,12 10,16" fill="white"/></svg></div>`
         : `<img src="${escAdminHtml(item.url)}" alt="${escAdminHtml(item.caption || '')}" loading="lazy">`;
 
-      return `<div class="gallery-admin-item" data-id="${item.id}" data-idx="${idx}">
+      return `<div class="gallery-admin-item" data-id="${item.id}" data-sort="${sort}">
         <div class="gallery-admin-thumb">${thumbHtml}</div>
         <div class="gallery-admin-body">
           <textarea class="gallery-admin-caption" placeholder="Add a caption…" data-id="${item.id}">${escAdminHtml(item.caption || '')}</textarea>
           <div class="gallery-admin-actions">
-            <button class="gallery-admin-sort-btn" data-gallery-action="up" data-idx="${idx}" title="Move up" ${idx === 0 ? 'disabled' : ''}>↑</button>
-            <button class="gallery-admin-sort-btn" data-gallery-action="down" data-idx="${idx}" title="Move down" ${idx === galleryData.length - 1 ? 'disabled' : ''}>↓</button>
-            <button class="gallery-admin-del-btn" data-gallery-action="delete" data-idx="${idx}" data-id="${item.id}" data-path="${escAdminHtml(item.storage_path || '')}">Delete</button>
+            <button class="gallery-admin-sort-btn" onclick="moveGalleryItem('${item.id}', 'up')" title="Move up" ${idx === 0 ? 'disabled' : ''}>↑</button>
+            <button class="gallery-admin-sort-btn" onclick="moveGalleryItem('${item.id}', 'down')" title="Move down" ${idx === last ? 'disabled' : ''}>↓</button>
+            <button class="gallery-admin-del-btn" onclick="deleteGalleryItem('${item.id}', '${escAdminHtml(item.storage_path || '')}')">Delete</button>
           </div>
         </div>
       </div>`;
@@ -3948,44 +3980,6 @@
         const item = galleryData.find(g => String(g.id) === String(id));
         if (item) item.caption = caption;
       });
-    });
-
-    /* Sort / delete buttons */
-    grid.addEventListener('click', async function(e) {
-      const btn = e.target.closest('[data-gallery-action]');
-      if (!btn) return;
-      const action = btn.dataset.galleryAction;
-      const idx    = parseInt(btn.dataset.idx, 10);
-
-      if (action === 'up' || action === 'down') {
-        const targetIdx = action === 'up' ? idx - 1 : idx + 1;
-        if (targetIdx < 0 || targetIdx >= galleryData.length) return;
-        const a = galleryData[idx];
-        const b = galleryData[targetIdx];
-        const sortA = a.sort_order ?? idx;
-        const sortB = b.sort_order ?? targetIdx;
-        const [r1, r2] = await Promise.all([
-          supabaseClient.from('project_gallery').update({ sort_order: sortB }).eq('id', a.id),
-          supabaseClient.from('project_gallery').update({ sort_order: sortA }).eq('id', b.id)
-        ]);
-        if (r1.error || r2.error) { showToast('Reorder failed.', true); return; }
-        loadAllureGallery();
-        return;
-      }
-
-      if (action === 'delete') {
-        if (!confirm('Delete this item?')) return;
-        const id   = btn.dataset.id;
-        const path = btn.dataset.path;
-        if (path) {
-          const { error: storErr } = await supabaseClient.storage.from('project-assets').remove([path]);
-          if (storErr) console.warn('Storage delete error:', storErr.message);
-        }
-        const { error } = await supabaseClient.from('project_gallery').delete().eq('id', id);
-        if (error) { showToast('Delete failed: ' + error.message, true); return; }
-        showToast('Item deleted.');
-        loadAllureGallery();
-      }
     });
   }
 
