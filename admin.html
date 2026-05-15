@@ -3894,19 +3894,44 @@
 
   window.moveGalleryItem = async function(id, direction) {
     console.log('Gallery reorder clicked', id, direction);
-    const idx = galleryData.findIndex(g => String(g.id) === String(id));
-    if (idx === -1) return;
+
+    const { data: freshItems, error: fetchError } = await supabaseClient
+      .from('project_gallery')
+      .select('*')
+      .eq('project_name', ALLURE_PROJECT)
+      .order('sort_order', { ascending: true, nullsFirst: false });
+
+    if (fetchError) {
+      console.log('Fetch error:', fetchError);
+      showToast('Failed to load gallery items.', true);
+      return;
+    }
+
+    const idx = freshItems.findIndex(g => String(g.id) === String(id));
+    if (idx === -1) { console.log('Current item not found for id:', id); return; }
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-    if (targetIdx < 0 || targetIdx >= galleryData.length) return;
-    const a     = galleryData[idx];
-    const b     = galleryData[targetIdx];
-    const sortA = a.sort_order ?? idx;
-    const sortB = b.sort_order ?? targetIdx;
-    const [r1, r2] = await Promise.all([
-      supabaseClient.from('project_gallery').update({ sort_order: sortB }).eq('id', a.id),
-      supabaseClient.from('project_gallery').update({ sort_order: sortA }).eq('id', b.id)
+    if (targetIdx < 0 || targetIdx >= freshItems.length) { console.log('Target index out of bounds:', targetIdx); return; }
+
+    const currentItem = freshItems[idx];
+    console.log('Current item:', currentItem);
+
+    const swapItem = freshItems[targetIdx];
+    console.log('Swap item:', swapItem);
+
+    const sortA = currentItem.sort_order ?? idx;
+    const sortB = swapItem.sort_order ?? targetIdx;
+
+    const [result1, result2] = await Promise.all([
+      supabaseClient.from('project_gallery').update({ sort_order: sortB }).eq('id', currentItem.id),
+      supabaseClient.from('project_gallery').update({ sort_order: sortA }).eq('id', swapItem.id)
     ]);
-    if (r1.error || r2.error) { showToast('Reorder failed.', true); return; }
+    console.log('Update result:', result1, result2);
+
+    if (result1.error || result2.error) {
+      console.log('Update errors:', result1.error, result2.error);
+      showToast('Reorder failed.', true);
+      return;
+    }
     loadAllureGallery();
   };
 
