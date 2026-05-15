@@ -1616,7 +1616,6 @@
       rdmCommittedAmount = data.reduce((s, r) => s + Number(r.amount), 0);
       document.getElementById('active-investments-section').style.display = '';
       document.getElementById('rdm-committed-amount').textContent = fmt(rdmCommittedAmount);
-      set('wallet-balance', fmt(Math.max(0, currentInvestor.wallet - rdmCommittedAmount)));
     } catch (err) {
       console.error('Failed to load commitment status:', err);
       document.getElementById('active-investments-section').style.display = 'none';
@@ -1646,8 +1645,7 @@
       }
 
       currentInvestor.wallet = gross;
-      set('wallet-balance', fmt(gross));
-      set('stat-net-distribution', '+' + fmt(net));
+      setFade('stat-net-distribution', '+' + fmt(net));
     } catch (err) {
       console.error('Failed to load Allure balance:', err);
     }
@@ -1696,8 +1694,11 @@
   }
 
   async function loadDashboardData(email) {
-    await loadAllureBalance(email);
-    loadCommitmentStatus(email);
+    await Promise.all([
+      loadAllureBalance(email),
+      loadCommitmentStatus(email)
+    ]);
+    setFade('wallet-balance', fmt(Math.max(0, currentInvestor.wallet - rdmCommittedAmount)));
     loadProjectDetails();
   }
 
@@ -1768,6 +1769,18 @@
 
   function set(id, val) {
     document.getElementById(id).textContent = val;
+  }
+
+  function setFade(id, val) {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.style.opacity = '0';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.style.transition = 'opacity 0.4s ease';
+        el.style.opacity = '1';
+      });
+    });
   }
 
   function escHtml(str) {
@@ -1905,9 +1918,6 @@
 
     set('stat-kabil-investment', fmt(inv.kabil.invested));
     set('stat-total-returns',   '+' + fmt(totalReturns));
-
-    /* Wallet */
-    set('wallet-balance', fmt(inv.wallet));
 
     /* Kabil card */
     const kabilPct = Math.round(inv.kabil.profit / inv.kabil.invested * 100);
@@ -2074,7 +2084,8 @@
     // Persist commitment, refresh progress bar, and show active investment
     await saveCommitmentToSupabase();
     updateFundingProgress();
-    loadCommitmentStatus(currentInvestorEmail);
+    await loadCommitmentStatus(currentInvestorEmail);
+    setFade('wallet-balance', fmt(Math.max(0, currentInvestor.wallet - rdmCommittedAmount)));
   }
 
   /* ── Event listeners ── */
