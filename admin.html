@@ -1628,6 +1628,7 @@
               </select>
             </div>
           </div>
+          <div class="field" style="margin-top:10px"><label>Total Investment Amount</label><input type="text" id="lp-tr-kabil-investment-amount" placeholder="$227,345"></div>
           <div class="field" style="margin-top:14px">
             <label>Kabil Featured Photo</label>
             <div id="lp-tr-kabil-photo-preview-wrap" style="display:none;margin-bottom:12px">
@@ -1658,6 +1659,7 @@
               </select>
             </div>
           </div>
+          <div class="field" style="margin-top:10px"><label>Total Investment Amount</label><input type="text" id="lp-tr-allure-investment-amount" placeholder="$449,059"></div>
           <div class="field" style="margin-top:14px">
             <label>Allure Featured Photo</label>
             <div id="lp-tr-allure-photo-preview-wrap" style="display:none;margin-bottom:12px">
@@ -4532,6 +4534,8 @@
     document.getElementById('lp-tr-allure-timeline').value    = tr.allure_timeline    || '';
     document.getElementById('lp-tr-allure-dates').value       = tr.allure_dates       || '';
     if (tr.allure_status) document.getElementById('lp-tr-allure-status').value = tr.allure_status;
+    document.getElementById('lp-tr-kabil-investment-amount').value  = tr.kabil_investment_amount  || '';
+    document.getElementById('lp-tr-allure-investment-amount').value = tr.allure_investment_amount || '';
     ['kabil', 'allure'].forEach(p => {
       const url = tr[p + '_featured_photo'] || '';
       document.getElementById('lp-tr-' + p + '-photo-preview').src = url;
@@ -4622,12 +4626,14 @@
       ['track_record', 'kabil_return',      document.getElementById('lp-tr-kabil-return').value.trim()],
       ['track_record', 'kabil_timeline',    document.getElementById('lp-tr-kabil-timeline').value.trim()],
       ['track_record', 'kabil_dates',       document.getElementById('lp-tr-kabil-dates').value.trim()],
-      ['track_record', 'kabil_status',      document.getElementById('lp-tr-kabil-status').value],
+      ['track_record', 'kabil_status',             document.getElementById('lp-tr-kabil-status').value],
+      ['track_record', 'kabil_investment_amount',  document.getElementById('lp-tr-kabil-investment-amount').value.trim()],
       ['track_record', 'allure_description',document.getElementById('lp-tr-allure-description').value.trim()],
       ['track_record', 'allure_return',     document.getElementById('lp-tr-allure-return').value.trim()],
       ['track_record', 'allure_timeline',   document.getElementById('lp-tr-allure-timeline').value.trim()],
       ['track_record', 'allure_dates',      document.getElementById('lp-tr-allure-dates').value.trim()],
-      ['track_record', 'allure_status',     document.getElementById('lp-tr-allure-status').value],
+      ['track_record', 'allure_status',            document.getElementById('lp-tr-allure-status').value],
+      ['track_record', 'allure_investment_amount', document.getElementById('lp-tr-allure-investment-amount').value.trim()],
     ];
 
     let failed = false;

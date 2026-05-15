@@ -428,7 +428,7 @@
                         <p class="proj-card-desc" id="kabil-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
-                                <div class="proj-num-val">$500K</div>
+                                <div class="proj-num-val" id="kabil-investment">$227,345</div>
                                 <div class="proj-num-lbl">Investment</div>
                             </div>
                             <div class="proj-num">
@@ -467,7 +467,7 @@
                         <p class="proj-card-desc" id="allure-desc">Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
-                                <div class="proj-num-val">$600K</div>
+                                <div class="proj-num-val" id="allure-investment">$449,059</div>
                                 <div class="proj-num-lbl">Investment</div>
                             </div>
                             <div class="proj-num">
@@ -767,7 +767,9 @@
         if (tr.allure_return)     document.getElementById('allure-return').textContent  = tr.allure_return + '%';
         if (tr.allure_timeline)   document.getElementById('allure-timeline').textContent= tr.allure_timeline;
         if (tr.allure_dates)      document.getElementById('allure-dates').textContent   = tr.allure_dates;
-        if (tr.allure_status)     document.getElementById('allure-badge').textContent   = tr.allure_status;
+        if (tr.allure_status)            document.getElementById('allure-badge').textContent      = tr.allure_status;
+        if (tr.kabil_investment_amount)  document.getElementById('kabil-investment').textContent  = tr.kabil_investment_amount;
+        if (tr.allure_investment_amount) document.getElementById('allure-investment').textContent = tr.allure_investment_amount;
 
         /* ── Why Tijuana ── */
         const tj = lp.about_tijuana || {};
