@@ -1469,6 +1469,42 @@
             </details>
           </div>
           <div class="field" style="margin-top:14px">
+            <label>Tijuana Photo 1</label>
+            <div id="lp-tj-photo-1-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-tj-photo-1-preview" src="" alt="Tijuana Photo 1" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-tj-photo-1-file-input" accept="image/*" style="display:none">
+            <input type="hidden" id="lp-tj-photo-1-url" value="">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-tj-photo-1-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-tj-photo-1-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Tijuana Photo 2</label>
+            <div id="lp-tj-photo-2-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-tj-photo-2-preview" src="" alt="Tijuana Photo 2" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-tj-photo-2-file-input" accept="image/*" style="display:none">
+            <input type="hidden" id="lp-tj-photo-2-url" value="">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-tj-photo-2-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-tj-photo-2-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Tijuana Photo 3</label>
+            <div id="lp-tj-photo-3-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-tj-photo-3-preview" src="" alt="Tijuana Photo 3" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-tj-photo-3-file-input" accept="image/*" style="display:none">
+            <input type="hidden" id="lp-tj-photo-3-url" value="">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-tj-photo-3-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-tj-photo-3-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px">
             <label>Title</label>
             <textarea id="lp-hero-title" rows="3" placeholder="Where trusted capital meets premium real estate."></textarea>
           </div>
@@ -4412,6 +4448,12 @@
     }
     document.getElementById('lp-hero-title').value    = h.title    || '';
     document.getElementById('lp-hero-subtitle').value = h.subtitle || '';
+    for (let i = 1; i <= 3; i++) {
+      const url = h['tijuana_photo_' + i] || '';
+      document.getElementById('lp-tj-photo-' + i + '-url').value = url;
+      document.getElementById('lp-tj-photo-' + i + '-preview').src = url;
+      document.getElementById('lp-tj-photo-' + i + '-preview-wrap').style.display = url ? 'block' : 'none';
+    }
 
     /* Stats */
     const s = lp.stats || {};
@@ -4451,6 +4493,9 @@
       ['hero', 'title',                document.getElementById('lp-hero-title').value.trim()],
       ['hero', 'subtitle',             document.getElementById('lp-hero-subtitle').value.trim()],
       ['hero', 'background_photo_url', document.getElementById('lp-hero-photo-url').value.trim()],
+      ['hero', 'tijuana_photo_1',      document.getElementById('lp-tj-photo-1-url').value.trim()],
+      ['hero', 'tijuana_photo_2',      document.getElementById('lp-tj-photo-2-url').value.trim()],
+      ['hero', 'tijuana_photo_3',      document.getElementById('lp-tj-photo-3-url').value.trim()],
     ];
 
     let failed = false;
@@ -4579,6 +4624,52 @@
     status.style.color = '#2E7D32'; status.style.display = 'inline';
     e.target.value = '';
   });
+
+  /* ── Tijuana gallery photo uploads ── */
+  function setupTijuanaPhotoUpload(n) {
+    document.getElementById('lp-tj-photo-' + n + '-upload-btn').addEventListener('click', () => {
+      document.getElementById('lp-tj-photo-' + n + '-file-input').click();
+    });
+
+    document.getElementById('lp-tj-photo-' + n + '-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const btn    = document.getElementById('lp-tj-photo-' + n + '-upload-btn');
+      const status = document.getElementById('lp-tj-photo-' + n + '-upload-status');
+      btn.disabled = true; btn.textContent = 'Uploading…';
+      status.style.display = 'none';
+
+      const ext  = file.name.split('.').pop();
+      const path = 'landing/tijuana_' + n + '_' + Date.now() + '.' + ext;
+
+      const { error: upErr } = await supabaseClient.storage
+        .from('project-assets')
+        .upload(path, file, { cacheControl: '3600', upsert: true });
+
+      if (upErr) {
+        btn.disabled = false; btn.textContent = 'Upload Photo';
+        status.textContent = 'Upload failed: ' + upErr.message;
+        status.style.color = '#C0392B'; status.style.display = 'inline';
+        e.target.value = '';
+        return;
+      }
+
+      const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+      const publicUrl = urlData?.publicUrl;
+
+      if (publicUrl) {
+        document.getElementById('lp-tj-photo-' + n + '-url').value = publicUrl;
+        document.getElementById('lp-tj-photo-' + n + '-preview').src = publicUrl;
+        document.getElementById('lp-tj-photo-' + n + '-preview-wrap').style.display = 'block';
+      }
+
+      btn.disabled = false; btn.textContent = 'Upload Photo';
+      status.textContent = 'Upload successful!';
+      status.style.color = '#2E7D32'; status.style.display = 'inline';
+      e.target.value = '';
+    });
+  }
+  [1, 2, 3].forEach(setupTijuanaPhotoUpload);
 
   /* ── Landing Page sub-nav ── */
   document.querySelectorAll('#lp-subnav .subnav-btn').forEach(btn => {

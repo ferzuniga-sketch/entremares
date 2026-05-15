@@ -410,6 +410,7 @@
                 <article class="proj-card fade-up">
                     <div class="proj-card-img-wrap">
                         <img
+                            id="kabil-card-img"
                             src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80&auto=format&fit=crop"
                             alt="Kabil — 4 luxury apartments in Tijuana"
                             class="proj-card-img"
@@ -448,6 +449,7 @@
                 <article class="proj-card fade-up" style="transition-delay: 0.12s">
                     <div class="proj-card-img-wrap">
                         <img
+                            id="allure-card-img"
                             src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&auto=format&fit=crop"
                             alt="Allure — 2 premium townhouses in Tijuana"
                             class="proj-card-img"
@@ -692,15 +694,31 @@
     (async function() {
         const SUPABASE_URL   = 'https://ghkhvjgeqqxfisfjozzr.supabase.co';
         const SUPABASE_KEY   = 'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR';
-        const DEFAULT_HERO_BG = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80';
+        const DEFAULT_HERO_BG     = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80';
+        const KABIL_IMG_DEFAULT   = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80&auto=format&fit=crop';
+        const ALLURE_IMG_DEFAULT  = 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&auto=format&fit=crop';
+        const GALLERY_DEFAULTS    = [
+            'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80',
+            'https://images.unsplash.com/photo-1591867424488-7e3e1ef2ba65?w=900&q=80',
+            'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80',
+        ];
 
         const { createClient } = window.supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const { data, error } = await db
-            .from('landing_page')
-            .select('section, key, value');
+        const [lpResult, kabilGal, allureGal] = await Promise.all([
+            db.from('landing_page').select('section, key, value'),
+            db.from('project_gallery').select('url').eq('project_name', 'Kabil').eq('file_type', 'image').order('sort_order', { ascending: true, nullsFirst: false }).limit(1),
+            db.from('project_gallery').select('url').eq('project_name', 'Allure').eq('file_type', 'image').order('sort_order', { ascending: true, nullsFirst: false }).limit(1),
+        ]);
 
+        /* ── Track Record card images (from project_gallery) ── */
+        const kabilCardImg = document.getElementById('kabil-card-img');
+        if (kabilCardImg) kabilCardImg.src = kabilGal.data?.[0]?.url || KABIL_IMG_DEFAULT;
+        const allureCardImg = document.getElementById('allure-card-img');
+        if (allureCardImg) allureCardImg.src = allureGal.data?.[0]?.url || ALLURE_IMG_DEFAULT;
+
+        const { data, error } = lpResult;
         if (error || !data) return;
 
         /* Build nested lookup: lp[section][key] = value */
@@ -720,17 +738,10 @@
         if (h.title) document.getElementById('hero-title').innerHTML = h.title;
         if (h.subtitle) document.getElementById('hero-subtitle').textContent = h.subtitle;
 
-        /* ── Gallery ── */
-        const g1 = document.getElementById('gallery-img-1');
-        if (g1) g1.src = heroBg;
-
-        if (h.gallery_photo_2_url) {
-            const g2 = document.getElementById('gallery-img-2');
-            if (g2) g2.src = h.gallery_photo_2_url;
-        }
-        if (h.gallery_photo_3_url) {
-            const g3 = document.getElementById('gallery-img-3');
-            if (g3) g3.src = h.gallery_photo_3_url;
+        /* ── Gallery (Tijuana photos) ── */
+        for (let i = 1; i <= 3; i++) {
+            const img = document.getElementById('gallery-img-' + i);
+            if (img) img.src = (h['tijuana_photo_' + i] && h['tijuana_photo_' + i].trim()) || GALLERY_DEFAULTS[i - 1];
         }
 
         /* ── Stats ── */
