@@ -637,6 +637,21 @@
 
     .btn-save:hover { opacity: 0.82; }
 
+    .btn-upload-cover {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0D0D0D;
+      background: #F5F5F3;
+      border: 1.5px solid #E8E8E4;
+      border-radius: 8px;
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-upload-cover:hover { background: #EDEDEA; border-color: #C8C8C4; }
+    .btn-upload-cover:disabled { opacity: 0.55; cursor: default; }
+
     /* ── Divider ── */
     .divider {
       height: 1px;
@@ -1094,8 +1109,19 @@
             <textarea id="pd-description" rows="3" placeholder="Project description…"></textarea>
           </div>
           <div class="field" style="margin-top:14px">
-            <label>Cover Photo URL</label>
-            <input type="text" id="pd-cover-photo" placeholder="https://…">
+            <label>Cover Photo</label>
+            <div id="pd-cover-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="pd-cover-preview" src="" alt="Cover photo" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="pd-cover-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="pd-cover-upload-btn" class="btn-upload-cover">Upload Cover Photo</button>
+              <span id="pd-cover-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+            <details style="margin-top:12px">
+              <summary style="font-size:12px;color:#9B9B9B;cursor:pointer;user-select:none;list-style:none;-webkit-appearance:none">Or enter URL manually</summary>
+              <input type="text" id="pd-cover-photo" placeholder="https://…" style="margin-top:8px">
+            </details>
           </div>
           <div class="form-grid-2" style="margin-top:14px">
             <div class="field">
@@ -2575,7 +2601,12 @@
     document.getElementById('pd-target-return').value   = data.target_return || '';
     document.getElementById('pd-actual-return').value   = data.actual_return || '';
     document.getElementById('pd-description').value     = data.description       || '';
-    document.getElementById('pd-cover-photo').value     = data.cover_photo_url   || '';
+    const coverUrl = data.cover_photo_url || '';
+    document.getElementById('pd-cover-photo').value     = coverUrl;
+    const previewWrap = document.getElementById('pd-cover-preview-wrap');
+    const previewImg  = document.getElementById('pd-cover-preview');
+    if (coverUrl) { previewImg.src = coverUrl; previewWrap.style.display = 'block'; }
+    else { previewWrap.style.display = 'none'; }
     document.getElementById('pd-contractor-name').value = data.contractor_name   || '';
     document.getElementById('pd-contractor-url').value  = data.contractor_url    || '';
   }
@@ -2639,6 +2670,80 @@
   }
 
   document.getElementById('btn-save-details').addEventListener('click', saveAllureDetails);
+
+  document.getElementById('pd-cover-upload-btn').addEventListener('click', () => {
+    document.getElementById('pd-cover-file-input').click();
+  });
+
+  document.getElementById('pd-cover-file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    await uploadCoverPhoto(file);
+    e.target.value = '';
+  });
+
+  async function uploadCoverPhoto(file) {
+    const btn    = document.getElementById('pd-cover-upload-btn');
+    const status = document.getElementById('pd-cover-upload-status');
+    btn.disabled    = true;
+    btn.textContent = 'Uploading…';
+    status.style.display = 'none';
+
+    const ext  = file.name.split('.').pop();
+    const path = 'allure/cover/' + Date.now() + '.' + ext;
+
+    const { error: upErr } = await supabaseClient.storage
+      .from('project-assets')
+      .upload(path, file, { cacheControl: '3600', upsert: true });
+
+    if (upErr) {
+      btn.disabled    = false;
+      btn.textContent = 'Upload Cover Photo';
+      status.textContent   = 'Upload failed: ' + upErr.message;
+      status.style.color   = '#C0392B';
+      status.style.display = 'inline';
+      return;
+    }
+
+    const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+    const publicUrl = urlData?.publicUrl;
+
+    if (!publicUrl) {
+      btn.disabled    = false;
+      btn.textContent = 'Upload Cover Photo';
+      status.textContent   = 'Could not get public URL.';
+      status.style.color   = '#C0392B';
+      status.style.display = 'inline';
+      return;
+    }
+
+    // Persist URL to project_details immediately
+    const { data: existing } = await supabaseClient
+      .from('project_details')
+      .select('id')
+      .eq('project_name', ALLURE_PROJECT)
+      .maybeSingle();
+
+    if (existing) {
+      await supabaseClient
+        .from('project_details')
+        .update({ cover_photo_url: publicUrl })
+        .eq('id', existing.id);
+    }
+
+    // Update URL field and preview
+    document.getElementById('pd-cover-photo').value = publicUrl;
+    const previewWrap = document.getElementById('pd-cover-preview-wrap');
+    const previewImg  = document.getElementById('pd-cover-preview');
+    previewImg.src             = publicUrl;
+    previewWrap.style.display  = 'block';
+
+    btn.disabled         = false;
+    btn.textContent      = 'Upload Cover Photo';
+    status.textContent   = 'Upload successful!';
+    status.style.color   = '#2E7D32';
+    status.style.display = 'inline';
+  }
 
   ['pd-start-date', 'pd-end-date'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => {
