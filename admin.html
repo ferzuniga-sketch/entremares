@@ -905,6 +905,7 @@
         <button class="tab-btn" data-tab="commitments">Commitments</button>
         <button class="tab-btn" data-tab="allure">Allure</button>
         <button class="tab-btn" data-tab="activity">Activity</button>
+        <button class="tab-btn" data-tab="landingpage">Landing Page</button>
       </div>
     </div>
 
@@ -1426,6 +1427,172 @@
           <tbody id="activity-tbody"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ═══════════════════════════
+         TAB: LANDING PAGE
+    ═══════════════════════════ -->
+    <div class="tab-content" id="tab-landingpage">
+
+      <!-- Sub-navigation -->
+      <div class="subnav-wrap">
+        <div class="subnav" id="lp-subnav">
+          <button class="subnav-btn active" data-lpsubtab="hero">Hero</button>
+          <button class="subnav-btn" data-lpsubtab="stats">Stats</button>
+          <button class="subnav-btn" data-lpsubtab="tijuana">About Tijuana</button>
+          <button class="subnav-btn" data-lpsubtab="trackrecord">Track Record</button>
+        </div>
+      </div>
+
+      <!-- ── HERO ── -->
+      <div class="subtab-content active" id="lpsubtab-hero">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Hero Section</div>
+            <div class="sec-count">Landing page hero content</div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="field">
+            <label>Background Photo</label>
+            <div id="lp-hero-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-hero-preview" src="" alt="Hero background" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-hero-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-hero-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-hero-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+            <details style="margin-top:12px">
+              <summary style="font-size:12px;color:#9B9B9B;cursor:pointer;user-select:none;list-style:none;-webkit-appearance:none">Or enter URL manually</summary>
+              <input type="text" id="lp-hero-photo-url" placeholder="https://…" style="margin-top:8px">
+            </details>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Title</label>
+            <textarea id="lp-hero-title" rows="3" placeholder="Where trusted capital meets premium real estate."></textarea>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Subtitle</label>
+            <textarea id="lp-hero-subtitle" rows="3" placeholder="Entremares is a private club…"></textarea>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-hero">Save Hero</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STATS ── -->
+      <div class="subtab-content" id="lpsubtab-stats">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Stats Bar</div>
+            <div class="sec-count">The 3 key numbers shown on the landing page</div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Capital Deployed — Value</label>
+              <input type="text" id="lp-stat-capital-val" placeholder="$1.1M+">
+            </div>
+            <div class="field">
+              <label>Capital Deployed — Label</label>
+              <input type="text" id="lp-stat-capital-lbl" placeholder="Total Capital Deployed">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Average Return — Value</label>
+              <input type="text" id="lp-stat-return-val" placeholder="30.0%">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Average Return — Label</label>
+              <input type="text" id="lp-stat-return-lbl" placeholder="Average Investor Return">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Active Investors — Value</label>
+              <input type="text" id="lp-stat-investors-val" placeholder="10+">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Active Investors — Label</label>
+              <input type="text" id="lp-stat-investors-lbl" placeholder="Active Investors">
+            </div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-stats">Save Stats</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ABOUT TIJUANA ── -->
+      <div class="subtab-content" id="lpsubtab-tijuana">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">About Tijuana</div>
+            <div class="sec-count">"Why Tijuana?" section on the landing page</div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Title</label>
+              <input type="text" id="lp-tj-title" placeholder="Why Tijuana?">
+            </div>
+            <div class="field">
+              <label>Subtitle</label>
+              <input type="text" id="lp-tj-subtitle" placeholder="A unique cross-border investment opportunity">
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Body Text</label>
+            <textarea id="lp-tj-body" rows="5" placeholder="Tijuana sits on the world's busiest land border crossing…"></textarea>
+          </div>
+          <div style="margin-top:20px">
+            <div class="form-section-label" style="margin-bottom:14px">Stat Chips</div>
+            <div class="form-grid-2">
+              <div class="field"><label>Chip 1 — Value</label><input type="text" id="lp-tj-c1-val" placeholder="2M+"></div>
+              <div class="field"><label>Chip 1 — Label</label><input type="text" id="lp-tj-c1-lbl" placeholder="Population"></div>
+              <div class="field" style="margin-top:10px"><label>Chip 2 — Value</label><input type="text" id="lp-tj-c2-val" placeholder="$100B+"></div>
+              <div class="field" style="margin-top:10px"><label>Chip 2 — Label</label><input type="text" id="lp-tj-c2-lbl" placeholder="Cross-Border Trade"></div>
+              <div class="field" style="margin-top:10px"><label>Chip 3 — Value</label><input type="text" id="lp-tj-c3-val" placeholder="32 km"></div>
+              <div class="field" style="margin-top:10px"><label>Chip 3 — Label</label><input type="text" id="lp-tj-c3-lbl" placeholder="Distance to San Diego"></div>
+              <div class="field" style="margin-top:10px"><label>Chip 4 — Value</label><input type="text" id="lp-tj-c4-val" placeholder="15%+"></div>
+              <div class="field" style="margin-top:10px"><label>Chip 4 — Label</label><input type="text" id="lp-tj-c4-lbl" placeholder="Real Estate Growth YoY"></div>
+            </div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-tijuana">Save About Tijuana</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TRACK RECORD ── -->
+      <div class="subtab-content" id="lpsubtab-trackrecord">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Track Record</div>
+            <div class="sec-count">Past project stats shown on the landing page</div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-label">Kabil</div>
+          <div class="form-grid-2" style="margin-top:14px">
+            <div class="field"><label>Net Return</label><input type="text" id="lp-tr-kabil-return" placeholder="31.71%"></div>
+            <div class="field"><label>Duration</label><input type="text" id="lp-tr-kabil-timeline" placeholder="30 mo."></div>
+            <div class="field" style="margin-top:10px"><label>Dates</label><input type="text" id="lp-tr-kabil-dates" placeholder="Jun 2020 – Dec 2022"></div>
+          </div>
+          <div class="divider" style="margin:24px 0"></div>
+          <div class="form-section-label">Allure</div>
+          <div class="form-grid-2" style="margin-top:14px">
+            <div class="field"><label>Net Return</label><input type="text" id="lp-tr-allure-return" placeholder="30.88%"></div>
+            <div class="field"><label>Duration</label><input type="text" id="lp-tr-allure-timeline" placeholder="36 mo."></div>
+            <div class="field" style="margin-top:10px"><label>Dates</label><input type="text" id="lp-tr-allure-dates" placeholder="Apr 2023 – Apr 2026"></div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-trackrecord">Save Track Record</button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -2332,9 +2499,10 @@
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      if (btn.dataset.tab === 'commitments') loadCommitmentsFromSupabase();
-      if (btn.dataset.tab === 'allure')      loadAllureDetails();
-      if (btn.dataset.tab === 'activity')    loadActivities();
+      if (btn.dataset.tab === 'commitments')  loadCommitmentsFromSupabase();
+      if (btn.dataset.tab === 'allure')       loadAllureDetails();
+      if (btn.dataset.tab === 'activity')     loadActivities();
+      if (btn.dataset.tab === 'landingpage')  loadLandingPage();
     });
   });
 
@@ -4188,6 +4356,245 @@
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 1800);
     loadAllureGallery();
   }
+
+  /* ═══════════════════════════════════════════
+     LANDING PAGE
+  ═══════════════════════════════════════════ */
+
+  /* ── Upsert a single landing_page row ── */
+  async function upsertLandingPageRow(section, key, value) {
+    const { data: existing, error: selErr } = await supabaseClient
+      .from('landing_page')
+      .select('id')
+      .eq('section', section)
+      .eq('key', key)
+      .maybeSingle();
+
+    if (selErr) return selErr;
+
+    let error;
+    if (existing) {
+      ({ error } = await supabaseClient
+        .from('landing_page')
+        .update({ value })
+        .eq('id', existing.id));
+    } else {
+      ({ error } = await supabaseClient
+        .from('landing_page')
+        .insert({ section, key, value }));
+    }
+    return error || null;
+  }
+
+  /* ── Load all rows and populate fields ── */
+  async function loadLandingPage() {
+    const { data, error } = await supabaseClient
+      .from('landing_page')
+      .select('section, key, value');
+
+    if (error) { showToast('Failed to load landing page data: ' + error.message, true); return; }
+
+    const lp = {};
+    (data || []).forEach(row => {
+      if (!lp[row.section]) lp[row.section] = {};
+      lp[row.section][row.key] = row.value;
+    });
+
+    /* Hero */
+    const h = lp.hero || {};
+    const heroUrl = h.background_photo_url || '';
+    document.getElementById('lp-hero-photo-url').value = heroUrl;
+    if (heroUrl) {
+      document.getElementById('lp-hero-preview').src = heroUrl;
+      document.getElementById('lp-hero-preview-wrap').style.display = 'block';
+    } else {
+      document.getElementById('lp-hero-preview-wrap').style.display = 'none';
+    }
+    document.getElementById('lp-hero-title').value    = h.title    || '';
+    document.getElementById('lp-hero-subtitle').value = h.subtitle || '';
+
+    /* Stats */
+    const s = lp.stats || {};
+    document.getElementById('lp-stat-capital-val').value    = s.capital_deployed       || '';
+    document.getElementById('lp-stat-capital-lbl').value    = s.capital_deployed_label  || '';
+    document.getElementById('lp-stat-return-val').value     = s.average_return          || '';
+    document.getElementById('lp-stat-return-lbl').value     = s.average_return_label    || '';
+    document.getElementById('lp-stat-investors-val').value  = s.active_investors        || '';
+    document.getElementById('lp-stat-investors-lbl').value  = s.active_investors_label  || '';
+
+    /* About Tijuana */
+    const tj = lp.about_tijuana || {};
+    document.getElementById('lp-tj-title').value    = tj.title    || '';
+    document.getElementById('lp-tj-subtitle').value = tj.subtitle || '';
+    document.getElementById('lp-tj-body').value     = tj.body     || '';
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('lp-tj-c' + i + '-val').value = tj['chip_' + i + '_value'] || '';
+      document.getElementById('lp-tj-c' + i + '-lbl').value = tj['chip_' + i + '_label'] || '';
+    }
+
+    /* Track Record */
+    const tr = lp.track_record || {};
+    document.getElementById('lp-tr-kabil-return').value    = tr.kabil_return    || '';
+    document.getElementById('lp-tr-kabil-timeline').value  = tr.kabil_timeline  || '';
+    document.getElementById('lp-tr-kabil-dates').value     = tr.kabil_dates     || '';
+    document.getElementById('lp-tr-allure-return').value   = tr.allure_return   || '';
+    document.getElementById('lp-tr-allure-timeline').value = tr.allure_timeline || '';
+    document.getElementById('lp-tr-allure-dates').value    = tr.allure_dates    || '';
+  }
+
+  /* ── Save Hero ── */
+  async function saveLandingPageHero() {
+    const btn = document.getElementById('btn-save-lp-hero');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const rows = [
+      ['hero', 'title',                document.getElementById('lp-hero-title').value.trim()],
+      ['hero', 'subtitle',             document.getElementById('lp-hero-subtitle').value.trim()],
+      ['hero', 'background_photo_url', document.getElementById('lp-hero-photo-url').value.trim()],
+    ];
+
+    let failed = false;
+    for (const [section, key, value] of rows) {
+      const err = await upsertLandingPageRow(section, key, value);
+      if (err) { showToast('Save failed: ' + err.message, true); failed = true; break; }
+    }
+
+    btn.disabled = false; btn.textContent = 'Save Hero';
+    if (!failed) showToast('Hero section saved.');
+  }
+
+  /* ── Save Stats ── */
+  async function saveLandingPageStats() {
+    const btn = document.getElementById('btn-save-lp-stats');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const rows = [
+      ['stats', 'capital_deployed',       document.getElementById('lp-stat-capital-val').value.trim()],
+      ['stats', 'capital_deployed_label',  document.getElementById('lp-stat-capital-lbl').value.trim()],
+      ['stats', 'average_return',          document.getElementById('lp-stat-return-val').value.trim()],
+      ['stats', 'average_return_label',    document.getElementById('lp-stat-return-lbl').value.trim()],
+      ['stats', 'active_investors',        document.getElementById('lp-stat-investors-val').value.trim()],
+      ['stats', 'active_investors_label',  document.getElementById('lp-stat-investors-lbl').value.trim()],
+    ];
+
+    let failed = false;
+    for (const [section, key, value] of rows) {
+      const err = await upsertLandingPageRow(section, key, value);
+      if (err) { showToast('Save failed: ' + err.message, true); failed = true; break; }
+    }
+
+    btn.disabled = false; btn.textContent = 'Save Stats';
+    if (!failed) showToast('Stats saved.');
+  }
+
+  /* ── Save About Tijuana ── */
+  async function saveLandingPageTijuana() {
+    const btn = document.getElementById('btn-save-lp-tijuana');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const rows = [
+      ['about_tijuana', 'title',    document.getElementById('lp-tj-title').value.trim()],
+      ['about_tijuana', 'subtitle', document.getElementById('lp-tj-subtitle').value.trim()],
+      ['about_tijuana', 'body',     document.getElementById('lp-tj-body').value.trim()],
+    ];
+    for (let i = 1; i <= 4; i++) {
+      rows.push(['about_tijuana', 'chip_' + i + '_value', document.getElementById('lp-tj-c' + i + '-val').value.trim()]);
+      rows.push(['about_tijuana', 'chip_' + i + '_label', document.getElementById('lp-tj-c' + i + '-lbl').value.trim()]);
+    }
+
+    let failed = false;
+    for (const [section, key, value] of rows) {
+      const err = await upsertLandingPageRow(section, key, value);
+      if (err) { showToast('Save failed: ' + err.message, true); failed = true; break; }
+    }
+
+    btn.disabled = false; btn.textContent = 'Save About Tijuana';
+    if (!failed) showToast('About Tijuana saved.');
+  }
+
+  /* ── Save Track Record ── */
+  async function saveLandingPageTrackRecord() {
+    const btn = document.getElementById('btn-save-lp-trackrecord');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const rows = [
+      ['track_record', 'kabil_return',    document.getElementById('lp-tr-kabil-return').value.trim()],
+      ['track_record', 'kabil_timeline',  document.getElementById('lp-tr-kabil-timeline').value.trim()],
+      ['track_record', 'kabil_dates',     document.getElementById('lp-tr-kabil-dates').value.trim()],
+      ['track_record', 'allure_return',   document.getElementById('lp-tr-allure-return').value.trim()],
+      ['track_record', 'allure_timeline', document.getElementById('lp-tr-allure-timeline').value.trim()],
+      ['track_record', 'allure_dates',    document.getElementById('lp-tr-allure-dates').value.trim()],
+    ];
+
+    let failed = false;
+    for (const [section, key, value] of rows) {
+      const err = await upsertLandingPageRow(section, key, value);
+      if (err) { showToast('Save failed: ' + err.message, true); failed = true; break; }
+    }
+
+    btn.disabled = false; btn.textContent = 'Save Track Record';
+    if (!failed) showToast('Track Record saved.');
+  }
+
+  /* ── Hero photo upload ── */
+  document.getElementById('lp-hero-upload-btn').addEventListener('click', () => {
+    document.getElementById('lp-hero-file-input').click();
+  });
+
+  document.getElementById('lp-hero-file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const btn    = document.getElementById('lp-hero-upload-btn');
+    const status = document.getElementById('lp-hero-upload-status');
+    btn.disabled = true; btn.textContent = 'Uploading…';
+    status.style.display = 'none';
+
+    const ext  = file.name.split('.').pop();
+    const path = 'landing/hero_' + Date.now() + '.' + ext;
+
+    const { error: upErr } = await supabaseClient.storage
+      .from('project-assets')
+      .upload(path, file, { cacheControl: '3600', upsert: true });
+
+    if (upErr) {
+      btn.disabled = false; btn.textContent = 'Upload Photo';
+      status.textContent = 'Upload failed: ' + upErr.message;
+      status.style.color = '#C0392B'; status.style.display = 'inline';
+      e.target.value = '';
+      return;
+    }
+
+    const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+    const publicUrl = urlData?.publicUrl;
+
+    if (publicUrl) {
+      document.getElementById('lp-hero-photo-url').value = publicUrl;
+      document.getElementById('lp-hero-preview').src = publicUrl;
+      document.getElementById('lp-hero-preview-wrap').style.display = 'block';
+    }
+
+    btn.disabled = false; btn.textContent = 'Upload Photo';
+    status.textContent = 'Upload successful!';
+    status.style.color = '#2E7D32'; status.style.display = 'inline';
+    e.target.value = '';
+  });
+
+  /* ── Landing Page sub-nav ── */
+  document.querySelectorAll('#lp-subnav .subnav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lp-subnav .subnav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#tab-landingpage .subtab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('lpsubtab-' + btn.dataset.lpsubtab).classList.add('active');
+    });
+  });
+
+  /* ── Wire save buttons ── */
+  document.getElementById('btn-save-lp-hero').addEventListener('click', saveLandingPageHero);
+  document.getElementById('btn-save-lp-stats').addEventListener('click', saveLandingPageStats);
+  document.getElementById('btn-save-lp-tijuana').addEventListener('click', saveLandingPageTijuana);
+  document.getElementById('btn-save-lp-trackrecord').addEventListener('click', saveLandingPageTrackRecord);
 </script>
 
 </body>

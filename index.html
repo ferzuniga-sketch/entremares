@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* Page-specific overrides */
@@ -41,6 +42,163 @@
         .nav.scrolled .nav-signin:hover {
             color: var(--black);
             border-color: var(--black);
+        }
+
+        /* ── Photo Gallery ── */
+        .hero-gallery {
+            background: #0D0D0D;
+        }
+        .gallery-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+        }
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            cursor: pointer;
+        }
+        .gallery-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.45s ease;
+            display: block;
+        }
+        .gallery-item:hover .gallery-img { transform: scale(1.06); }
+        .gallery-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0);
+            transition: background 0.3s;
+        }
+        .gallery-item:hover::after { background: rgba(0,0,0,0.15); }
+
+        /* Lightbox */
+        .gallery-lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.93);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .gallery-lightbox-img {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+            cursor: default;
+        }
+        .gallery-lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 28px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 38px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+        .gallery-lightbox-close:hover { color: #fff; }
+
+        /* ── Why Tijuana ── */
+        .why-tijuana {
+            background: #F5F5F3;
+            padding: 100px 0;
+        }
+        .why-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 72px;
+            align-items: start;
+        }
+        .why-eyebrow {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #9B9B9B;
+            margin-bottom: 16px;
+        }
+        .why-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 500;
+            line-height: 1.15;
+            letter-spacing: -0.025em;
+            color: #0D0D0D;
+            margin-bottom: 10px;
+        }
+        .why-subtitle {
+            font-size: 1rem;
+            color: #6B6B6B;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .why-body {
+            font-size: 0.9375rem;
+            line-height: 1.75;
+            color: #4B4B4B;
+            margin-bottom: 36px;
+        }
+        .why-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .why-chip {
+            background: #fff;
+            border: 1px solid #E8E8E4;
+            border-radius: 12px;
+            padding: 16px 20px;
+            min-width: 132px;
+        }
+        .chip-val {
+            display: block;
+            font-size: 1.375rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: #0D0D0D;
+            line-height: 1;
+        }
+        .chip-lbl {
+            display: block;
+            font-size: 0.6875rem;
+            color: #9B9B9B;
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+        .why-right {}
+        .why-map iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 12px;
+            display: block;
+        }
+        .why-note {
+            font-size: 0.8125rem;
+            color: #9B9B9B;
+            margin-top: 12px;
+            text-align: center;
+        }
+        @media (max-width: 900px) {
+            .why-inner { grid-template-columns: 1fr; gap: 40px; }
+            .why-title { font-size: 2rem; }
+        }
+        @media (max-width: 640px) {
+            .gallery-row { grid-template-columns: 1fr; }
+            .why-tijuana { padding: 64px 0; }
         }
     </style>
 </head>
@@ -83,7 +241,8 @@
     <section class="hero" id="hero" aria-label="Hero">
         <div class="hero-bg">
             <img
-                src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1920&q=85&auto=format&fit=crop"
+                id="hero-bg-img"
+                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80"
                 alt="Luxury residential development"
                 class="hero-img"
             >
@@ -95,13 +254,13 @@
             <div class="container">
                 <div class="hero-eyebrow fade-up">Private Investment Club · Est. 2020</div>
 
-                <h1 class="hero-title fade-up" style="transition-delay: 0.08s">
+                <h1 class="hero-title fade-up" style="transition-delay: 0.08s" id="hero-title">
                     Where trusted capital<br>
                     meets premium<br>
                     <em>real estate.</em>
                 </h1>
 
-                <p class="hero-subtitle fade-up" style="transition-delay: 0.16s">
+                <p class="hero-subtitle fade-up" style="transition-delay: 0.16s" id="hero-subtitle">
                     Entremares is a private club connecting accredited investors with exceptional residential development opportunities across Mexico and Latin America.
                 </p>
 
@@ -115,10 +274,10 @@
                         <div class="proof-avatar">AC</div>
                         <div class="proof-avatar">MR</div>
                         <div class="proof-avatar">JL</div>
-                        <div class="proof-avatar">+5</div>
+                        <div class="proof-avatar">+7</div>
                     </div>
                     <p class="proof-text">
-                        <strong>8 trusted investors</strong> have deployed capital with Entremares
+                        <strong>10+ trusted investors</strong> have deployed capital with Entremares
                     </p>
                 </div>
             </div>
@@ -130,33 +289,66 @@
         </div>
     </section>
 
+    <!-- ===== Photo Gallery Row ===== -->
+    <section class="hero-gallery" aria-label="Photo gallery">
+        <div class="gallery-row">
+            <div class="gallery-item" data-gallery-idx="0">
+                <img
+                    id="gallery-img-1"
+                    src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80"
+                    alt="Entremares development"
+                    class="gallery-img"
+                    loading="lazy"
+                >
+            </div>
+            <div class="gallery-item" data-gallery-idx="1">
+                <img
+                    id="gallery-img-2"
+                    src="https://images.unsplash.com/photo-1591867424488-7e3e1ef2ba65?w=900&q=80"
+                    alt="Tijuana aerial view"
+                    class="gallery-img"
+                    loading="lazy"
+                >
+            </div>
+            <div class="gallery-item" data-gallery-idx="2">
+                <img
+                    id="gallery-img-3"
+                    src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80"
+                    alt="Modern architecture"
+                    class="gallery-img"
+                    loading="lazy"
+                >
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Lightbox -->
+    <div class="gallery-lightbox" id="gallery-lightbox" style="display:none" role="dialog" aria-modal="true" aria-label="Photo lightbox">
+        <button class="gallery-lightbox-close" id="gallery-lb-close" aria-label="Close">&times;</button>
+        <img src="" alt="" id="gallery-lb-img" class="gallery-lightbox-img">
+    </div>
+
     <!-- ===== Stats Bar ===== -->
     <section class="stats" aria-label="Key statistics">
         <div class="container">
-            <div class="stats-grid" data-stagger>
+            <div class="stats-grid" data-stagger style="--stats-cols: 3">
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        $<span data-count="1.1" data-suffix="M+" data-decimals="1">1.1M+</span>
+                        <span id="stat-capital">$1.1M+</span>
                     </div>
-                    <div class="stat-label">Total Capital Deployed</div>
+                    <div class="stat-label" id="stat-capital-lbl">Total Capital Deployed</div>
                 </div>
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span data-count="20" data-suffix="%">20</span>%
+                        <span id="stat-return">30.0%</span>
                     </div>
-                    <div class="stat-label">Average Investor Return</div>
+                    <div class="stat-label" id="stat-return-lbl">Average Investor Return</div>
                 </div>
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span data-count="2">2</span>
+                        <span id="stat-investors">10+</span>
                     </div>
-                    <div class="stat-label">Projects Completed</div>
-                </div>
-                <div class="stat-item fade-up">
-                    <div class="stat-value">
-                        <span data-count="100" data-suffix="%">100</span>%
-                    </div>
-                    <div class="stat-label">Delivered On Time</div>
+                    <div class="stat-label" id="stat-investors-lbl">Active Investors</div>
                 </div>
             </div>
         </div>
@@ -226,22 +418,22 @@
                     <div class="proj-card-body">
                         <div class="proj-card-meta">
                             <span>Tijuana, Mexico</span>
-                            <span>2020 — 2022</span>
+                            <span id="kabil-dates">Jun 2020 – Dec 2022</span>
                         </div>
                         <h3 class="proj-card-title">Kabil</h3>
-                        <p class="proj-card-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 27 months — 3 months from first listing to sold out.</p>
+                        <p class="proj-card-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
                                 <div class="proj-num-val">$500K</div>
                                 <div class="proj-num-lbl">Investment</div>
                             </div>
                             <div class="proj-num">
-                                <div class="proj-num-val">18%</div>
+                                <div class="proj-num-val" id="kabil-return">31.71%</div>
                                 <div class="proj-num-lbl">Net Return</div>
                             </div>
                             <div class="proj-num">
-                                <div class="proj-num-val">3 mo.</div>
-                                <div class="proj-num-lbl">Sold Out</div>
+                                <div class="proj-num-val" id="kabil-timeline">30 mo.</div>
+                                <div class="proj-num-lbl">Duration</div>
                             </div>
                         </div>
                         <a href="projects.html#kabil" class="proj-card-link">
@@ -264,22 +456,22 @@
                     <div class="proj-card-body">
                         <div class="proj-card-meta">
                             <span>Tijuana, Mexico</span>
-                            <span>2022 — 2024</span>
+                            <span id="allure-dates">Apr 2023 – Apr 2026</span>
                         </div>
                         <h3 class="proj-card-title">Allure</h3>
-                        <p class="proj-card-desc">Two premium townhouses that pushed the bar on design and premium finishes. Sold out in just 2 months — delivering a 22% net return, our strongest to date.</p>
+                        <p class="proj-card-desc">Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
                                 <div class="proj-num-val">$600K</div>
                                 <div class="proj-num-lbl">Investment</div>
                             </div>
                             <div class="proj-num">
-                                <div class="proj-num-val">22%</div>
-                                <div class="proj-num-lbl">Net Return</div>
+                                <div class="proj-num-val" id="allure-return">30.88%</div>
+                                <div class="proj-num-lbl">Net Return (after WHT)</div>
                             </div>
                             <div class="proj-num">
-                                <div class="proj-num-val">2 mo.</div>
-                                <div class="proj-num-lbl">Sold Out</div>
+                                <div class="proj-num-val" id="allure-timeline">36 mo.</div>
+                                <div class="proj-num-lbl">Duration</div>
                             </div>
                         </div>
                         <a href="projects.html#allure" class="proj-card-link">
@@ -287,6 +479,52 @@
                         </a>
                     </div>
                 </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Why Tijuana? ===== -->
+    <section class="why-tijuana" aria-label="Why Tijuana">
+        <div class="container">
+            <div class="why-inner">
+
+                <div class="why-left">
+                    <div class="why-eyebrow">Location</div>
+                    <h2 class="why-title" id="wt-title">Why Tijuana?</h2>
+                    <p class="why-subtitle" id="wt-subtitle">A unique cross-border investment opportunity</p>
+                    <p class="why-body" id="wt-body">Tijuana sits on the world's busiest land border crossing, with direct access to the $9 trillion US economy and a rapidly growing local middle class. The city's real estate market is driven by surging demand from both sides of the border — making it one of Latin America's most compelling development opportunities for accredited investors.</p>
+                    <div class="why-chips">
+                        <div class="why-chip">
+                            <span class="chip-val" id="wt-chip-1-val">2M+</span>
+                            <span class="chip-lbl" id="wt-chip-1-lbl">Population</span>
+                        </div>
+                        <div class="why-chip">
+                            <span class="chip-val" id="wt-chip-2-val">$100B+</span>
+                            <span class="chip-lbl" id="wt-chip-2-lbl">Cross-Border Trade</span>
+                        </div>
+                        <div class="why-chip">
+                            <span class="chip-val" id="wt-chip-3-val">32 km</span>
+                            <span class="chip-lbl" id="wt-chip-3-lbl">Distance to San Diego</span>
+                        </div>
+                        <div class="why-chip">
+                            <span class="chip-val" id="wt-chip-4-val">15%+</span>
+                            <span class="chip-lbl" id="wt-chip-4-lbl">Real Estate Growth YoY</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="why-right">
+                    <div class="why-map">
+                        <iframe
+                            src="https://maps.google.com/maps?q=Tijuana,Baja+California,Mexico&output=embed"
+                            title="Tijuana, Baja California, Mexico"
+                            loading="lazy"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                    <p class="why-note">32 km from San Diego International Airport</p>
+                </div>
 
             </div>
         </div>
@@ -420,5 +658,109 @@
     </footer>
 
     <script src="assets/js/main.js"></script>
+
+    <script>
+    /* ── Gallery lightbox ── */
+    (function() {
+        const lightbox = document.getElementById('gallery-lightbox');
+        const lbImg    = document.getElementById('gallery-lb-img');
+        const lbClose  = document.getElementById('gallery-lb-close');
+
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const img = item.querySelector('img');
+                lbImg.src = img.src;
+                lbImg.alt = img.alt;
+                lightbox.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        lbClose.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+    })();
+
+    /* ── Supabase — populate landing page content ── */
+    (async function() {
+        const SUPABASE_URL   = 'https://ghkhvjgeqqxfisfjozzr.supabase.co';
+        const SUPABASE_KEY   = 'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR';
+        const DEFAULT_HERO_BG = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80';
+
+        const { createClient } = window.supabase;
+        const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const { data, error } = await db
+            .from('landing_page')
+            .select('section, key, value');
+
+        if (error || !data) return;
+
+        /* Build nested lookup: lp[section][key] = value */
+        const lp = {};
+        data.forEach(row => {
+            if (!lp[row.section]) lp[row.section] = {};
+            lp[row.section][row.key] = row.value;
+        });
+
+        /* ── Hero ── */
+        const h = lp.hero || {};
+        const heroBg = (h.background_photo_url && h.background_photo_url.trim()) || DEFAULT_HERO_BG;
+
+        const heroImg = document.getElementById('hero-bg-img');
+        if (heroImg) heroImg.src = heroBg;
+
+        if (h.title) document.getElementById('hero-title').innerHTML = h.title;
+        if (h.subtitle) document.getElementById('hero-subtitle').textContent = h.subtitle;
+
+        /* ── Gallery ── */
+        const g1 = document.getElementById('gallery-img-1');
+        if (g1) g1.src = heroBg;
+
+        if (h.gallery_photo_2_url) {
+            const g2 = document.getElementById('gallery-img-2');
+            if (g2) g2.src = h.gallery_photo_2_url;
+        }
+        if (h.gallery_photo_3_url) {
+            const g3 = document.getElementById('gallery-img-3');
+            if (g3) g3.src = h.gallery_photo_3_url;
+        }
+
+        /* ── Stats ── */
+        const s = lp.stats || {};
+        if (s.capital_deployed)       document.getElementById('stat-capital').textContent      = s.capital_deployed;
+        if (s.capital_deployed_label) document.getElementById('stat-capital-lbl').textContent  = s.capital_deployed_label;
+        if (s.average_return)         document.getElementById('stat-return').textContent        = s.average_return;
+        if (s.average_return_label)   document.getElementById('stat-return-lbl').textContent    = s.average_return_label;
+        if (s.active_investors)       document.getElementById('stat-investors').textContent     = s.active_investors;
+        if (s.active_investors_label) document.getElementById('stat-investors-lbl').textContent = s.active_investors_label;
+
+        /* ── Track Record ── */
+        const tr = lp.track_record || {};
+        if (tr.kabil_return)    document.getElementById('kabil-return').textContent    = tr.kabil_return;
+        if (tr.kabil_timeline)  document.getElementById('kabil-timeline').textContent  = tr.kabil_timeline;
+        if (tr.kabil_dates)     document.getElementById('kabil-dates').textContent     = tr.kabil_dates;
+        if (tr.allure_return)   document.getElementById('allure-return').textContent   = tr.allure_return;
+        if (tr.allure_timeline) document.getElementById('allure-timeline').textContent = tr.allure_timeline;
+        if (tr.allure_dates)    document.getElementById('allure-dates').textContent    = tr.allure_dates;
+
+        /* ── Why Tijuana ── */
+        const tj = lp.about_tijuana || {};
+        if (tj.title)    document.getElementById('wt-title').textContent    = tj.title;
+        if (tj.subtitle) document.getElementById('wt-subtitle').textContent = tj.subtitle;
+        if (tj.body)     document.getElementById('wt-body').textContent     = tj.body;
+        for (let i = 1; i <= 4; i++) {
+            const v = tj['chip_' + i + '_value'];
+            const l = tj['chip_' + i + '_label'];
+            if (v) document.getElementById('wt-chip-' + i + '-val').textContent = v;
+            if (l) document.getElementById('wt-chip-' + i + '-lbl').textContent = l;
+        }
+    })();
+    </script>
 </body>
 </html>
