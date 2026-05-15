@@ -1611,10 +1611,22 @@
         </div>
         <div class="form-card">
           <div class="form-section-label">Kabil</div>
+          <div class="field" style="margin-top:14px">
+            <label>Project Description</label>
+            <input type="text" id="lp-tr-kabil-description" placeholder="Four luxury apartments designed with meticulous attention to finish…">
+          </div>
           <div class="form-grid-2" style="margin-top:14px">
-            <div class="field"><label>Net Return</label><input type="text" id="lp-tr-kabil-return" placeholder="31.71%"></div>
-            <div class="field"><label>Duration</label><input type="text" id="lp-tr-kabil-timeline" placeholder="30 mo."></div>
-            <div class="field" style="margin-top:10px"><label>Dates</label><input type="text" id="lp-tr-kabil-dates" placeholder="Jun 2020 – Dec 2022"></div>
+            <div class="field"><label>Net Return %</label><input type="number" id="lp-tr-kabil-return" placeholder="31.71" step="0.01"></div>
+            <div class="field"><label>Duration</label><input type="text" id="lp-tr-kabil-timeline" placeholder="30 months"></div>
+            <div class="field" style="margin-top:10px"><label>Date Range</label><input type="text" id="lp-tr-kabil-dates" placeholder="Jun 2020 - Dec 2022"></div>
+            <div class="field" style="margin-top:10px">
+              <label>Status</label>
+              <select id="lp-tr-kabil-status">
+                <option value="Completed">Completed</option>
+                <option value="Active">Active</option>
+                <option value="Coming Soon">Coming Soon</option>
+              </select>
+            </div>
           </div>
           <div class="field" style="margin-top:14px">
             <label>Kabil Featured Photo</label>
@@ -1629,10 +1641,22 @@
           </div>
           <div class="divider" style="margin:24px 0"></div>
           <div class="form-section-label">Allure</div>
+          <div class="field" style="margin-top:14px">
+            <label>Project Description</label>
+            <input type="text" id="lp-tr-allure-description" placeholder="Two premium townhouses that pushed the bar on design and premium finishes…">
+          </div>
           <div class="form-grid-2" style="margin-top:14px">
-            <div class="field"><label>Net Return</label><input type="text" id="lp-tr-allure-return" placeholder="30.88%"></div>
-            <div class="field"><label>Duration</label><input type="text" id="lp-tr-allure-timeline" placeholder="36 mo."></div>
-            <div class="field" style="margin-top:10px"><label>Dates</label><input type="text" id="lp-tr-allure-dates" placeholder="Apr 2023 – Apr 2026"></div>
+            <div class="field"><label>Net Return %</label><input type="number" id="lp-tr-allure-return" placeholder="30.88" step="0.01"></div>
+            <div class="field"><label>Duration</label><input type="text" id="lp-tr-allure-timeline" placeholder="36 months"></div>
+            <div class="field" style="margin-top:10px"><label>Date Range</label><input type="text" id="lp-tr-allure-dates" placeholder="Apr 2023 - Apr 2026"></div>
+            <div class="field" style="margin-top:10px">
+              <label>Status</label>
+              <select id="lp-tr-allure-status">
+                <option value="Completed">Completed</option>
+                <option value="Active">Active</option>
+                <option value="Coming Soon">Coming Soon</option>
+              </select>
+            </div>
           </div>
           <div class="field" style="margin-top:14px">
             <label>Allure Featured Photo</label>
@@ -4498,12 +4522,16 @@
 
     /* Track Record */
     const tr = lp.track_record || {};
-    document.getElementById('lp-tr-kabil-return').value    = tr.kabil_return    || '';
-    document.getElementById('lp-tr-kabil-timeline').value  = tr.kabil_timeline  || '';
-    document.getElementById('lp-tr-kabil-dates').value     = tr.kabil_dates     || '';
-    document.getElementById('lp-tr-allure-return').value   = tr.allure_return   || '';
-    document.getElementById('lp-tr-allure-timeline').value = tr.allure_timeline || '';
-    document.getElementById('lp-tr-allure-dates').value    = tr.allure_dates    || '';
+    document.getElementById('lp-tr-kabil-description').value = tr.kabil_description || '';
+    document.getElementById('lp-tr-kabil-return').value      = tr.kabil_return      || '';
+    document.getElementById('lp-tr-kabil-timeline').value    = tr.kabil_timeline    || '';
+    document.getElementById('lp-tr-kabil-dates').value       = tr.kabil_dates       || '';
+    if (tr.kabil_status) document.getElementById('lp-tr-kabil-status').value = tr.kabil_status;
+    document.getElementById('lp-tr-allure-description').value = tr.allure_description || '';
+    document.getElementById('lp-tr-allure-return').value      = tr.allure_return      || '';
+    document.getElementById('lp-tr-allure-timeline').value    = tr.allure_timeline    || '';
+    document.getElementById('lp-tr-allure-dates').value       = tr.allure_dates       || '';
+    if (tr.allure_status) document.getElementById('lp-tr-allure-status').value = tr.allure_status;
     ['kabil', 'allure'].forEach(p => {
       const url = tr[p + '_featured_photo'] || '';
       document.getElementById('lp-tr-' + p + '-photo-preview').src = url;
@@ -4590,12 +4618,16 @@
     btn.disabled = true; btn.textContent = 'Saving…';
 
     const rows = [
-      ['track_record', 'kabil_return',    document.getElementById('lp-tr-kabil-return').value.trim()],
-      ['track_record', 'kabil_timeline',  document.getElementById('lp-tr-kabil-timeline').value.trim()],
-      ['track_record', 'kabil_dates',     document.getElementById('lp-tr-kabil-dates').value.trim()],
-      ['track_record', 'allure_return',   document.getElementById('lp-tr-allure-return').value.trim()],
-      ['track_record', 'allure_timeline', document.getElementById('lp-tr-allure-timeline').value.trim()],
-      ['track_record', 'allure_dates',    document.getElementById('lp-tr-allure-dates').value.trim()],
+      ['track_record', 'kabil_description', document.getElementById('lp-tr-kabil-description').value.trim()],
+      ['track_record', 'kabil_return',      document.getElementById('lp-tr-kabil-return').value.trim()],
+      ['track_record', 'kabil_timeline',    document.getElementById('lp-tr-kabil-timeline').value.trim()],
+      ['track_record', 'kabil_dates',       document.getElementById('lp-tr-kabil-dates').value.trim()],
+      ['track_record', 'kabil_status',      document.getElementById('lp-tr-kabil-status').value],
+      ['track_record', 'allure_description',document.getElementById('lp-tr-allure-description').value.trim()],
+      ['track_record', 'allure_return',     document.getElementById('lp-tr-allure-return').value.trim()],
+      ['track_record', 'allure_timeline',   document.getElementById('lp-tr-allure-timeline').value.trim()],
+      ['track_record', 'allure_dates',      document.getElementById('lp-tr-allure-dates').value.trim()],
+      ['track_record', 'allure_status',     document.getElementById('lp-tr-allure-status').value],
     ];
 
     let failed = false;

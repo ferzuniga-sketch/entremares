@@ -241,12 +241,13 @@
 
     <!-- ===== Hero ===== -->
     <section class="hero" id="hero" aria-label="Hero">
-        <div class="hero-bg">
+        <div class="hero-bg" style="background:#0D0D0D">
             <img
                 id="hero-bg-img"
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80"
+                src=""
                 alt="Luxury residential development"
                 class="hero-img"
+                style="opacity:0;transition:opacity 0.5s ease"
             >
             <div class="hero-overlay" aria-hidden="true"></div>
             <div class="hero-grain"  aria-hidden="true"></div>
@@ -416,7 +417,7 @@
                             class="proj-card-img"
                             loading="lazy"
                         >
-                        <div class="proj-card-badge">Completed</div>
+                        <div class="proj-card-badge" id="kabil-badge">Completed</div>
                     </div>
                     <div class="proj-card-body">
                         <div class="proj-card-meta">
@@ -424,7 +425,7 @@
                             <span id="kabil-dates">Jun 2020 – Dec 2022</span>
                         </div>
                         <h3 class="proj-card-title">Kabil</h3>
-                        <p class="proj-card-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.</p>
+                        <p class="proj-card-desc" id="kabil-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
                                 <div class="proj-num-val">$500K</div>
@@ -455,7 +456,7 @@
                             class="proj-card-img"
                             loading="lazy"
                         >
-                        <div class="proj-card-badge">Completed</div>
+                        <div class="proj-card-badge" id="allure-badge">Completed</div>
                     </div>
                     <div class="proj-card-body">
                         <div class="proj-card-meta">
@@ -463,7 +464,7 @@
                             <span id="allure-dates">Apr 2023 – Apr 2026</span>
                         </div>
                         <h3 class="proj-card-title">Allure</h3>
-                        <p class="proj-card-desc">Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.</p>
+                        <p class="proj-card-desc" id="allure-desc">Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
                                 <div class="proj-num-val">$600K</div>
@@ -726,7 +727,11 @@
         const heroBg = (h.background_photo_url && h.background_photo_url.trim()) || DEFAULT_HERO_BG;
 
         const heroImg = document.getElementById('hero-bg-img');
-        if (heroImg) heroImg.src = heroBg;
+        if (heroImg) {
+            heroImg.onload = () => { heroImg.style.opacity = '1'; };
+            heroImg.src = heroBg;
+            if (heroImg.complete && heroImg.naturalWidth) heroImg.style.opacity = '1';
+        }
 
         if (h.title) document.getElementById('hero-title').innerHTML = h.title;
         if (h.subtitle) document.getElementById('hero-subtitle').textContent = h.subtitle;
@@ -753,12 +758,16 @@
         if (kabilCardImg) kabilCardImg.src = tr.kabil_featured_photo || GRAY_PH;
         const allureCardImg = document.getElementById('allure-card-img');
         if (allureCardImg) allureCardImg.src = tr.allure_featured_photo || allureGal.data?.[0]?.url || ALLURE_IMG_DEFAULT;
-        if (tr.kabil_return)    document.getElementById('kabil-return').textContent    = tr.kabil_return;
-        if (tr.kabil_timeline)  document.getElementById('kabil-timeline').textContent  = tr.kabil_timeline;
-        if (tr.kabil_dates)     document.getElementById('kabil-dates').textContent     = tr.kabil_dates;
-        if (tr.allure_return)   document.getElementById('allure-return').textContent   = tr.allure_return;
-        if (tr.allure_timeline) document.getElementById('allure-timeline').textContent = tr.allure_timeline;
-        if (tr.allure_dates)    document.getElementById('allure-dates').textContent    = tr.allure_dates;
+        if (tr.kabil_description) document.getElementById('kabil-desc').textContent     = tr.kabil_description;
+        if (tr.kabil_return)      document.getElementById('kabil-return').textContent   = tr.kabil_return + '%';
+        if (tr.kabil_timeline)    document.getElementById('kabil-timeline').textContent = tr.kabil_timeline;
+        if (tr.kabil_dates)       document.getElementById('kabil-dates').textContent    = tr.kabil_dates;
+        if (tr.kabil_status)      document.getElementById('kabil-badge').textContent    = tr.kabil_status;
+        if (tr.allure_description)document.getElementById('allure-desc').textContent    = tr.allure_description;
+        if (tr.allure_return)     document.getElementById('allure-return').textContent  = tr.allure_return + '%';
+        if (tr.allure_timeline)   document.getElementById('allure-timeline').textContent= tr.allure_timeline;
+        if (tr.allure_dates)      document.getElementById('allure-dates').textContent   = tr.allure_dates;
+        if (tr.allure_status)     document.getElementById('allure-badge').textContent   = tr.allure_status;
 
         /* ── Why Tijuana ── */
         const tj = lp.about_tijuana || {};
