@@ -370,7 +370,7 @@
             </a>
 
             <div class="nav-links" role="menubar">
-                <a href="projects.html" class="nav-link" role="menuitem">Projects</a>
+                <a href="#projects" class="nav-link" role="menuitem">Projects</a>
                 <a href="#tijuana" class="nav-link" role="menuitem">Tijuana</a>
                 <a href="#how-it-works" class="nav-link" role="menuitem">How it works</a>
                 <a href="#team" class="nav-link" role="menuitem">Team</a>
@@ -388,7 +388,7 @@
 
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu" role="menu" aria-hidden="true">
-        <a href="projects.html" class="mobile-link">Projects</a>
+        <a href="#projects" class="mobile-link">Projects</a>
         <a href="#tijuana" class="mobile-link">Tijuana</a>
         <a href="#how-it-works" class="mobile-link">How it works</a>
         <a href="#team" class="mobile-link">Team</a>
@@ -425,7 +425,7 @@
                 </p>
 
                 <div class="hero-actions fade-up" style="transition-delay: 0.24s">
-                    <a href="apply.html" class="btn btn-white">Request Access</a>
+                    <a href="apply.html" class="btn btn-white">Join the Waitlist</a>
                     <a href="dashboard.html" class="btn btn-ghost-white">View Projects</a>
                 </div>
 
@@ -668,7 +668,7 @@
                             <span>Tijuana, Mexico</span>
                             <span id="allure-dates">Apr 2023 – Apr 2026</span>
                         </div>
-                        <h3 class="proj-card-title">Allure</h3>
+                        <h3 class="proj-card-title" id="allure-card-title">Allure</h3>
                         <p class="proj-card-desc" id="allure-desc">Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
@@ -687,6 +687,45 @@
                         <button class="proj-card-link" onclick="openProjectDetail('allure')">
                             View Project Details <span class="arrow">→</span>
                         </button>
+                    </div>
+                </article>
+
+                <!-- REAL DEL MONTE -->
+                <article class="proj-card fade-up" style="transition-delay: 0.24s">
+                    <div class="proj-card-img-wrap">
+                        <img
+                            id="rdm-card-img"
+                            src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22%3E%3Crect fill=%22%23e8e8e4%22 width=%221%22 height=%221%22/%3E%3C/svg%3E"
+                            alt="Real del Monte — premium residential development in Tijuana"
+                            class="proj-card-img"
+                            loading="lazy"
+                        >
+                        <div class="proj-card-badge" id="rdm-badge" style="background:#1A7F4A;color:#fff;">NOW FUNDING</div>
+                    </div>
+                    <div class="proj-card-body">
+                        <div class="proj-card-meta">
+                            <span>Tijuana, Mexico</span>
+                            <span id="rdm-dates"></span>
+                        </div>
+                        <h3 class="proj-card-title" id="rdm-card-title">Real del Monte</h3>
+                        <p class="proj-card-desc" id="rdm-desc">Our current active project — a premium residential development in the heart of Tijuana's most sought-after neighborhood. Targeting 20-25% net return over 24 months.</p>
+                        <div class="proj-card-numbers">
+                            <div class="proj-num">
+                                <div class="proj-num-val" id="rdm-return">20–25%</div>
+                                <div class="proj-num-lbl">Target Return</div>
+                            </div>
+                            <div class="proj-num">
+                                <div class="proj-num-val" id="rdm-timeline">24 mo.</div>
+                                <div class="proj-num-lbl">Timeline</div>
+                            </div>
+                            <div class="proj-num">
+                                <div class="proj-num-val" id="rdm-status-val">Funding</div>
+                                <div class="proj-num-lbl">Status</div>
+                            </div>
+                        </div>
+                        <a href="dashboard.html" class="proj-card-link">
+                            Learn More &amp; Invest <span class="arrow">→</span>
+                        </a>
                     </div>
                 </article>
 
@@ -842,7 +881,7 @@
                 <div>
                     <span class="footer-col-label">Navigate</span>
                     <div class="footer-links">
-                        <a href="projects.html" class="footer-link">Projects</a>
+                        <a href="#projects" class="footer-link">Projects</a>
                         <a href="#how-it-works" class="footer-link">How it works</a>
                         <a href="#team" class="footer-link">The Team</a>
                         <a href="apply.html" class="footer-link">Apply</a>
@@ -926,6 +965,20 @@
             units:         '2 Townhouses',
             featured_photo: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&auto=format&fit=crop',
         },
+        real_del_monte: {
+            hero_title:    'Real del Monte',
+            hero_subtitle: 'Tijuana, Mexico',
+            description:   'Our current active project — a premium residential development in the heart of Tijuana\'s most sought-after neighborhood. Targeting 20-25% net return over 24 months.',
+            highlight_1:   'Premium residential development in Tijuana\'s most sought-after neighborhood',
+            highlight_2:   'Targeting 20-25% net return over 24 months',
+            highlight_3:   'Currently accepting investor commitments',
+            highlight_4:   '',
+            capex:         '',
+            return:        '20–25%',
+            timeline:      '24 mo.',
+            units:         '',
+            featured_photo: '',
+        },
     };
     let _projDetailData = {};
 
@@ -988,9 +1041,10 @@
         const { createClient } = window.supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const [lpResult, allureGal] = await Promise.all([
+        const [lpResult, allureGal, kabilGal] = await Promise.all([
             db.from('landing_page').select('section, key, value'),
             db.from('project_gallery').select('url').eq('project_name', 'Allure').eq('file_type', 'image').order('sort_order', { ascending: true, nullsFirst: false }).limit(1),
+            db.from('project_gallery').select('url').eq('project_name', 'Kabil').eq('file_type', 'image').order('sort_order', { ascending: true, nullsFirst: false }).limit(1),
         ]);
 
         const { data, error } = lpResult;
@@ -1033,28 +1087,62 @@
         if (s.active_investors_label) document.getElementById('stat-investors-lbl').textContent = s.active_investors_label;
 
         /* ── Track Record ── */
-        const tr = lp.track_record || {};
+        const tr  = lp.track_record        || {};
+        const ad  = lp.allure_detail       || {};
+        const kd  = lp.kabil_detail        || {};
+        const rdm = lp.real_del_monte_detail || {};
         const GRAY_PH = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22%3E%3Crect fill=%22%23e8e8e4%22 width=%221%22 height=%221%22/%3E%3C/svg%3E';
+
+        /* Card photos: prefer allure_detail / kabil_detail featured_photo, then track_record, then gallery */
         const kabilCardImg = document.getElementById('kabil-card-img');
-        if (kabilCardImg) kabilCardImg.src = tr.kabil_featured_photo || GRAY_PH;
+        if (kabilCardImg) kabilCardImg.src = kd.featured_photo || tr.kabil_featured_photo || kabilGal.data?.[0]?.url || GRAY_PH;
         const allureCardImg = document.getElementById('allure-card-img');
-        if (allureCardImg) allureCardImg.src = tr.allure_featured_photo || allureGal.data?.[0]?.url || ALLURE_IMG_DEFAULT;
-        if (tr.kabil_description) document.getElementById('kabil-desc').textContent     = tr.kabil_description;
-        if (tr.kabil_return)      document.getElementById('kabil-return').textContent   = tr.kabil_return + '%';
-        if (tr.kabil_timeline)    document.getElementById('kabil-timeline').textContent = tr.kabil_timeline;
-        if (tr.kabil_dates)       document.getElementById('kabil-dates').textContent    = tr.kabil_dates;
-        if (tr.kabil_status)      document.getElementById('kabil-badge').textContent    = tr.kabil_status;
-        if (tr.allure_description)document.getElementById('allure-desc').textContent    = tr.allure_description;
-        if (tr.allure_return)     document.getElementById('allure-return').textContent  = tr.allure_return + '%';
-        if (tr.allure_timeline)   document.getElementById('allure-timeline').textContent= tr.allure_timeline;
-        if (tr.allure_dates)      document.getElementById('allure-dates').textContent   = tr.allure_dates;
-        if (tr.allure_status)            document.getElementById('allure-badge').textContent      = tr.allure_status;
-        if (tr.kabil_investment_amount)  document.getElementById('kabil-investment').textContent  = tr.kabil_investment_amount;
+        if (allureCardImg) allureCardImg.src = ad.featured_photo || tr.allure_featured_photo || allureGal.data?.[0]?.url || ALLURE_IMG_DEFAULT;
+
+        /* Card descriptions: prefer allure_detail / kabil_detail, fall back to track_record */
+        const kabilDescVal = kd.description || tr.kabil_description;
+        if (kabilDescVal) document.getElementById('kabil-desc').textContent = kabilDescVal;
+        const allureDescVal = ad.description || tr.allure_description;
+        if (allureDescVal) document.getElementById('allure-desc').textContent = allureDescVal;
+
+        /* Card metrics: prefer detail section, fall back to track_record */
+        const kabilRetVal = kd.return || tr.kabil_return;
+        if (kabilRetVal) document.getElementById('kabil-return').textContent = kabilRetVal + (String(kabilRetVal).includes('%') ? '' : '%');
+        const kabilTlVal = kd.timeline || tr.kabil_timeline;
+        if (kabilTlVal) document.getElementById('kabil-timeline').textContent = kabilTlVal;
+        if (tr.kabil_dates)             document.getElementById('kabil-dates').textContent     = tr.kabil_dates;
+        if (tr.kabil_status)            document.getElementById('kabil-badge').textContent     = tr.kabil_status;
+        if (tr.kabil_investment_amount) document.getElementById('kabil-investment').textContent = tr.kabil_investment_amount;
+
+        const allureRetVal = ad.return || tr.allure_return;
+        if (allureRetVal) document.getElementById('allure-return').textContent = allureRetVal + (String(allureRetVal).includes('%') ? '' : '%');
+        const allureTlVal = ad.timeline || tr.allure_timeline;
+        if (allureTlVal) document.getElementById('allure-timeline').textContent = allureTlVal;
+        if (tr.allure_dates)             document.getElementById('allure-dates').textContent     = tr.allure_dates;
+        if (tr.allure_status)            document.getElementById('allure-badge').textContent     = tr.allure_status;
         if (tr.allure_investment_amount) document.getElementById('allure-investment').textContent = tr.allure_investment_amount;
 
+        /* Real del Monte card */
+        const rdmCardImg = document.getElementById('rdm-card-img');
+        if (rdmCardImg && rdm.featured_photo) rdmCardImg.src = rdm.featured_photo;
+        if (rdm.hero_title)   document.getElementById('rdm-card-title').textContent = rdm.hero_title;
+        if (rdm.description)  document.getElementById('rdm-desc').textContent       = rdm.description;
+        if (rdm.return)       document.getElementById('rdm-return').textContent      = rdm.return;
+        if (rdm.timeline)     document.getElementById('rdm-timeline').textContent    = rdm.timeline;
+        if (rdm.status) {
+            document.getElementById('rdm-status-val').textContent = rdm.status;
+            const rdmBadge = document.getElementById('rdm-badge');
+            rdmBadge.textContent = rdm.status;
+            if (rdm.status === 'Completed') {
+                rdmBadge.style.background = 'rgba(255,255,255,0.95)';
+                rdmBadge.style.color      = '#0D0D0D';
+            }
+        }
+
         /* ── Project Detail data (stored for modal use) ── */
-        _projDetailData.allure = lp.allure_detail || {};
-        _projDetailData.kabil  = lp.kabil_detail  || {};
+        _projDetailData.allure        = lp.allure_detail        || {};
+        _projDetailData.kabil         = lp.kabil_detail         || {};
+        _projDetailData.real_del_monte = lp.real_del_monte_detail || {};
 
         /* ── Why Tijuana ── */
         const tj = lp.about_tijuana || {};

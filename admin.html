@@ -1732,6 +1732,49 @@
           </div>
         </div>
 
+        <!-- ── REAL DEL MONTE — CURRENT PROJECT ── -->
+        <div class="form-card" style="margin-top:20px">
+          <div class="form-section-label" style="margin-top:0">Real del Monte — Current Project</div>
+          <div class="sec-count" style="margin-bottom:16px">Content shown on the "Real del Monte" card on the landing page</div>
+          <div class="field" style="margin-top:14px">
+            <label>Title</label>
+            <input type="text" id="lp-rdm-hero-title" placeholder="Real del Monte">
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Description</label>
+            <textarea id="lp-rdm-description" rows="4" style="width:100%;resize:vertical" placeholder="Our current active project — a premium residential development in the heart of Tijuana's most sought-after neighborhood. Targeting 20-25% net return over 24 months."></textarea>
+          </div>
+          <div class="form-grid-2" style="margin-top:14px">
+            <div class="field"><label>Target Return</label><input type="text" id="lp-rdm-return" placeholder="20-25%"></div>
+            <div class="field"><label>Timeline</label><input type="text" id="lp-rdm-timeline" placeholder="24 months"></div>
+            <div class="field" style="margin-top:10px">
+              <label>Status (badge)</label>
+              <select id="lp-rdm-status">
+                <option value="NOW FUNDING">NOW FUNDING</option>
+                <option value="Funding">Funding</option>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+                <option value="Coming Soon">Coming Soon</option>
+              </select>
+            </div>
+            <div class="field" style="margin-top:10px"><label>Investment Amount</label><input type="text" id="lp-rdm-investment-amount" placeholder="e.g. $800,000"></div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Featured Photo</label>
+            <div id="lp-rdm-photo-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-rdm-photo-preview" src="" alt="Real del Monte Photo" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-rdm-photo-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-rdm-photo-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-rdm-photo-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-rdm-detail">Save Real del Monte</button>
+          </div>
+        </div>
+
         <!-- ── KABIL — PROJECT DETAIL PAGE ── -->
         <div class="form-card" style="margin-top:20px">
           <div class="form-section-label" style="margin-top:0">Kabil — Project Detail Page</div>
@@ -4637,18 +4680,18 @@
 
     /* Track Record */
     const tr = lp.track_record || {};
-    document.getElementById('lp-tr-kabil-description').value = tr.kabil_description || '';
-    document.getElementById('lp-tr-kabil-return').value      = tr.kabil_return      || '';
-    document.getElementById('lp-tr-kabil-timeline').value    = tr.kabil_timeline    || '';
-    document.getElementById('lp-tr-kabil-dates').value       = tr.kabil_dates       || '';
-    if (tr.kabil_status) document.getElementById('lp-tr-kabil-status').value = tr.kabil_status;
-    document.getElementById('lp-tr-allure-description').value = tr.allure_description || '';
-    document.getElementById('lp-tr-allure-return').value      = tr.allure_return      || '';
-    document.getElementById('lp-tr-allure-timeline').value    = tr.allure_timeline    || '';
-    document.getElementById('lp-tr-allure-dates').value       = tr.allure_dates       || '';
-    if (tr.allure_status) document.getElementById('lp-tr-allure-status').value = tr.allure_status;
-    document.getElementById('lp-tr-kabil-investment-amount').value  = tr.kabil_investment_amount  || '';
-    document.getElementById('lp-tr-allure-investment-amount').value = tr.allure_investment_amount || '';
+    document.getElementById('lp-tr-kabil-description').value = tr.kabil_description || 'Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.';
+    document.getElementById('lp-tr-kabil-return').value      = tr.kabil_return      || '31.71';
+    document.getElementById('lp-tr-kabil-timeline').value    = tr.kabil_timeline    || '30 mo.';
+    document.getElementById('lp-tr-kabil-dates').value       = tr.kabil_dates       || 'Jun 2020 – Dec 2022';
+    document.getElementById('lp-tr-kabil-status').value      = tr.kabil_status      || 'Completed';
+    document.getElementById('lp-tr-kabil-investment-amount').value = tr.kabil_investment_amount || '$227,345';
+    document.getElementById('lp-tr-allure-description').value = tr.allure_description || 'Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.';
+    document.getElementById('lp-tr-allure-return').value      = tr.allure_return      || '30.88';
+    document.getElementById('lp-tr-allure-timeline').value    = tr.allure_timeline    || '36 mo.';
+    document.getElementById('lp-tr-allure-dates').value       = tr.allure_dates       || 'Apr 2023 – Apr 2026';
+    document.getElementById('lp-tr-allure-status').value      = tr.allure_status      || 'Completed';
+    document.getElementById('lp-tr-allure-investment-amount').value = tr.allure_investment_amount || '$449,059';
     ['kabil', 'allure'].forEach(p => {
       const url = tr[p + '_featured_photo'] || '';
       document.getElementById('lp-tr-' + p + '-photo-preview').src = url;
@@ -4657,35 +4700,59 @@
 
     /* Allure Detail */
     const ad = lp.allure_detail || {};
-    document.getElementById('lp-ad-hero-title').value    = ad.hero_title    || '';
-    document.getElementById('lp-ad-hero-subtitle').value = ad.hero_subtitle || '';
-    document.getElementById('lp-ad-description').value   = ad.description   || '';
+    document.getElementById('lp-ad-hero-title').value    = ad.hero_title    || 'Allure';
+    document.getElementById('lp-ad-hero-subtitle').value = ad.hero_subtitle || 'Tijuana, Mexico · 2 Townhouses';
+    document.getElementById('lp-ad-description').value   = ad.description   || 'Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.';
+    const adHighlightDefaults = [
+      'Premium townhouse design with high-end finishes',
+      "Located in Tijuana's most sought-after neighborhood",
+      'Sold at premium to market rate',
+      '30.88% net return after withholding tax',
+    ];
     for (let i = 1; i <= 4; i++) {
-      document.getElementById('lp-ad-highlight-' + i).value = ad['highlight_' + i] || '';
+      document.getElementById('lp-ad-highlight-' + i).value = ad['highlight_' + i] || adHighlightDefaults[i - 1];
     }
-    document.getElementById('lp-ad-capex').value    = ad.capex    || '';
-    document.getElementById('lp-ad-return').value   = ad.return   || '';
-    document.getElementById('lp-ad-timeline').value = ad.timeline || '';
-    document.getElementById('lp-ad-units').value    = ad.units    || '';
+    document.getElementById('lp-ad-capex').value    = ad.capex    || '$449,059';
+    document.getElementById('lp-ad-return').value   = ad.return   || '30.88';
+    document.getElementById('lp-ad-timeline').value = ad.timeline || '36 mo.';
+    document.getElementById('lp-ad-units').value    = ad.units    || '2 Townhouses';
     const adPhoto = ad.featured_photo || '';
     document.getElementById('lp-ad-photo-preview').src = adPhoto;
     document.getElementById('lp-ad-photo-preview-wrap').style.display = adPhoto ? 'block' : 'none';
 
     /* Kabil Detail */
     const kd = lp.kabil_detail || {};
-    document.getElementById('lp-kd-hero-title').value    = kd.hero_title    || '';
-    document.getElementById('lp-kd-hero-subtitle').value = kd.hero_subtitle || '';
-    document.getElementById('lp-kd-description').value   = kd.description   || '';
+    document.getElementById('lp-kd-hero-title').value    = kd.hero_title    || 'Kabil';
+    document.getElementById('lp-kd-hero-subtitle').value = kd.hero_subtitle || 'Tijuana, Mexico · 4 Apartments';
+    document.getElementById('lp-kd-description').value   = kd.description   || 'Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.';
+    const kdHighlightDefaults = [
+      'Four luxury apartments with premium finishes',
+      'Sold out in 3 months from first listing',
+      'Built and delivered in under 30 months',
+      '31.71% net return on total investment',
+    ];
     for (let i = 1; i <= 4; i++) {
-      document.getElementById('lp-kd-highlight-' + i).value = kd['highlight_' + i] || '';
+      document.getElementById('lp-kd-highlight-' + i).value = kd['highlight_' + i] || kdHighlightDefaults[i - 1];
     }
-    document.getElementById('lp-kd-capex').value    = kd.capex    || '';
-    document.getElementById('lp-kd-return').value   = kd.return   || '';
-    document.getElementById('lp-kd-timeline').value = kd.timeline || '';
-    document.getElementById('lp-kd-units').value    = kd.units    || '';
+    document.getElementById('lp-kd-capex').value    = kd.capex    || '$227,345';
+    document.getElementById('lp-kd-return').value   = kd.return   || '31.71';
+    document.getElementById('lp-kd-timeline').value = kd.timeline || '30 mo.';
+    document.getElementById('lp-kd-units').value    = kd.units    || '4 Apartments';
     const kdPhoto = kd.featured_photo || '';
     document.getElementById('lp-kd-photo-preview').src = kdPhoto;
     document.getElementById('lp-kd-photo-preview-wrap').style.display = kdPhoto ? 'block' : 'none';
+
+    /* Real del Monte Detail */
+    const rdm = lp.real_del_monte_detail || {};
+    document.getElementById('lp-rdm-hero-title').value      = rdm.hero_title        || 'Real del Monte';
+    document.getElementById('lp-rdm-description').value     = rdm.description       || "Our current active project — a premium residential development in the heart of Tijuana's most sought-after neighborhood. Targeting 20-25% net return over 24 months.";
+    document.getElementById('lp-rdm-return').value          = rdm.return            || '20-25%';
+    document.getElementById('lp-rdm-timeline').value        = rdm.timeline          || '24 months';
+    document.getElementById('lp-rdm-status').value          = rdm.status            || 'NOW FUNDING';
+    document.getElementById('lp-rdm-investment-amount').value = rdm.investment_amount || '';
+    const rdmPhoto = rdm.featured_photo || '';
+    document.getElementById('lp-rdm-photo-preview').src = rdmPhoto;
+    document.getElementById('lp-rdm-photo-preview-wrap').style.display = rdmPhoto ? 'block' : 'none';
   }
 
   /* ── Save Hero ── */
@@ -4942,6 +5009,7 @@
   }
   setupDetailPhotoUpload('ad', 'allure');
   setupDetailPhotoUpload('kd', 'kabil');
+  setupDetailPhotoUpload('rdm', 'real_del_monte');
 
   /* ── Hero photo upload ── */
   document.getElementById('lp-hero-upload-btn').addEventListener('click', () => {
@@ -5044,12 +5112,34 @@
   });
 
   /* ── Wire save buttons ── */
+  /* ── Save Real del Monte Detail ── */
+  async function saveLandingPageRdmDetail() {
+    const btn = document.getElementById('btn-save-lp-rdm-detail');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const rows = [
+      ['real_del_monte_detail', 'hero_title',        document.getElementById('lp-rdm-hero-title').value.trim()],
+      ['real_del_monte_detail', 'description',       document.getElementById('lp-rdm-description').value.trim()],
+      ['real_del_monte_detail', 'return',            document.getElementById('lp-rdm-return').value.trim()],
+      ['real_del_monte_detail', 'timeline',          document.getElementById('lp-rdm-timeline').value.trim()],
+      ['real_del_monte_detail', 'status',            document.getElementById('lp-rdm-status').value],
+      ['real_del_monte_detail', 'investment_amount', document.getElementById('lp-rdm-investment-amount').value.trim()],
+    ];
+    let failed = false;
+    for (const [section, key, value] of rows) {
+      const err = await upsertLandingPageRow(section, key, value);
+      if (err) { showToast('Save failed: ' + err.message, true); failed = true; break; }
+    }
+    btn.disabled = false; btn.textContent = 'Save Real del Monte';
+    if (!failed) showToast('Real del Monte saved.');
+  }
+
   document.getElementById('btn-save-lp-hero').addEventListener('click', saveLandingPageHero);
   document.getElementById('btn-save-lp-stats').addEventListener('click', saveLandingPageStats);
   document.getElementById('btn-save-lp-tijuana').addEventListener('click', saveLandingPageTijuana);
   document.getElementById('btn-save-lp-trackrecord').addEventListener('click', saveLandingPageTrackRecord);
   document.getElementById('btn-save-lp-allure-detail').addEventListener('click', saveLandingPageAllureDetail);
   document.getElementById('btn-save-lp-kabil-detail').addEventListener('click', saveLandingPageKabilDetail);
+  document.getElementById('btn-save-lp-rdm-detail').addEventListener('click', saveLandingPageRdmDetail);
 </script>
 
 </body>
