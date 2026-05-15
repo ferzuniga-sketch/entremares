@@ -1675,6 +1675,119 @@
             <button class="btn-save" id="btn-save-lp-trackrecord">Save Track Record</button>
           </div>
         </div>
+
+        <!-- ── ALLURE — PROJECT DETAIL PAGE ── -->
+        <div class="form-card" style="margin-top:20px">
+          <div class="form-section-label" style="margin-top:0">Allure — Project Detail Page</div>
+          <div class="sec-count" style="margin-bottom:16px">Content shown when a visitor clicks "View Project Details" on the Allure card</div>
+          <div class="field" style="margin-top:14px">
+            <label>Hero Title</label>
+            <input type="text" id="lp-ad-hero-title" placeholder="Allure">
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Hero Subtitle</label>
+            <input type="text" id="lp-ad-hero-subtitle" placeholder="Tijuana, Mexico · 2 Townhouses">
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Full Description</label>
+            <textarea id="lp-ad-description" rows="4" placeholder="Two premium townhouses that pushed the bar on design and premium finishes…" style="width:100%;resize:vertical"></textarea>
+          </div>
+          <div class="form-section-label" style="margin-top:18px">Key Highlights</div>
+          <div class="field" style="margin-top:10px">
+            <label>Highlight 1</label>
+            <input type="text" id="lp-ad-highlight-1" placeholder="Premium townhouse design with high-end finishes">
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>Highlight 2</label>
+            <input type="text" id="lp-ad-highlight-2" placeholder="Located in Tijuana's most sought-after neighborhood">
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>Highlight 3</label>
+            <input type="text" id="lp-ad-highlight-3" placeholder="Sold at premium to market rate">
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>Highlight 4</label>
+            <input type="text" id="lp-ad-highlight-4" placeholder="30.88% net return after withholding tax">
+          </div>
+          <div class="form-section-label" style="margin-top:18px">Investment Details</div>
+          <div class="form-grid-2" style="margin-top:10px">
+            <div class="field"><label>Total Capex</label><input type="text" id="lp-ad-capex" placeholder="$449,059"></div>
+            <div class="field"><label>Net Return %</label><input type="number" id="lp-ad-return" placeholder="30.88" step="0.01"></div>
+            <div class="field" style="margin-top:8px"><label>Timeline</label><input type="text" id="lp-ad-timeline" placeholder="36 months"></div>
+            <div class="field" style="margin-top:8px"><label>Units</label><input type="text" id="lp-ad-units" placeholder="2 Townhouses"></div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Featured Photo</label>
+            <div id="lp-ad-photo-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-ad-photo-preview" src="" alt="Allure Detail Photo" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-ad-photo-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-ad-photo-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-ad-photo-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-allure-detail">Save Allure Detail</button>
+          </div>
+        </div>
+
+        <!-- ── KABIL — PROJECT DETAIL PAGE ── -->
+        <div class="form-card" style="margin-top:20px">
+          <div class="form-section-label" style="margin-top:0">Kabil — Project Detail Page</div>
+          <div class="sec-count" style="margin-bottom:16px">Content shown when a visitor clicks "View Project Details" on the Kabil card</div>
+          <div class="field" style="margin-top:14px">
+            <label>Hero Title</label>
+            <input type="text" id="lp-kd-hero-title" placeholder="Kabil">
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Hero Subtitle</label>
+            <input type="text" id="lp-kd-hero-subtitle" placeholder="Tijuana, Mexico · 4 Apartments">
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Full Description</label>
+            <textarea id="lp-kd-description" rows="4" placeholder="Four luxury apartments designed with meticulous attention to finish and spatial flow…" style="width:100%;resize:vertical"></textarea>
+          </div>
+          <div class="form-section-label" style="margin-top:18px">Key Highlights</div>
+          <div class="field" style="margin-top:10px">
+            <label>Highlight 1</label>
+            <input type="text" id="lp-kd-highlight-1" placeholder="Four luxury apartments with premium finishes">
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>Highlight 2</label>
+            <input type="text" id="lp-kd-highlight-2" placeholder="Sold out in 3 months from first listing">
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>Highlight 3</label>
+            <input type="text" id="lp-kd-highlight-3" placeholder="Built and delivered in under 30 months">
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>Highlight 4</label>
+            <input type="text" id="lp-kd-highlight-4" placeholder="31.71% net return on total investment">
+          </div>
+          <div class="form-section-label" style="margin-top:18px">Investment Details</div>
+          <div class="form-grid-2" style="margin-top:10px">
+            <div class="field"><label>Total Capex</label><input type="text" id="lp-kd-capex" placeholder="$227,345"></div>
+            <div class="field"><label>Net Return %</label><input type="number" id="lp-kd-return" placeholder="31.71" step="0.01"></div>
+            <div class="field" style="margin-top:8px"><label>Timeline</label><input type="text" id="lp-kd-timeline" placeholder="30 months"></div>
+            <div class="field" style="margin-top:8px"><label>Units</label><input type="text" id="lp-kd-units" placeholder="4 Apartments"></div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Featured Photo</label>
+            <div id="lp-kd-photo-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-kd-photo-preview" src="" alt="Kabil Detail Photo" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-kd-photo-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-kd-photo-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-kd-photo-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-kabil-detail">Save Kabil Detail</button>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -4541,6 +4654,38 @@
       document.getElementById('lp-tr-' + p + '-photo-preview').src = url;
       document.getElementById('lp-tr-' + p + '-photo-preview-wrap').style.display = url ? 'block' : 'none';
     });
+
+    /* Allure Detail */
+    const ad = lp.allure_detail || {};
+    document.getElementById('lp-ad-hero-title').value    = ad.hero_title    || '';
+    document.getElementById('lp-ad-hero-subtitle').value = ad.hero_subtitle || '';
+    document.getElementById('lp-ad-description').value   = ad.description   || '';
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('lp-ad-highlight-' + i).value = ad['highlight_' + i] || '';
+    }
+    document.getElementById('lp-ad-capex').value    = ad.capex    || '';
+    document.getElementById('lp-ad-return').value   = ad.return   || '';
+    document.getElementById('lp-ad-timeline').value = ad.timeline || '';
+    document.getElementById('lp-ad-units').value    = ad.units    || '';
+    const adPhoto = ad.featured_photo || '';
+    document.getElementById('lp-ad-photo-preview').src = adPhoto;
+    document.getElementById('lp-ad-photo-preview-wrap').style.display = adPhoto ? 'block' : 'none';
+
+    /* Kabil Detail */
+    const kd = lp.kabil_detail || {};
+    document.getElementById('lp-kd-hero-title').value    = kd.hero_title    || '';
+    document.getElementById('lp-kd-hero-subtitle').value = kd.hero_subtitle || '';
+    document.getElementById('lp-kd-description').value   = kd.description   || '';
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('lp-kd-highlight-' + i).value = kd['highlight_' + i] || '';
+    }
+    document.getElementById('lp-kd-capex').value    = kd.capex    || '';
+    document.getElementById('lp-kd-return').value   = kd.return   || '';
+    document.getElementById('lp-kd-timeline').value = kd.timeline || '';
+    document.getElementById('lp-kd-units').value    = kd.units    || '';
+    const kdPhoto = kd.featured_photo || '';
+    document.getElementById('lp-kd-photo-preview').src = kdPhoto;
+    document.getElementById('lp-kd-photo-preview-wrap').style.display = kdPhoto ? 'block' : 'none';
   }
 
   /* ── Save Hero ── */
@@ -4646,6 +4791,58 @@
     if (!failed) showToast('Track Record saved.');
   }
 
+  /* ── Save Allure Detail ── */
+  async function saveLandingPageAllureDetail() {
+    const btn = document.getElementById('btn-save-lp-allure-detail');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const rows = [
+      ['allure_detail', 'hero_title',    document.getElementById('lp-ad-hero-title').value.trim()],
+      ['allure_detail', 'hero_subtitle', document.getElementById('lp-ad-hero-subtitle').value.trim()],
+      ['allure_detail', 'description',   document.getElementById('lp-ad-description').value.trim()],
+      ['allure_detail', 'highlight_1',   document.getElementById('lp-ad-highlight-1').value.trim()],
+      ['allure_detail', 'highlight_2',   document.getElementById('lp-ad-highlight-2').value.trim()],
+      ['allure_detail', 'highlight_3',   document.getElementById('lp-ad-highlight-3').value.trim()],
+      ['allure_detail', 'highlight_4',   document.getElementById('lp-ad-highlight-4').value.trim()],
+      ['allure_detail', 'capex',         document.getElementById('lp-ad-capex').value.trim()],
+      ['allure_detail', 'return',        document.getElementById('lp-ad-return').value.trim()],
+      ['allure_detail', 'timeline',      document.getElementById('lp-ad-timeline').value.trim()],
+      ['allure_detail', 'units',         document.getElementById('lp-ad-units').value.trim()],
+    ];
+    let failed = false;
+    for (const [section, key, value] of rows) {
+      const err = await upsertLandingPageRow(section, key, value);
+      if (err) { showToast('Save failed: ' + err.message, true); failed = true; break; }
+    }
+    btn.disabled = false; btn.textContent = 'Save Allure Detail';
+    if (!failed) showToast('Allure Detail Page saved.');
+  }
+
+  /* ── Save Kabil Detail ── */
+  async function saveLandingPageKabilDetail() {
+    const btn = document.getElementById('btn-save-lp-kabil-detail');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const rows = [
+      ['kabil_detail', 'hero_title',    document.getElementById('lp-kd-hero-title').value.trim()],
+      ['kabil_detail', 'hero_subtitle', document.getElementById('lp-kd-hero-subtitle').value.trim()],
+      ['kabil_detail', 'description',   document.getElementById('lp-kd-description').value.trim()],
+      ['kabil_detail', 'highlight_1',   document.getElementById('lp-kd-highlight-1').value.trim()],
+      ['kabil_detail', 'highlight_2',   document.getElementById('lp-kd-highlight-2').value.trim()],
+      ['kabil_detail', 'highlight_3',   document.getElementById('lp-kd-highlight-3').value.trim()],
+      ['kabil_detail', 'highlight_4',   document.getElementById('lp-kd-highlight-4').value.trim()],
+      ['kabil_detail', 'capex',         document.getElementById('lp-kd-capex').value.trim()],
+      ['kabil_detail', 'return',        document.getElementById('lp-kd-return').value.trim()],
+      ['kabil_detail', 'timeline',      document.getElementById('lp-kd-timeline').value.trim()],
+      ['kabil_detail', 'units',         document.getElementById('lp-kd-units').value.trim()],
+    ];
+    let failed = false;
+    for (const [section, key, value] of rows) {
+      const err = await upsertLandingPageRow(section, key, value);
+      if (err) { showToast('Save failed: ' + err.message, true); failed = true; break; }
+    }
+    btn.disabled = false; btn.textContent = 'Save Kabil Detail';
+    if (!failed) showToast('Kabil Detail Page saved.');
+  }
+
   /* ── Track Record photo uploads ── */
   function setupTrackRecordPhotoUpload(project) {
     document.getElementById('lp-tr-' + project + '-photo-upload-btn').addEventListener('click', () => {
@@ -4698,6 +4895,53 @@
     });
   }
   ['kabil', 'allure'].forEach(setupTrackRecordPhotoUpload);
+
+  /* ── Detail page photo uploads ── */
+  function setupDetailPhotoUpload(prefix, section) {
+    document.getElementById('lp-' + prefix + '-photo-upload-btn').addEventListener('click', () => {
+      document.getElementById('lp-' + prefix + '-photo-file-input').click();
+    });
+    document.getElementById('lp-' + prefix + '-photo-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const btn    = document.getElementById('lp-' + prefix + '-photo-upload-btn');
+      const status = document.getElementById('lp-' + prefix + '-photo-upload-status');
+      btn.disabled = true; btn.textContent = 'Uploading…';
+      status.style.display = 'none';
+      const ext  = file.name.split('.').pop();
+      const path = 'landing/' + section + '-detail_' + Date.now() + '.' + ext;
+      const { error: upErr } = await supabaseClient.storage
+        .from('project-assets')
+        .upload(path, file, { cacheControl: '3600', upsert: true });
+      if (upErr) {
+        btn.disabled = false; btn.textContent = 'Upload Photo';
+        status.textContent = 'Upload failed: ' + upErr.message;
+        status.style.color = '#C0392B'; status.style.display = 'inline';
+        e.target.value = '';
+        return;
+      }
+      const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+      const publicUrl = urlData?.publicUrl;
+      if (publicUrl) {
+        const err = await upsertLandingPageRow(section + '_detail', 'featured_photo', publicUrl);
+        if (err) {
+          btn.disabled = false; btn.textContent = 'Upload Photo';
+          status.textContent = 'Save failed: ' + err.message;
+          status.style.color = '#C0392B'; status.style.display = 'inline';
+          e.target.value = '';
+          return;
+        }
+        document.getElementById('lp-' + prefix + '-photo-preview').src = publicUrl;
+        document.getElementById('lp-' + prefix + '-photo-preview-wrap').style.display = 'block';
+      }
+      btn.disabled = false; btn.textContent = 'Upload Photo';
+      status.textContent = 'Uploaded!';
+      status.style.color = '#2E7D32'; status.style.display = 'inline';
+      e.target.value = '';
+    });
+  }
+  setupDetailPhotoUpload('ad', 'allure');
+  setupDetailPhotoUpload('kd', 'kabil');
 
   /* ── Hero photo upload ── */
   document.getElementById('lp-hero-upload-btn').addEventListener('click', () => {
@@ -4804,6 +5048,8 @@
   document.getElementById('btn-save-lp-stats').addEventListener('click', saveLandingPageStats);
   document.getElementById('btn-save-lp-tijuana').addEventListener('click', saveLandingPageTijuana);
   document.getElementById('btn-save-lp-trackrecord').addEventListener('click', saveLandingPageTrackRecord);
+  document.getElementById('btn-save-lp-allure-detail').addEventListener('click', saveLandingPageAllureDetail);
+  document.getElementById('btn-save-lp-kabil-detail').addEventListener('click', saveLandingPageKabilDetail);
 </script>
 
 </body>

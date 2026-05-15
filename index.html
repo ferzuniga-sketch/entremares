@@ -200,6 +200,163 @@
             .gallery-row { grid-template-columns: 1fr; }
             .why-tijuana { padding: 64px 0; }
         }
+
+        /* Project Detail Modal */
+        .proj-detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.72);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .proj-detail-close {
+            position: fixed;
+            top: 20px;
+            right: 28px;
+            background: rgba(0,0,0,0.45);
+            border: none;
+            color: rgba(255,255,255,0.85);
+            font-size: 30px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 2px 10px 4px;
+            border-radius: 50%;
+            z-index: 9999;
+            transition: background 0.2s, color 0.2s;
+        }
+        .proj-detail-close:hover { background: rgba(0,0,0,0.75); color: #fff; }
+        .proj-detail-modal {
+            background: #fff;
+            border-radius: 16px;
+            max-width: 680px;
+            width: 100%;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 32px 100px rgba(0,0,0,0.45);
+        }
+        .proj-detail-hero {
+            position: relative;
+            height: 260px;
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+        .proj-detail-hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .proj-detail-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.08) 60%);
+        }
+        .proj-detail-hero-text {
+            position: absolute;
+            bottom: 24px;
+            left: 28px;
+            right: 28px;
+        }
+        .proj-detail-hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 500;
+            color: #fff;
+            margin: 0 0 4px;
+            line-height: 1.1;
+        }
+        .proj-detail-hero-subtitle {
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.78);
+            margin: 0;
+        }
+        .proj-detail-body {
+            padding: 32px 28px 36px;
+        }
+        .proj-detail-desc {
+            font-size: 0.9375rem;
+            line-height: 1.75;
+            color: #4B4B4B;
+            margin-bottom: 32px;
+        }
+        .proj-detail-section-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #9B9B9B;
+            margin: 0 0 14px;
+        }
+        .proj-detail-highlights {
+            margin-bottom: 32px;
+        }
+        .proj-detail-highlights-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .proj-detail-highlights-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9375rem;
+            color: #0D0D0D;
+            line-height: 1.5;
+        }
+        .proj-detail-highlights-list li::before {
+            content: '→';
+            color: #9B9B9B;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .proj-detail-inv-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .proj-detail-inv-item {
+            background: #F5F5F3;
+            border-radius: 10px;
+            padding: 16px 10px;
+            text-align: center;
+        }
+        .proj-detail-inv-val {
+            font-size: 1.0625rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #0D0D0D;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+        .proj-detail-inv-lbl {
+            font-size: 0.6875rem;
+            color: #9B9B9B;
+            font-weight: 500;
+        }
+        button.proj-card-link {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        @media (max-width: 640px) {
+            .proj-detail-overlay { padding: 0; align-items: flex-end; }
+            .proj-detail-modal { border-radius: 16px 16px 0 0; max-height: 92vh; }
+            .proj-detail-hero { border-radius: 16px 16px 0 0; height: 200px; }
+            .proj-detail-inv-grid { grid-template-columns: repeat(2, 1fr); }
+            .proj-detail-body { padding: 24px 20px 32px; }
+        }
     </style>
 </head>
 <body>
@@ -331,6 +488,54 @@
         <img src="" alt="" id="gallery-lb-img" class="gallery-lightbox-img">
     </div>
 
+    <!-- Project Detail Modal -->
+    <div class="proj-detail-overlay" id="proj-detail-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Project details">
+        <button class="proj-detail-close" id="proj-detail-close" aria-label="Close">&times;</button>
+        <div class="proj-detail-modal">
+            <div class="proj-detail-hero">
+                <img src="" alt="" id="pdm-hero-img" class="proj-detail-hero-img">
+                <div class="proj-detail-hero-overlay"></div>
+                <div class="proj-detail-hero-text">
+                    <h2 class="proj-detail-hero-title" id="pdm-title">Project</h2>
+                    <p class="proj-detail-hero-subtitle" id="pdm-subtitle"></p>
+                </div>
+            </div>
+            <div class="proj-detail-body">
+                <p class="proj-detail-desc" id="pdm-description"></p>
+                <div class="proj-detail-highlights">
+                    <div class="proj-detail-section-label">Key Highlights</div>
+                    <ul class="proj-detail-highlights-list" id="pdm-highlights">
+                        <li id="pdm-h1"></li>
+                        <li id="pdm-h2"></li>
+                        <li id="pdm-h3"></li>
+                        <li id="pdm-h4"></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="proj-detail-section-label">Investment Details</div>
+                    <div class="proj-detail-inv-grid">
+                        <div class="proj-detail-inv-item">
+                            <div class="proj-detail-inv-val" id="pdm-capex"></div>
+                            <div class="proj-detail-inv-lbl">Total Capex</div>
+                        </div>
+                        <div class="proj-detail-inv-item">
+                            <div class="proj-detail-inv-val" id="pdm-return"></div>
+                            <div class="proj-detail-inv-lbl">Net Return</div>
+                        </div>
+                        <div class="proj-detail-inv-item">
+                            <div class="proj-detail-inv-val" id="pdm-timeline"></div>
+                            <div class="proj-detail-inv-lbl">Timeline</div>
+                        </div>
+                        <div class="proj-detail-inv-item">
+                            <div class="proj-detail-inv-val" id="pdm-units"></div>
+                            <div class="proj-detail-inv-lbl">Units</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== Stats Bar ===== -->
     <section class="stats" aria-label="Key statistics">
         <div class="container">
@@ -440,9 +645,9 @@
                                 <div class="proj-num-lbl">Duration</div>
                             </div>
                         </div>
-                        <a href="projects.html#kabil" class="proj-card-link">
+                        <button class="proj-card-link" onclick="openProjectDetail('kabil')">
                             View Project Details <span class="arrow">→</span>
-                        </a>
+                        </button>
                     </div>
                 </article>
 
@@ -479,9 +684,9 @@
                                 <div class="proj-num-lbl">Duration</div>
                             </div>
                         </div>
-                        <a href="projects.html#allure" class="proj-card-link">
+                        <button class="proj-card-link" onclick="openProjectDetail('allure')">
                             View Project Details <span class="arrow">→</span>
-                        </a>
+                        </button>
                     </div>
                 </article>
 
@@ -692,6 +897,82 @@
     })();
 
     /* ── Supabase — populate landing page content ── */
+    const PROJ_DETAIL_DEFAULTS = {
+        kabil: {
+            hero_title:    'Kabil',
+            hero_subtitle: 'Tijuana, Mexico · 4 Apartments',
+            description:   'Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.',
+            highlight_1:   'Four luxury apartments with premium finishes',
+            highlight_2:   'Sold out in 3 months from first listing',
+            highlight_3:   'Built and delivered in under 30 months',
+            highlight_4:   '31.71% net return on total investment',
+            capex:         '$227,345',
+            return:        '31.71%',
+            timeline:      '30 mo.',
+            units:         '4 Apartments',
+            featured_photo: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80&auto=format&fit=crop',
+        },
+        allure: {
+            hero_title:    'Allure',
+            hero_subtitle: 'Tijuana, Mexico · 2 Townhouses',
+            description:   'Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.',
+            highlight_1:   'Premium townhouse design with high-end finishes',
+            highlight_2:   'Located in Tijuana\'s most sought-after neighborhood',
+            highlight_3:   'Sold at premium to market rate',
+            highlight_4:   '30.88% net return after withholding tax',
+            capex:         '$449,059',
+            return:        '30.88%',
+            timeline:      '36 mo.',
+            units:         '2 Townhouses',
+            featured_photo: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&auto=format&fit=crop',
+        },
+    };
+    let _projDetailData = {};
+
+    function openProjectDetail(project) {
+        const d = _projDetailData[project] || {};
+        const def = PROJ_DETAIL_DEFAULTS[project] || {};
+        const get = k => d[k] || def[k] || '';
+
+        document.getElementById('pdm-title').textContent    = get('hero_title');
+        document.getElementById('pdm-subtitle').textContent = get('hero_subtitle');
+        document.getElementById('pdm-description').textContent = get('description');
+        for (let i = 1; i <= 4; i++) {
+            const li = document.getElementById('pdm-h' + i);
+            const text = get('highlight_' + i);
+            li.textContent = text;
+            li.style.display = text ? '' : 'none';
+        }
+        document.getElementById('pdm-capex').textContent    = get('capex');
+        document.getElementById('pdm-return').textContent   = get('return');
+        document.getElementById('pdm-timeline').textContent = get('timeline');
+        document.getElementById('pdm-units').textContent    = get('units');
+
+        const heroImg = document.getElementById('pdm-hero-img');
+        heroImg.src = get('featured_photo');
+        heroImg.alt = get('hero_title');
+
+        document.getElementById('proj-detail-overlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.getElementById('proj-detail-close').addEventListener('click', () => {
+        document.getElementById('proj-detail-overlay').style.display = 'none';
+        document.body.style.overflow = '';
+    });
+    document.getElementById('proj-detail-overlay').addEventListener('click', e => {
+        if (e.target === document.getElementById('proj-detail-overlay')) {
+            document.getElementById('proj-detail-overlay').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && document.getElementById('proj-detail-overlay').style.display !== 'none') {
+            document.getElementById('proj-detail-overlay').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+
     (async function() {
         const SUPABASE_URL   = 'https://ghkhvjgeqqxfisfjozzr.supabase.co';
         const SUPABASE_KEY   = 'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR';
@@ -770,6 +1051,10 @@
         if (tr.allure_status)            document.getElementById('allure-badge').textContent      = tr.allure_status;
         if (tr.kabil_investment_amount)  document.getElementById('kabil-investment').textContent  = tr.kabil_investment_amount;
         if (tr.allure_investment_amount) document.getElementById('allure-investment').textContent = tr.allure_investment_amount;
+
+        /* ── Project Detail data (stored for modal use) ── */
+        _projDetailData.allure = lp.allure_detail || {};
+        _projDetailData.kabil  = lp.kabil_detail  || {};
 
         /* ── Why Tijuana ── */
         const tj = lp.about_tijuana || {};
