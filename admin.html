@@ -1616,12 +1616,34 @@
             <div class="field"><label>Duration</label><input type="text" id="lp-tr-kabil-timeline" placeholder="30 mo."></div>
             <div class="field" style="margin-top:10px"><label>Dates</label><input type="text" id="lp-tr-kabil-dates" placeholder="Jun 2020 – Dec 2022"></div>
           </div>
+          <div class="field" style="margin-top:14px">
+            <label>Kabil Featured Photo</label>
+            <div id="lp-tr-kabil-photo-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-tr-kabil-photo-preview" src="" alt="Kabil Featured Photo" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-tr-kabil-photo-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-tr-kabil-photo-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-tr-kabil-photo-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
           <div class="divider" style="margin:24px 0"></div>
           <div class="form-section-label">Allure</div>
           <div class="form-grid-2" style="margin-top:14px">
             <div class="field"><label>Net Return</label><input type="text" id="lp-tr-allure-return" placeholder="30.88%"></div>
             <div class="field"><label>Duration</label><input type="text" id="lp-tr-allure-timeline" placeholder="36 mo."></div>
             <div class="field" style="margin-top:10px"><label>Dates</label><input type="text" id="lp-tr-allure-dates" placeholder="Apr 2023 – Apr 2026"></div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Allure Featured Photo</label>
+            <div id="lp-tr-allure-photo-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-tr-allure-photo-preview" src="" alt="Allure Featured Photo" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-tr-allure-photo-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-tr-allure-photo-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-tr-allure-photo-upload-status" style="font-size:13px;display:none"></span>
+            </div>
           </div>
           <div style="margin-top:24px;display:flex;justify-content:flex-end">
             <button class="btn-save" id="btn-save-lp-trackrecord">Save Track Record</button>
@@ -4482,6 +4504,11 @@
     document.getElementById('lp-tr-allure-return').value   = tr.allure_return   || '';
     document.getElementById('lp-tr-allure-timeline').value = tr.allure_timeline || '';
     document.getElementById('lp-tr-allure-dates').value    = tr.allure_dates    || '';
+    ['kabil', 'allure'].forEach(p => {
+      const url = tr[p + '_featured_photo'] || '';
+      document.getElementById('lp-tr-' + p + '-photo-preview').src = url;
+      document.getElementById('lp-tr-' + p + '-photo-preview-wrap').style.display = url ? 'block' : 'none';
+    });
   }
 
   /* ── Save Hero ── */
@@ -4580,6 +4607,59 @@
     btn.disabled = false; btn.textContent = 'Save Track Record';
     if (!failed) showToast('Track Record saved.');
   }
+
+  /* ── Track Record photo uploads ── */
+  function setupTrackRecordPhotoUpload(project) {
+    document.getElementById('lp-tr-' + project + '-photo-upload-btn').addEventListener('click', () => {
+      document.getElementById('lp-tr-' + project + '-photo-file-input').click();
+    });
+
+    document.getElementById('lp-tr-' + project + '-photo-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const btn    = document.getElementById('lp-tr-' + project + '-photo-upload-btn');
+      const status = document.getElementById('lp-tr-' + project + '-photo-upload-status');
+      btn.disabled = true; btn.textContent = 'Uploading…';
+      status.style.display = 'none';
+
+      const ext  = file.name.split('.').pop();
+      const path = 'landing/' + project + '-featured_' + Date.now() + '.' + ext;
+
+      const { error: upErr } = await supabaseClient.storage
+        .from('project-assets')
+        .upload(path, file, { cacheControl: '3600', upsert: true });
+
+      if (upErr) {
+        btn.disabled = false; btn.textContent = 'Upload Photo';
+        status.textContent = 'Upload failed: ' + upErr.message;
+        status.style.color = '#C0392B'; status.style.display = 'inline';
+        e.target.value = '';
+        return;
+      }
+
+      const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+      const publicUrl = urlData?.publicUrl;
+
+      if (publicUrl) {
+        const err = await upsertLandingPageRow('track_record', project + '_featured_photo', publicUrl);
+        if (err) {
+          btn.disabled = false; btn.textContent = 'Upload Photo';
+          status.textContent = 'Save failed: ' + err.message;
+          status.style.color = '#C0392B'; status.style.display = 'inline';
+          e.target.value = '';
+          return;
+        }
+        document.getElementById('lp-tr-' + project + '-photo-preview').src = publicUrl;
+        document.getElementById('lp-tr-' + project + '-photo-preview-wrap').style.display = 'block';
+      }
+
+      btn.disabled = false; btn.textContent = 'Upload Photo';
+      status.textContent = 'Uploaded!';
+      status.style.color = '#2E7D32'; status.style.display = 'inline';
+      e.target.value = '';
+    });
+  }
+  ['kabil', 'allure'].forEach(setupTrackRecordPhotoUpload);
 
   /* ── Hero photo upload ── */
   document.getElementById('lp-hero-upload-btn').addEventListener('click', () => {

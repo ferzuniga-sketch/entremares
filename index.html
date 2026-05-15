@@ -706,17 +706,10 @@
         const { createClient } = window.supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const [lpResult, kabilGal, allureGal] = await Promise.all([
+        const [lpResult, allureGal] = await Promise.all([
             db.from('landing_page').select('section, key, value'),
-            db.from('project_gallery').select('url').eq('project_name', 'Kabil').eq('file_type', 'image').order('sort_order', { ascending: true, nullsFirst: false }).limit(1),
             db.from('project_gallery').select('url').eq('project_name', 'Allure').eq('file_type', 'image').order('sort_order', { ascending: true, nullsFirst: false }).limit(1),
         ]);
-
-        /* ── Track Record card images (from project_gallery) ── */
-        const kabilCardImg = document.getElementById('kabil-card-img');
-        if (kabilCardImg) kabilCardImg.src = kabilGal.data?.[0]?.url || KABIL_IMG_DEFAULT;
-        const allureCardImg = document.getElementById('allure-card-img');
-        if (allureCardImg) allureCardImg.src = allureGal.data?.[0]?.url || ALLURE_IMG_DEFAULT;
 
         const { data, error } = lpResult;
         if (error || !data) return;
@@ -755,6 +748,11 @@
 
         /* ── Track Record ── */
         const tr = lp.track_record || {};
+        const GRAY_PH = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22%3E%3Crect fill=%22%23e8e8e4%22 width=%221%22 height=%221%22/%3E%3C/svg%3E';
+        const kabilCardImg = document.getElementById('kabil-card-img');
+        if (kabilCardImg) kabilCardImg.src = tr.kabil_featured_photo || GRAY_PH;
+        const allureCardImg = document.getElementById('allure-card-img');
+        if (allureCardImg) allureCardImg.src = tr.allure_featured_photo || allureGal.data?.[0]?.url || ALLURE_IMG_DEFAULT;
         if (tr.kabil_return)    document.getElementById('kabil-return').textContent    = tr.kabil_return;
         if (tr.kabil_timeline)  document.getElementById('kabil-timeline').textContent  = tr.kabil_timeline;
         if (tr.kabil_dates)     document.getElementById('kabil-dates').textContent     = tr.kabil_dates;
