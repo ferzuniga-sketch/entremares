@@ -826,6 +826,13 @@
       background: #FFFFFF;
     }
 
+    .modal-amount-input::-webkit-outer-spin-button,
+    .modal-amount-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .modal-amount-input[type=number] { -moz-appearance: textfield; }
+
     .modal-amount-input.error {
       border-color: #C0392B;
       background: #FEF8F8;
@@ -1428,7 +1435,7 @@
       <div class="modal-field-lbl">How much would you like to invest?</div>
       <div class="modal-amount-wrap">
         <span class="modal-amount-prefix">$</span>
-        <input type="text" inputmode="numeric" class="modal-amount-input" id="modal-amount-input" placeholder="25,000" autocomplete="off">
+        <input type="number" step="0.01" min="0" class="modal-amount-input" id="modal-amount-input" placeholder="25000" autocomplete="off">
       </div>
       <div class="modal-min-notice" id="modal-min-notice">$25,000 minimum investment</div>
 
@@ -1468,12 +1475,20 @@
           <span class="modal-summary-val" id="s2-project">Real del Monte</span>
         </div>
         <div class="modal-summary-row">
-          <span class="modal-summary-lbl">Amount</span>
+          <span class="modal-summary-lbl">Amount committing</span>
           <span class="modal-summary-val" id="s2-amount">—</span>
         </div>
         <div class="modal-summary-row">
           <span class="modal-summary-lbl">Date</span>
           <span class="modal-summary-val">May 2, 2026</span>
+        </div>
+        <div class="modal-summary-row">
+          <span class="modal-summary-lbl">Remaining after commitment</span>
+          <span class="modal-summary-val" id="s2-remaining">—</span>
+        </div>
+        <div class="modal-summary-row">
+          <span class="modal-summary-lbl">Remaining after WHT</span>
+          <span class="modal-summary-val" id="s2-remaining-wht">—</span>
         </div>
       </div>
 
@@ -1681,6 +1696,7 @@
   let modalAmount = 0;
   let modalRefNum = '';
   let rdmCommittedAmount = 0;
+  let currentGrossDistribution = 0;
 
   async function loadCommitmentStatus(email) {
     if (!email) return;
@@ -1728,6 +1744,7 @@
       }
 
       currentInvestor.wallet = gross;
+      currentGrossDistribution = gross;
       setFade('stat-net-distribution', '+' + fmt(net));
     } catch (err) {
       console.error('Failed to load Allure balance:', err);
@@ -1781,7 +1798,12 @@
       loadAllureBalance(email),
       loadCommitmentStatus(email)
     ]);
-    setFade('wallet-balance', fmt(Math.max(0, currentInvestor.wallet - rdmCommittedAmount)));
+    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    setFade('wallet-balance', fmt(remaining));
+    if (currentGrossDistribution > 0 && rdmCommittedAmount > 0) {
+      const netRemaining = remaining <= 0 ? 0 : remaining * (ALLURE_NET_MULTIPLIER / ALLURE_GROSS_MULTIPLIER);
+      setFade('stat-net-distribution', remaining <= 0 ? fmt(0) : '+' + fmt(netRemaining));
+    }
     loadProjectDetails();
   }
 
@@ -1981,6 +2003,7 @@
     currentInvestor = inv;
     currentInvestorEmail = email || '';
     rdmCommittedAmount = 0;
+    currentGrossDistribution = 0;
     document.getElementById('active-investments-section').style.display = 'none';
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('dashboard').style.display    = 'block';
@@ -2089,8 +2112,9 @@
 
   function setPreset(fraction) {
     const balance = getAvailableBalance();
-    const raw     = balance * fraction;
-    const amount  = Math.max(25000, Math.round(raw));
+    const amount  = fraction === 1.0
+      ? balance
+      : Math.max(25000, parseFloat((balance * fraction).toFixed(2)));
     document.getElementById('modal-amount-input').value = amount;
     document.querySelectorAll('.modal-preset-btn').forEach(b => {
       b.classList.toggle('selected', parseFloat(b.dataset.pct) === fraction);
@@ -2101,6 +2125,26 @@
 
   function getAvailableBalance() {
     return Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+  }
+
+  async function fetchAndUpdateBalance() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('commitments')
+        .select('amount')
+        .ilike('investor_email', currentInvestorEmail)
+        .neq('project_name', 'Kabil')
+        .neq('project_name', 'Allure');
+      if (!error && data) {
+        rdmCommittedAmount = data.reduce((s, r) => s + Number(r.amount), 0);
+      }
+    } catch (_) {}
+    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    setFade('wallet-balance', fmt(remaining));
+    if (currentGrossDistribution > 0) {
+      const netRemaining = remaining <= 0 ? 0 : remaining * (ALLURE_NET_MULTIPLIER / ALLURE_GROSS_MULTIPLIER);
+      setFade('stat-net-distribution', remaining <= 0 ? fmt(0) : '+' + fmt(netRemaining));
+    }
   }
 
   function validateAmount(amount) {
@@ -2152,6 +2196,13 @@
     document.getElementById('s2-investor').textContent = currentInvestor.name;
     document.getElementById('s2-project').textContent  = projectName;
     document.getElementById('s2-amount').textContent   = fmt(amount);
+    const balance = getAvailableBalance();
+    const remaining = Math.max(0, balance - amount);
+    const remainingWHT = remaining > 0
+      ? remaining * (ALLURE_NET_MULTIPLIER / ALLURE_GROSS_MULTIPLIER)
+      : 0;
+    document.getElementById('s2-remaining').textContent = fmt(remaining);
+    document.getElementById('s2-remaining-wht').textContent = fmt(remainingWHT);
     document.getElementById('s2-returns-lbl').textContent = 'Target return · ' + targetReturn + '% over ' + duration + ' months';
     document.getElementById('s2-returns').textContent  = fmt(amount * targetReturn * 0.8 / 100) + ' – ' + fmt(amount * targetReturn * 1.2 / 100);
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -2209,7 +2260,7 @@
     await checkFullyFunded(projectName);
     updateFundingProgress();
     await loadCommitmentStatus(currentInvestorEmail);
-    setFade('wallet-balance', fmt(Math.max(0, currentInvestor.wallet - rdmCommittedAmount)));
+    await fetchAndUpdateBalance();
   }
 
   /* ── Event listeners ── */
