@@ -523,6 +523,17 @@
     }
 
     /* ══════════════════════════════════════════
+       FUNDING SUMMARY CARD
+    ══════════════════════════════════════════ */
+    .funding-summary-card { background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 14px; padding: 24px 28px; margin-bottom: 20px; }
+    .funding-summary-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .funding-summary-title { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #9B9B9B; }
+    .funding-proj-row + .funding-proj-row { margin-top: 18px; padding-top: 18px; border-top: 1px solid #F0F0EE; }
+    .funding-proj-name { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: #0D0D0D; }
+    .funding-proj-pct { font-size: 13px; font-weight: 700; color: #1A7F4A; }
+    .commit-update-status { background: #F0FBF5; border: 1px solid #C3E8D2; border-radius: 10px; padding: 12px 18px; font-size: 13px; color: #0D0D0D; margin-bottom: 14px; line-height: 1.55; }
+
+    /* ══════════════════════════════════════════
        MODAL
     ══════════════════════════════════════════ */
     .modal-overlay {
@@ -973,6 +984,21 @@
          TAB: COMMITMENTS
     ═══════════════════════════ -->
     <div class="tab-content" id="tab-commitments">
+
+      <!-- Funding Summary -->
+      <div class="funding-summary-card">
+        <div class="funding-summary-hdr">
+          <span class="funding-summary-title">Funding Summary</span>
+          <span style="font-size:12px;color:#C0C0BC" id="funding-summary-updated"></span>
+        </div>
+        <div id="funding-summary-body">
+          <div style="color:#9B9B9B;font-size:13px">Loading…</div>
+        </div>
+      </div>
+
+      <!-- Update status message (shown after editing a commitment) -->
+      <div class="commit-update-status" id="commit-update-status" style="display:none"></div>
+
       <div class="sec-top">
         <div>
           <div class="sec-heading">Commitments</div>
@@ -3044,6 +3070,51 @@
     });
   }
 
+  /* ── Funding Summary (real-time per-project card) ── */
+  async function loadFundingSummary() {
+    const bodyEl   = document.getElementById('funding-summary-body');
+    const updEl    = document.getElementById('funding-summary-updated');
+    if (!bodyEl) return;
+
+    const { data, error } = await supabaseClient
+      .from('commitments')
+      .select('project_name, amount');
+
+    if (error) {
+      bodyEl.innerHTML = '<div style="color:#C0392B;font-size:13px">Failed to load: ' + escHtml(error.message) + '</div>';
+      return;
+    }
+
+    const ACTIVE_PROJECTS = [{ name: 'Real del Monte', target: 800000 }];
+    const byProject = {};
+    (data || []).forEach(r => {
+      byProject[r.project_name] = (byProject[r.project_name] || 0) + Number(r.amount);
+    });
+
+    bodyEl.innerHTML = ACTIVE_PROJECTS.map(p => {
+      const total     = byProject[p.name] || 0;
+      const pct       = Math.min(100, total / p.target * 100);
+      const remaining = Math.max(0, p.target - total);
+      return `<div class="funding-proj-row">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span class="funding-proj-name">${escHtml(p.name)}</span>
+          <span class="funding-proj-pct">${pct.toFixed(1)}% funded</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" style="width:${pct.toFixed(2)}%;background:#1A7F4A"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:7px;font-size:12px;color:#9B9B9B">
+          <span>${fmt(total)} committed of ${fmt(p.target)} target</span>
+          <span>${fmt(remaining)} remaining</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    if (updEl) {
+      updEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+  }
+
   /* ── Inline edit ── */
   function startEditCommitment(id, currentAmount) {
     document.getElementById('cell-amount-' + id).innerHTML =
@@ -3099,7 +3170,26 @@
     }
 
     console.log('[Supabase] Update successful — rows affected:', data.length, data);
+
+    // Recalculate project funding and show inline success message
+    const projectName = commitmentsCache[id]?.project_name || 'Real del Monte';
+    commitmentsCache[id] = Object.assign({}, commitmentsCache[id], { amount: newAmount });
+    const target = 800000;
+    const allForProject = Object.values(commitmentsCache).filter(c => c.project_name === projectName);
+    const newTotal = allForProject.reduce((s, c) => s + Number(c.amount), 0);
+    const newPct   = Math.min(100, newTotal / target * 100);
+    const statusEl = document.getElementById('commit-update-status');
+    if (statusEl) {
+      statusEl.innerHTML = '<strong style="color:#1A7F4A">&#10003; Commitment updated.</strong> '
+        + escHtml(projectName) + ' funding: <strong>' + newPct.toFixed(1) + '%</strong>'
+        + ' (' + fmt(newTotal) + ' raised of ' + fmt(target) + ' target)';
+      statusEl.style.display = '';
+      clearTimeout(statusEl._hideTimer);
+      statusEl._hideTimer = setTimeout(() => { statusEl.style.display = 'none'; }, 7000);
+    }
+
     loadCommitmentsFromSupabase();
+    loadFundingSummary();
   }
 
   /* ── Delete ── */
@@ -3132,6 +3222,7 @@
 
     console.log('[Supabase] Delete successful — rows deleted:', data.length, data);
     loadCommitmentsFromSupabase();
+    loadFundingSummary();
   }
 
   /* ── Add Commitment modal ── */
@@ -3185,6 +3276,7 @@
 
     closeCommitmentModal();
     loadCommitmentsFromSupabase();
+    loadFundingSummary();
   }
 
   document.getElementById('btn-add-commitment').addEventListener('click', openAddCommitment);
@@ -3224,7 +3316,7 @@
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      if (btn.dataset.tab === 'commitments')  loadCommitmentsFromSupabase();
+      if (btn.dataset.tab === 'commitments') { loadCommitmentsFromSupabase(); loadFundingSummary(); }
       if (btn.dataset.tab === 'allure')       loadAllureDetails();
       if (btn.dataset.tab === 'activity')     loadActivities();
       if (btn.dataset.tab === 'landingpage')  loadLandingPage();
@@ -3412,7 +3504,7 @@
     document.getElementById('admin-panel').style.display  = 'block';
     renderInvestors();
     renderProjects();
-    setTimeout(loadCommitmentsFromSupabase, 1000);
+    setTimeout(() => { loadCommitmentsFromSupabase(); loadFundingSummary(); }, 1000);
   }
 
   document.getElementById('btn-login').addEventListener('click', attemptLogin);

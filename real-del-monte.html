@@ -209,6 +209,27 @@
     .mini-details-link { display: block; margin-top: 14px; font-size: 13px; font-weight: 500; color: #1A7F4A; text-decoration: none; cursor: pointer; }
     .mini-details-link:hover { text-decoration: underline; }
 
+    /* ══ MODIFY REQUEST FORM ══ */
+    .btn-modify-toggle { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; font-family: inherit; font-size: 13px; font-weight: 600; color: #1A5FA8; background: #EEF4FD; border: 1.5px solid #BDD3F5; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .btn-modify-toggle:hover { background: #1A5FA8; color: #FFFFFF; border-color: #1A5FA8; }
+    .modify-form-label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #9B9B9B; margin-bottom: 12px; }
+    .modify-fld-lbl { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9B9B9B; margin-bottom: 6px; }
+    .modify-input { width: 100%; padding: 9px 12px; font-family: inherit; font-size: 14px; color: #0D0D0D; background: #FFFFFF; border: 1.5px solid #E8E8E4; border-radius: 8px; outline: none; transition: border-color 0.15s; }
+    .modify-input:focus { border-color: #0D0D0D; }
+    .modify-input[readonly] { color: #9B9B9B; background: #F5F5F3; cursor: default; }
+    .modify-textarea { width: 100%; padding: 9px 12px; font-family: inherit; font-size: 14px; color: #0D0D0D; background: #FFFFFF; border: 1.5px solid #E8E8E4; border-radius: 8px; outline: none; resize: vertical; min-height: 72px; transition: border-color 0.15s; }
+    .modify-textarea:focus { border-color: #0D0D0D; }
+    .modify-buttons { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .btn-modify-email-send { padding: 9px 16px; font-family: inherit; font-size: 13px; font-weight: 600; color: #FFFFFF; background: #0D0D0D; border: none; border-radius: 8px; cursor: pointer; transition: opacity 0.15s; }
+    .btn-modify-email-send:hover { opacity: 0.82; }
+    .btn-modify-email-send:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-modify-wa { padding: 9px 16px; font-family: inherit; font-size: 13px; font-weight: 600; color: #1A7F4A; background: #F0FBF5; border: 1.5px solid #C3E8D2; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all 0.15s; }
+    .btn-modify-wa:hover { background: #1A7F4A; color: #FFFFFF; border-color: #1A7F4A; }
+    .modify-approval-note { font-size: 12px; color: #9B9B9B; margin-top: 12px; line-height: 1.6; font-style: italic; }
+    .modify-status { font-size: 13px; margin-top: 10px; }
+    .modify-status.success { color: #1A7F4A; }
+    .modify-status.error { color: #C0392B; }
+
     /* ══ RESPONSIVE ══ */
     @media (max-width: 960px) {
       .project-layout { grid-template-columns: 1fr; }
@@ -535,6 +556,29 @@
                 <div class="inv-row">
                   <span class="inv-lbl">Status</span>
                   <span class="inv-val" style="color:#1A7F4A">Funding in progress</span>
+                </div>
+              </div>
+              <div class="inv-section">
+                <div style="padding:4px 0 12px">
+                  <button class="btn-modify-toggle" id="btn-toggle-modify" onclick="toggleModifyForm()">Request to Modify</button>
+                  <div id="modify-form-wrap" style="display:none;margin-top:14px">
+                    <div class="modify-form-label">Modification Request</div>
+                    <label class="modify-fld-lbl">Current Commitment</label>
+                    <input type="text" id="modify-current" class="modify-input" readonly style="margin-bottom:10px">
+                    <label class="modify-fld-lbl">Requested New Amount ($)</label>
+                    <input type="number" id="modify-new-amount" class="modify-input" placeholder="Enter amount" min="1" step="1" style="margin-bottom:10px">
+                    <label class="modify-fld-lbl">Reason for Change</label>
+                    <textarea id="modify-reason" class="modify-textarea" placeholder="Please explain why you'd like to modify your commitment…"></textarea>
+                    <div class="modify-buttons">
+                      <button class="btn-modify-email-send" id="modify-btn-email">Send via Email</button>
+                      <a class="btn-modify-wa" id="modify-btn-wa" href="#" target="_blank">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        Ask on WhatsApp
+                      </a>
+                    </div>
+                    <div class="modify-status" id="modify-status" style="display:none"></div>
+                    <p class="modify-approval-note">Modification requests are subject to approval and do not take effect until confirmed by Entremares.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1063,6 +1107,93 @@
 
     // Build Q&A on all tabs after DOM is ready
     ['qa-overview', 'qa-financials', 'qa-returns', 'qa-updates'].forEach(id => buildQASection(id));
+  })();
+
+  /* ══════════════════════════════════════════
+     MODIFY COMMITMENT FORM
+  ══════════════════════════════════════════ */
+  function toggleModifyForm() {
+    const wrap = document.getElementById('modify-form-wrap');
+    const btn  = document.getElementById('btn-toggle-modify');
+    if (wrap.style.display === 'none') {
+      wrap.style.display = '';
+      btn.textContent = 'Cancel';
+      document.getElementById('modify-current').value = document.getElementById('tab-committed').textContent;
+      updateModifyWALink();
+    } else {
+      wrap.style.display = 'none';
+      btn.textContent = 'Request to Modify';
+    }
+  }
+
+  function updateModifyWALink() {
+    const current = document.getElementById('modify-current').value;
+    const newAmt  = document.getElementById('modify-new-amount').value.trim();
+    const reason  = document.getElementById('modify-reason').value.trim();
+    const newFmt  = newAmt ? '$' + Number(newAmt).toLocaleString('en-US') : '[new amount]';
+    const text = 'Hi Fernando, I would like to modify my commitment in Real del Monte from ' + current + ' to ' + newFmt + '. Reason: ' + (reason || '[reason]');
+    document.getElementById('modify-btn-wa').href = 'https://wa.me/50769824455?text=' + encodeURIComponent(text);
+  }
+
+  (function initModifyForm() {
+    const newAmtInput = document.getElementById('modify-new-amount');
+    const reasonInput = document.getElementById('modify-reason');
+    const emailBtn    = document.getElementById('modify-btn-email');
+    const statusEl    = document.getElementById('modify-status');
+    if (!newAmtInput || !emailBtn) return;
+
+    newAmtInput.addEventListener('input', updateModifyWALink);
+    reasonInput.addEventListener('input', updateModifyWALink);
+
+    emailBtn.addEventListener('click', async function() {
+      const current = document.getElementById('modify-current').value;
+      const newAmt  = newAmtInput.value.trim();
+      const reason  = reasonInput.value.trim();
+      statusEl.style.display = 'none';
+
+      if (!newAmt || parseFloat(newAmt) <= 0) {
+        statusEl.textContent = 'Please enter a valid new amount.';
+        statusEl.className = 'modify-status error';
+        statusEl.style.display = '';
+        return;
+      }
+      if (!reason) {
+        statusEl.textContent = 'Please describe the reason for your modification request.';
+        statusEl.className = 'modify-status error';
+        statusEl.style.display = '';
+        return;
+      }
+
+      emailBtn.disabled = true;
+      emailBtn.textContent = 'Sending…';
+
+      try {
+        await emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+          to_email:   'ferzuniga@gmail.com',
+          subject:    'Commitment Modification Request - Real del Monte - ' + currentInvestorName,
+          from_name:  currentInvestorName,
+          from_email: currentInvestorEmail,
+          message:    'Commitment Modification Request\n\nInvestor: ' + currentInvestorName
+                    + '\nProject: Real del Monte'
+                    + '\n\nCurrent Commitment: ' + current
+                    + '\nRequested New Amount: $' + Number(newAmt).toLocaleString('en-US')
+                    + '\n\nReason: ' + reason
+        });
+        statusEl.textContent = 'Request sent! We\'ll review and confirm within 24 hours.';
+        statusEl.className = 'modify-status success';
+        statusEl.style.display = '';
+        newAmtInput.value = '';
+        reasonInput.value = '';
+        updateModifyWALink();
+      } catch (err) {
+        statusEl.textContent = 'Failed to send email. Please try WhatsApp.';
+        statusEl.className = 'modify-status error';
+        statusEl.style.display = '';
+      }
+
+      emailBtn.disabled = false;
+      emailBtn.textContent = 'Send via Email';
+    });
   })();
 </script>
 
