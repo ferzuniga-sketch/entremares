@@ -1164,6 +1164,59 @@
     }
 
     .login-back:hover { color: #6B6B6B; }
+
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 20px;
+      color: #BEBEBE;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .login-divider::before,
+    .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #E8E8E4;
+    }
+
+    .btn-magic-link {
+      width: 100%;
+      padding: 15px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: #0D0D0D;
+      background: #FFFFFF;
+      border: 1.5px solid #0D0D0D;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      letter-spacing: -0.01em;
+    }
+    .btn-magic-link:hover { background: #F5F5F3; }
+    .btn-magic-link:active { opacity: 0.7; }
+    .btn-magic-link:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .login-success {
+      font-size: 13px;
+      color: #1A6B3A;
+      background: #EBF6EF;
+      border: 1px solid #B8DFC6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .magic-link-note {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #BEBEBE;
+    }
   </style>
 </head>
 <body>
@@ -1203,6 +1256,14 @@
     <div style="text-align:center;margin-top:14px;">
       <a id="lnk-forgot" href="#" style="font-size:13px;color:#6B6B6B;text-decoration:none;">Forgot password?</a>
     </div>
+
+    <div class="login-divider">or</div>
+
+    <div class="login-success" id="magic-link-success">Magic link sent! Check your email and click the link to sign in.</div>
+
+    <button class="btn-magic-link" id="btn-magic-link">Send Magic Link</button>
+
+    <div class="magic-link-note">Magic link expires in 1 hour</div>
 
   </div>
 </div>
@@ -2052,6 +2113,42 @@
     renderDashboard(inv, userEmail);
   }
 
+  async function sendMagicLink() {
+    const email      = document.getElementById('inp-email').value.trim().toLowerCase();
+    const errEl      = document.getElementById('login-error');
+    const successEl  = document.getElementById('magic-link-success');
+    const btn        = document.getElementById('btn-magic-link');
+
+    errEl.style.display     = 'none';
+    successEl.style.display = 'none';
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errEl.textContent    = 'Please enter a valid email address.';
+      errEl.style.display  = 'block';
+      document.getElementById('inp-email').focus();
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = 'Sending…';
+
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: 'https://entremares-nine.vercel.app/dashboard.html' }
+    });
+
+    btn.disabled    = false;
+    btn.textContent = 'Send Magic Link';
+
+    if (error) {
+      errEl.textContent   = error.message || 'Failed to send magic link. Please try again.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    successEl.style.display = 'block';
+  }
+
   async function signOut() {
     await supabaseClient.auth.signOut();
     const adminLink = document.getElementById('admin-link');
@@ -2316,6 +2413,7 @@
 
   /* ── Event listeners ── */
   document.getElementById('btn-login').addEventListener('click', attemptLogin);
+  document.getElementById('btn-magic-link').addEventListener('click', sendMagicLink);
   document.getElementById('btn-signout').addEventListener('click', signOut);
   document.getElementById('btn-invest').addEventListener('click', openModal);
 
