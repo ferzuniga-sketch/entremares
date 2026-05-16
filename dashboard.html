@@ -1601,7 +1601,6 @@
         </div>
       </div>
 
-      <a class="btn-modal-notify" id="btn-notify-admin">Send admin notification email</a>
       <button class="btn-modal-primary" onclick="closeModal()">Close</button>
     </div>
 
@@ -1687,6 +1686,27 @@
       if (error) console.error('Supabase insert error:', error);
     } catch (err) {
       console.error('Failed to save commitment:', err);
+    }
+  }
+
+  async function sendNewCommitmentAlert(projectName) {
+    try {
+      const { data } = await supabaseClient
+        .from('commitments')
+        .select('amount')
+        .eq('project_name', projectName);
+      const newTotal = (data || []).reduce((s, r) => s + Number(r.amount), 0);
+      const fmtAmount = '$' + modalAmount.toLocaleString('en-US');
+      const fmtTotal  = '$' + newTotal.toLocaleString('en-US');
+      emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+        name:              'New Commitment Alert',
+        email:             currentInvestorEmail,
+        country:           currentInvestor.name,
+        investment_amount: fmtAmount,
+        message:           'New commitment received: ' + currentInvestor.name + ' has committed ' + fmtAmount + ' to ' + projectName + '. Total raised for ' + projectName + ': ' + fmtTotal + '.'
+      }).catch(err => console.error('EmailJS commitment alert failed:', err));
+    } catch (err) {
+      console.error('sendNewCommitmentAlert error:', err);
     }
   }
 
@@ -2284,24 +2304,10 @@
       if (lbl && val && lbl.textContent === 'Date') val.textContent = today;
     });
 
-    const subject = encodeURIComponent('New Investment Commitment – ' + currentInvestor.name + ' – ' + fmt(modalAmount));
-    const body = encodeURIComponent(
-      'New Investment Commitment\n\n' +
-      'Investor:    ' + currentInvestor.name + '\n' +
-      'Email:       ' + currentInvestorEmail  + '\n' +
-      'Project:     ' + projectName           + '\n' +
-      'Amount:      ' + fmt(modalAmount)       + '\n' +
-      'Date:        ' + today                  + '\n' +
-      'Reference:   #' + modalRefNum           + '\n\n' +
-      'Ownership:   ' + (modalAmount / 800000 * 100).toFixed(2) + '% of project\n' +
-      'Please review and send the Shareholders Loan Agreement to the investor.'
-    );
-    document.getElementById('btn-notify-admin').href =
-      'mailto:ferzuniga@gmail.com?subject=' + subject + '&body=' + body;
-
     showStep(3);
 
     await saveCommitmentToSupabase();
+    sendNewCommitmentAlert(projectName);
     await checkFullyFunded(projectName);
     updateFundingProgress();
     await loadCommitmentStatus(currentInvestorEmail);
