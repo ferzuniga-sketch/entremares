@@ -904,6 +904,7 @@
         <button class="tab-btn" data-tab="projects">Projects</button>
         <button class="tab-btn" data-tab="commitments">Commitments</button>
         <button class="tab-btn" data-tab="allure">Allure</button>
+        <button class="tab-btn" data-tab="realdelmente">Real del Monte</button>
         <button class="tab-btn" data-tab="activity">Activity</button>
         <button class="tab-btn" data-tab="landingpage">Landing Page</button>
       </div>
@@ -1398,6 +1399,383 @@
       </div>
 
     </div>
+
+    <!-- ═══════════════════════════
+         TAB: REAL DEL MONTE
+    ═══════════════════════════ -->
+    <div class="tab-content" id="tab-realdelmente">
+
+      <!-- Sub-navigation -->
+      <div class="subnav-wrap">
+        <div class="subnav" id="rdm-subnav">
+          <button class="subnav-btn active" data-rdmsubtab="details">Project Details</button>
+          <button class="subnav-btn" data-rdmsubtab="budget">Budget</button>
+          <button class="subnav-btn" data-rdmsubtab="scenarios">Return Scenarios</button>
+          <button class="subnav-btn" data-rdmsubtab="capital">Capital Structure</button>
+          <button class="subnav-btn" data-rdmsubtab="positions">Investor Positions</button>
+          <button class="subnav-btn" data-rdmsubtab="updates">Updates</button>
+          <button class="subnav-btn" data-rdmsubtab="gallery">Gallery</button>
+        </div>
+      </div>
+
+      <!-- ── PROJECT DETAILS ── -->
+      <div class="subtab-content active" id="rdmsubtab-details">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Project Details — Real del Monte</div>
+            <div class="sec-count">Core project information</div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Project Name</label>
+              <input type="text" id="rdm-pd-name" placeholder="Real del Monte">
+            </div>
+            <div class="field">
+              <label>Location</label>
+              <input type="text" id="rdm-pd-location" placeholder="City, Country">
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Address</label>
+            <input type="text" id="rdm-pd-address" placeholder="Full street address">
+          </div>
+          <div class="form-grid-4" style="margin-top:14px">
+            <div class="field">
+              <label>Status</label>
+              <select id="rdm-pd-status">
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+                <option value="Coming Soon">Coming Soon</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <input type="text" id="rdm-pd-category" placeholder="Residential">
+            </div>
+            <div class="field">
+              <label>Size</label>
+              <input type="text" id="rdm-pd-size-sqm" placeholder="e.g. 500 m²">
+            </div>
+            <div class="field">
+              <label>Start Date</label>
+              <input type="date" id="rdm-pd-start-date">
+            </div>
+            <div class="field">
+              <label>End Date</label>
+              <input type="date" id="rdm-pd-end-date">
+            </div>
+          </div>
+          <div class="form-grid-4" style="margin-top:14px">
+            <div class="field">
+              <label>Duration (months)</label>
+              <input type="number" id="rdm-pd-duration" placeholder="24" step="1" min="1">
+            </div>
+            <div class="field">
+              <label>Total Capex ($)</label>
+              <input type="number" id="rdm-pd-capex" placeholder="800000" step="1">
+            </div>
+            <div class="field">
+              <label>Target Return (%)</label>
+              <input type="number" id="rdm-pd-target-return" placeholder="25" step="0.01">
+            </div>
+            <div class="field">
+              <label>Actual Return (%)</label>
+              <input type="number" id="rdm-pd-actual-return" placeholder="TBD" step="0.01">
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Units</label>
+            <input type="text" id="rdm-pd-units" placeholder="e.g. 6 apartments">
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Description</label>
+            <textarea id="rdm-pd-description" rows="3" placeholder="Project description…"></textarea>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Cover Photo</label>
+            <div id="rdm-pd-cover-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="rdm-pd-cover-preview" src="" alt="Cover photo" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="rdm-pd-cover-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="rdm-pd-cover-upload-btn" class="btn-upload-cover">Upload Cover Photo</button>
+              <span id="rdm-pd-cover-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+            <details style="margin-top:12px">
+              <summary style="font-size:12px;color:#9B9B9B;cursor:pointer;user-select:none;list-style:none;-webkit-appearance:none">Or enter URL manually</summary>
+              <input type="text" id="rdm-pd-cover-photo" placeholder="https://…" style="margin-top:8px">
+            </details>
+          </div>
+          <div class="form-grid-2" style="margin-top:14px">
+            <div class="field">
+              <label>Contractor Name</label>
+              <input type="text" id="rdm-pd-contractor-name" placeholder="AEDIFIKA">
+            </div>
+            <div class="field">
+              <label>Contractor URL</label>
+              <input type="text" id="rdm-pd-contractor-url" placeholder="https://…">
+            </div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="rdm-btn-save-details">Save Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BUDGET ── -->
+      <div class="subtab-content" id="rdmsubtab-budget">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Budget</div>
+            <div class="sec-count" id="rdm-budget-count">Loading…</div>
+          </div>
+          <button class="btn-add" id="rdm-btn-add-budget">+ Add Row</button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Forecasted</th>
+                <th>Actual</th>
+                <th>Variance</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rdm-budget-tbody"></tbody>
+            <tfoot id="rdm-budget-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── RETURN SCENARIOS ── -->
+      <div class="subtab-content" id="rdmsubtab-scenarios">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Return Scenarios</div>
+            <div class="sec-count">Three-scenario analysis (20%, 25%, 30%)</div>
+          </div>
+        </div>
+        <div class="scenario-grid">
+          <div class="scenario-card scenario-pessimistic">
+            <div class="scenario-label">Pessimistic</div>
+            <div class="field">
+              <label>Scenario Name</label>
+              <input type="text" id="rdm-sc-pess-name" placeholder="Pessimistic" value="Pessimistic">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Return (%)</label>
+              <input type="number" id="rdm-sc-pess-return" placeholder="20" step="0.1" value="20">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Description</label>
+              <textarea id="rdm-sc-pess-desc" rows="2" placeholder="Conservative estimate">Conservative estimate</textarea>
+            </div>
+            <div style="margin-top:14px">
+              <button class="btn-save" style="width:100%" onclick="rdmSaveScenario('pessimistic')">Save</button>
+            </div>
+          </div>
+          <div class="scenario-card scenario-base">
+            <div class="scenario-label">Base Case</div>
+            <div class="field">
+              <label>Scenario Name</label>
+              <input type="text" id="rdm-sc-base-name" placeholder="Base" value="Base">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Return (%)</label>
+              <input type="number" id="rdm-sc-base-return" placeholder="25" step="0.01" value="25">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Description</label>
+              <textarea id="rdm-sc-base-desc" rows="2" placeholder="Expected outcome">Expected outcome</textarea>
+            </div>
+            <div style="margin-top:14px">
+              <button class="btn-save" style="width:100%" onclick="rdmSaveScenario('base')">Save</button>
+            </div>
+          </div>
+          <div class="scenario-card scenario-optimistic">
+            <div class="scenario-label">Optimistic</div>
+            <div class="field">
+              <label>Scenario Name</label>
+              <input type="text" id="rdm-sc-opt-name" placeholder="Optimistic" value="Optimistic">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Return (%)</label>
+              <input type="number" id="rdm-sc-opt-return" placeholder="30" step="0.1" value="30">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Description</label>
+              <textarea id="rdm-sc-opt-desc" rows="2" placeholder="Upside scenario">Upside scenario</textarea>
+            </div>
+            <div style="margin-top:14px">
+              <button class="btn-save" style="width:100%" onclick="rdmSaveScenario('optimistic')">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CAPITAL STRUCTURE ── -->
+      <div class="subtab-content" id="rdmsubtab-capital">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Capital Structure</div>
+            <div class="sec-count" id="rdm-capital-count">Loading…</div>
+          </div>
+          <button class="btn-add" id="rdm-btn-add-capital">+ Add Row</button>
+        </div>
+        <div style="background:#FFF8E7;border:1px solid #F0D890;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#7A5900">
+          Default structure: EntreOcéanos 70% / AEDIFIKA 30% / Total $800,000
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Forecasted</th>
+                <th>Actual</th>
+                <th>Stake</th>
+                <th>Is Total</th>
+                <th>Sort Order</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rdm-capital-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── INVESTOR POSITIONS (from commitments) ── -->
+      <div class="subtab-content" id="rdmsubtab-positions">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Investor Positions</div>
+            <div class="sec-count" id="rdm-positions-count">Loading…</div>
+          </div>
+          <button class="btn-add" id="rdm-btn-add-commitment">+ Add Commitment</button>
+        </div>
+        <div style="background:#EEF4FD;border:1px solid #BDD3F5;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1A5FA8">
+          Reads from the commitments table. Include AEDIFIKA's $240,000 as a manual entry.
+        </div>
+        <!-- Summary -->
+        <div class="summary-strip" style="margin-bottom:20px">
+          <div>
+            <div class="sum-lbl">Total Committed</div>
+            <div class="sum-val" id="rdm-sum-committed">$0</div>
+          </div>
+          <div>
+            <div class="sum-lbl">Funding Target</div>
+            <div class="sum-val">$800,000</div>
+          </div>
+          <div>
+            <div class="sum-lbl">Remaining</div>
+            <div class="sum-val" id="rdm-sum-remaining">$800,000</div>
+          </div>
+          <div style="min-width:160px">
+            <div class="sum-lbl" id="rdm-sum-pct-lbl">0% funded</div>
+            <div class="prog-track" style="margin-top:6px">
+              <div class="prog-fill" id="rdm-commit-prog-fill"></div>
+            </div>
+          </div>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Investor Name</th>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rdm-positions-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── UPDATES ── -->
+      <div class="subtab-content" id="rdmsubtab-updates">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Updates</div>
+            <div class="sec-count" id="rdm-updates-count">Project news &amp; milestones</div>
+          </div>
+          <button class="btn-add" id="rdm-btn-add-update">+ Add Update</button>
+        </div>
+
+        <div id="rdm-update-form-wrap" style="display:none;background:#FAFAF8;border:1px solid #EEEEE9;border-radius:14px;padding:24px;margin-bottom:20px">
+          <div class="sec-heading" id="rdm-update-form-title" style="margin-bottom:18px;font-size:15px">New Update</div>
+          <input type="hidden" id="rdm-uf-id">
+          <div class="field" style="margin-bottom:14px">
+            <label>Title</label>
+            <input type="text" id="rdm-uf-title" placeholder="e.g. Permits Approved">
+          </div>
+          <div class="form-grid-2" style="margin-bottom:14px">
+            <div class="field">
+              <label>Category</label>
+              <select id="rdm-uf-category">
+                <option value="Permitting">Permitting</option>
+                <option value="Construction">Construction</option>
+                <option value="Sales">Sales</option>
+                <option value="Finance">Finance</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="rdm-uf-date">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Body</label>
+            <textarea id="rdm-uf-body" rows="5" placeholder="Full update text…"></textarea>
+          </div>
+          <div class="field" style="margin-bottom:20px">
+            <label>Photo URL <span style="font-weight:400;color:#B0B0AA">(optional)</span></label>
+            <input type="text" id="rdm-uf-photo" placeholder="https://…">
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn-save" id="rdm-btn-save-update">Save Update</button>
+            <button class="btn-add" id="rdm-btn-cancel-update" style="background:#F5F5F3;color:#4B4B4B">Cancel</button>
+          </div>
+        </div>
+
+        <div id="rdm-updates-admin-list"></div>
+      </div>
+
+      <!-- ── GALLERY ── -->
+      <div class="subtab-content" id="rdmsubtab-gallery">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Gallery</div>
+            <div class="sec-count" id="rdm-gallery-count">Photos &amp; Videos</div>
+          </div>
+        </div>
+
+        <div class="form-card" style="padding:0;overflow:hidden;margin-bottom:20px">
+          <div id="rdm-gallery-drop-zone" style="border:2px dashed #D0D0CC;border-radius:12px;padding:40px 32px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;margin:20px;background:#FAFAF8">
+            <input type="file" id="rdm-gallery-file-input" accept="image/*,video/*" multiple style="display:none">
+            <div style="margin-bottom:10px">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C0C0BC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div style="font-size:15px;font-weight:600;color:#4A4A4A;margin-bottom:4px">Click to upload or drag &amp; drop photos/videos</div>
+            <div style="font-size:12px;color:#9B9B9B">Images and videos accepted · Stored under project-assets/real-del-monte/</div>
+          </div>
+          <div id="rdm-gallery-upload-progress" style="display:none;padding:0 20px 20px">
+            <div style="font-size:13px;font-weight:500;color:#4A4A4A;margin-bottom:8px" id="rdm-gallery-upload-label">Uploading…</div>
+            <div style="background:#EEEEE9;border-radius:4px;height:6px;overflow:hidden">
+              <div id="rdm-gallery-upload-bar" style="height:100%;background:#0D0D0D;border-radius:4px;width:0%;transition:width 0.2s"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="rdm-gallery-admin-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div>
+      </div>
+
+    </div><!-- /tab-realdelmente -->
 
     <!-- ═══════════════════════════
          TAB: ACTIVITY
@@ -2228,6 +2606,113 @@
     <div class="modal-footer">
       <button class="btn-cancel" id="modal-activity-cancel">Cancel</button>
       <button class="btn-save" id="modal-activity-save">Add Activity</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RDM: Commitment Modal ── -->
+<div class="modal-overlay" id="rdm-modal-commitment">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="rdm-modal-commitment-title">Add Commitment</div>
+      <button class="modal-close" id="rdm-modal-commitment-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Investor Name</label>
+          <input type="text" id="rdm-cm-name" placeholder="e.g. AEDIFIKA">
+        </div>
+        <div class="field">
+          <label>Investor Email</label>
+          <input type="email" id="rdm-cm-email" placeholder="investor@email.com">
+        </div>
+        <div class="field">
+          <label>Amount ($)</label>
+          <input type="number" id="rdm-cm-amount" placeholder="0" step="0.01" min="0">
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="rdm-cm-date">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="rdm-modal-commitment-cancel">Cancel</button>
+      <button class="btn-save" id="rdm-modal-commitment-save">Save Commitment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RDM: Budget Modal ── -->
+<div class="modal-overlay" id="rdm-modal-budget">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="rdm-modal-budget-title">Add Budget Row</div>
+      <button class="modal-close" id="rdm-modal-budget-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Item Name</label>
+          <input type="text" id="rdm-br-item" placeholder="e.g. Foundation">
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <input type="text" id="rdm-br-category" placeholder="e.g. Construction">
+        </div>
+        <div class="field">
+          <label>Forecasted ($)</label>
+          <input type="number" id="rdm-br-forecasted" placeholder="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Actual ($)</label>
+          <input type="number" id="rdm-br-actual" placeholder="0" step="0.01">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="rdm-modal-budget-cancel">Cancel</button>
+      <button class="btn-save" id="rdm-modal-budget-save">Save Row</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RDM: Capital Row Modal ── -->
+<div class="modal-overlay" id="rdm-modal-capital">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="rdm-modal-capital-title">Add Capital Row</div>
+      <button class="modal-close" id="rdm-modal-capital-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Item Name</label>
+          <input type="text" id="rdm-cr-item" placeholder="e.g. EntreOcéanos (70%)">
+        </div>
+        <div class="field">
+          <label>Forecasted ($)</label>
+          <input type="number" id="rdm-cr-forecasted" placeholder="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Actual ($)</label>
+          <input type="number" id="rdm-cr-actual" placeholder="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Sort Order</label>
+          <input type="number" id="rdm-cr-sort" placeholder="0" step="1" min="0">
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+          <input type="checkbox" id="rdm-cr-is-total"> Mark as total row
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="rdm-modal-capital-cancel">Cancel</button>
+      <button class="btn-save" id="rdm-modal-capital-save">Save Row</button>
     </div>
   </div>
 </div>
@@ -4595,6 +5080,734 @@
     if (progressLbl) progressLbl.textContent = 'Upload complete!';
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 1800);
     loadAllureGallery();
+  }
+
+  /* ═══════════════════════════════════════════
+     REAL DEL MONTE PROJECT MANAGEMENT
+  ═══════════════════════════════════════════ */
+
+  const RDM_PROJECT = 'Real del Monte';
+  const RDM_GOAL    = 800000;
+
+  /* ── RDM Sub-nav ── */
+  document.querySelectorAll('#rdm-subnav .subnav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#rdm-subnav .subnav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#tab-realdelmente .subtab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('rdmsubtab-' + btn.dataset.rdmsubtab).classList.add('active');
+      const loaders = {
+        details:   rdmLoadDetails,
+        budget:    rdmLoadBudget,
+        scenarios: rdmLoadScenarios,
+        capital:   rdmLoadCapital,
+        positions: rdmLoadPositions,
+        updates:   rdmLoadUpdates,
+        gallery:   rdmLoadGallery
+      };
+      if (loaders[btn.dataset.rdmsubtab]) loaders[btn.dataset.rdmsubtab]();
+    });
+  });
+
+  /* Also load Allure when switching to its tab */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.dataset.tab === 'realdelmente') {
+      btn.addEventListener('click', () => {
+        rdmLoadDetails();
+      });
+    }
+  });
+
+  /* ══════════════════════════
+     1. PROJECT DETAILS
+  ══════════════════════════ */
+
+  async function rdmLoadDetails() {
+    const { data, error } = await supabaseClient
+      .from('project_details')
+      .select('*')
+      .eq('project_name', RDM_PROJECT)
+      .maybeSingle();
+    if (error) { showToast('Failed to load RDM details: ' + error.message, true); return; }
+    if (!data) return;
+
+    document.getElementById('rdm-pd-name').value            = data.project_name    || '';
+    document.getElementById('rdm-pd-location').value        = data.location        || '';
+    document.getElementById('rdm-pd-address').value         = data.address         || '';
+    document.getElementById('rdm-pd-status').value          = data.status          || 'Active';
+    document.getElementById('rdm-pd-category').value        = data.category        || '';
+    document.getElementById('rdm-pd-size-sqm').value        = data.size_sqm        || '';
+    document.getElementById('rdm-pd-start-date').value      = data.start_date      || '';
+    document.getElementById('rdm-pd-end-date').value        = data.end_date        || '';
+    document.getElementById('rdm-pd-duration').value        = data.duration_months || '';
+    document.getElementById('rdm-pd-capex').value           = data.total_capex     || '';
+    document.getElementById('rdm-pd-target-return').value   = data.target_return   || '';
+    document.getElementById('rdm-pd-actual-return').value   = data.actual_return   || '';
+    document.getElementById('rdm-pd-units').value           = data.units           || '';
+    document.getElementById('rdm-pd-description').value     = data.description     || '';
+    document.getElementById('rdm-pd-contractor-name').value = data.contractor_name || '';
+    document.getElementById('rdm-pd-contractor-url').value  = data.contractor_url  || '';
+    const coverUrl = data.cover_photo_url || '';
+    document.getElementById('rdm-pd-cover-photo').value = coverUrl;
+    const pw = document.getElementById('rdm-pd-cover-preview-wrap');
+    const pi = document.getElementById('rdm-pd-cover-preview');
+    if (coverUrl) { pi.src = coverUrl; pw.style.display = 'block'; } else { pw.style.display = 'none'; }
+  }
+
+  async function rdmSaveDetails() {
+    const btn = document.getElementById('rdm-btn-save-details');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const payload = {
+      project_name:    document.getElementById('rdm-pd-name').value.trim() || RDM_PROJECT,
+      location:        document.getElementById('rdm-pd-location').value.trim(),
+      address:         document.getElementById('rdm-pd-address').value.trim(),
+      status:          document.getElementById('rdm-pd-status').value,
+      category:        document.getElementById('rdm-pd-category').value.trim(),
+      size_sqm:        document.getElementById('rdm-pd-size-sqm').value.trim() || null,
+      start_date:      document.getElementById('rdm-pd-start-date').value   || null,
+      end_date:        document.getElementById('rdm-pd-end-date').value     || null,
+      duration_months: parseInt(document.getElementById('rdm-pd-duration').value)     || null,
+      total_capex:     parseFloat(document.getElementById('rdm-pd-capex').value)      || null,
+      target_return:   parseFloat(document.getElementById('rdm-pd-target-return').value) || null,
+      actual_return:   parseFloat(document.getElementById('rdm-pd-actual-return').value) || null,
+      units:           document.getElementById('rdm-pd-units').value.trim(),
+      description:     document.getElementById('rdm-pd-description').value.trim(),
+      cover_photo_url: document.getElementById('rdm-pd-cover-photo').value.trim(),
+      contractor_name: document.getElementById('rdm-pd-contractor-name').value.trim(),
+      contractor_url:  document.getElementById('rdm-pd-contractor-url').value.trim()
+    };
+
+    const { data: existing } = await supabaseClient
+      .from('project_details').select('id').eq('project_name', RDM_PROJECT).maybeSingle();
+    let error;
+    if (existing) {
+      ({ error } = await supabaseClient.from('project_details').update(payload).eq('id', existing.id));
+    } else {
+      ({ error } = await supabaseClient.from('project_details').insert(payload));
+    }
+    btn.disabled = false; btn.textContent = 'Save Details';
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
+    showToast('RDM project details saved.');
+  }
+
+  document.getElementById('rdm-btn-save-details').addEventListener('click', rdmSaveDetails);
+
+  document.getElementById('rdm-pd-cover-upload-btn').addEventListener('click', () => {
+    document.getElementById('rdm-pd-cover-file-input').click();
+  });
+
+  document.getElementById('rdm-pd-cover-file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const btn    = document.getElementById('rdm-pd-cover-upload-btn');
+    const status = document.getElementById('rdm-pd-cover-upload-status');
+    btn.disabled = true; btn.textContent = 'Uploading…'; status.style.display = 'none';
+    const ext  = file.name.split('.').pop();
+    const path = 'real-del-monte/cover/' + Date.now() + '.' + ext;
+    const { error: upErr } = await supabaseClient.storage.from('project-assets').upload(path, file, { cacheControl: '3600', upsert: true });
+    if (upErr) {
+      btn.disabled = false; btn.textContent = 'Upload Cover Photo';
+      status.textContent = 'Upload failed: ' + upErr.message; status.style.color = '#C0392B'; status.style.display = 'inline';
+      return;
+    }
+    const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+    const publicUrl = urlData?.publicUrl;
+    document.getElementById('rdm-pd-cover-photo').value = publicUrl || '';
+    if (publicUrl) {
+      document.getElementById('rdm-pd-cover-preview').src = publicUrl;
+      document.getElementById('rdm-pd-cover-preview-wrap').style.display = 'block';
+      const { data: ex } = await supabaseClient.from('project_details').select('id').eq('project_name', RDM_PROJECT).maybeSingle();
+      if (ex) await supabaseClient.from('project_details').update({ cover_photo_url: publicUrl }).eq('id', ex.id);
+    }
+    btn.disabled = false; btn.textContent = 'Upload Cover Photo';
+    status.textContent = 'Upload successful!'; status.style.color = '#2E7D32'; status.style.display = 'inline';
+    e.target.value = '';
+  });
+
+  /* ══════════════════════════
+     2. BUDGET
+  ══════════════════════════ */
+
+  let rdmBudgetCache = {};
+  let rdmBudgetEditingId = null;
+
+  async function rdmLoadBudget() {
+    const tbody = document.getElementById('rdm-budget-tbody');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+    const { data, error } = await supabaseClient
+      .from('project_budget').select('*').eq('project_name', RDM_PROJECT)
+      .order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true });
+    if (error) { showToast('Failed to load RDM budget: ' + error.message, true); return; }
+    rdmRenderBudgetTable(data || []);
+  }
+
+  function rdmRenderBudgetTable(data) {
+    rdmBudgetCache = {};
+    const tbody  = document.getElementById('rdm-budget-tbody');
+    const tfoot  = document.getElementById('rdm-budget-tfoot');
+    const count  = document.getElementById('rdm-budget-count');
+    data.forEach(r => { rdmBudgetCache[r.id] = r; });
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No rows yet.</td></tr>';
+      if (count) count.textContent = '0 rows';
+      if (tfoot) tfoot.innerHTML = '';
+      return;
+    }
+    let totalFore = 0, totalAct = 0;
+    tbody.innerHTML = data.map(r => {
+      const fore = r.forecasted || 0, act = r.actual || 0;
+      const variance = fore - act;
+      totalFore += fore; totalAct += act;
+      const vc = variance >= 0 ? 'color:#1A7F4A' : 'color:#C0392B';
+      return `<tr data-id="${r.id}">
+        <td>${escAdminHtml(r.item)}</td>
+        <td style="color:#6B6B6B;font-size:13px">${escAdminHtml(r.category || '')}</td>
+        <td class="td-mono">${fmt(fore)}</td>
+        <td class="td-mono">${fmt(act)}</td>
+        <td class="td-mono" style="${vc}">${variance >= 0 ? '+' : ''}${fmt(variance)}</td>
+        <td class="td-actions">
+          <button class="btn-edit" onclick="rdmOpenEditBudget('${r.id}')">Edit</button>
+          <button class="btn-delete" onclick="rdmDeleteBudget('${r.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+    const tv = totalFore - totalAct;
+    const tvc = tv >= 0 ? 'color:#1A7F4A;font-weight:700' : 'color:#C0392B;font-weight:700';
+    if (tfoot) tfoot.innerHTML = `<tr style="background:#FAFAF8;border-top:2px solid #E8E8E4">
+      <td style="padding:14px 18px;font-weight:700">TOTAL</td><td></td>
+      <td class="td-mono" style="font-weight:700">${fmt(totalFore)}</td>
+      <td class="td-mono" style="font-weight:700">${fmt(totalAct)}</td>
+      <td class="td-mono" style="${tvc}">${tv >= 0 ? '+' : ''}${fmt(tv)}</td>
+      <td></td>
+    </tr>`;
+    if (count) count.textContent = data.length + ' rows';
+  }
+
+  function rdmOpenAddBudget() {
+    rdmBudgetEditingId = null;
+    document.getElementById('rdm-modal-budget-title').textContent = 'Add Budget Row';
+    document.getElementById('rdm-modal-budget-save').textContent  = 'Save Row';
+    ['rdm-br-item','rdm-br-category','rdm-br-forecasted','rdm-br-actual'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rdm-modal-budget').classList.add('open');
+  }
+
+  function rdmOpenEditBudget(id) {
+    rdmBudgetEditingId = id;
+    const r = rdmBudgetCache[id]; if (!r) return;
+    document.getElementById('rdm-modal-budget-title').textContent = 'Edit Budget Row';
+    document.getElementById('rdm-modal-budget-save').textContent  = 'Save';
+    document.getElementById('rdm-br-item').value       = r.item       || '';
+    document.getElementById('rdm-br-category').value   = r.category   || '';
+    document.getElementById('rdm-br-forecasted').value = r.forecasted || '';
+    document.getElementById('rdm-br-actual').value     = r.actual     || '';
+    document.getElementById('rdm-modal-budget').classList.add('open');
+  }
+
+  async function rdmDeleteBudget(id) {
+    if (!confirm('Delete this budget row?')) return;
+    const { error } = await supabaseClient.from('project_budget').delete().eq('id', id);
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    showToast('Row deleted.'); rdmLoadBudget();
+  }
+
+  async function rdmSaveBudget() {
+    const item       = document.getElementById('rdm-br-item').value.trim();
+    const category   = document.getElementById('rdm-br-category').value.trim();
+    const forecasted = parseFloat(document.getElementById('rdm-br-forecasted').value) || 0;
+    const actual     = parseFloat(document.getElementById('rdm-br-actual').value)     || 0;
+    if (!item) { alert('Item name is required.'); return; }
+    const btn = document.getElementById('rdm-modal-budget-save');
+    btn.disabled = true;
+    const payload = { project_name: RDM_PROJECT, item, category, forecasted, actual };
+    let error;
+    if (rdmBudgetEditingId) {
+      ({ error } = await supabaseClient.from('project_budget').update(payload).eq('id', rdmBudgetEditingId));
+    } else {
+      ({ error } = await supabaseClient.from('project_budget').insert(payload));
+    }
+    btn.disabled = false;
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
+    document.getElementById('rdm-modal-budget').classList.remove('open');
+    showToast('Row saved.'); rdmLoadBudget();
+  }
+
+  document.getElementById('rdm-btn-add-budget').addEventListener('click', rdmOpenAddBudget);
+  document.getElementById('rdm-modal-budget-close').addEventListener('click', () => document.getElementById('rdm-modal-budget').classList.remove('open'));
+  document.getElementById('rdm-modal-budget-cancel').addEventListener('click', () => document.getElementById('rdm-modal-budget').classList.remove('open'));
+  document.getElementById('rdm-modal-budget-save').addEventListener('click', rdmSaveBudget);
+  document.getElementById('rdm-modal-budget').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+
+  /* ══════════════════════════
+     3. RETURN SCENARIOS
+  ══════════════════════════ */
+
+  async function rdmLoadScenarios() {
+    const { data, error } = await supabaseClient
+      .from('project_scenarios').select('*').eq('project_name', RDM_PROJECT);
+    if (error) { showToast('Failed to load RDM scenarios: ' + error.message, true); return; }
+    if (!data) return;
+    const pfxMap = { pessimistic: 'pess', base: 'base', optimistic: 'opt' };
+    (data || []).forEach(sc => {
+      const pfx = pfxMap[sc.scenario_name]; if (!pfx) return;
+      const nameEl = document.getElementById('rdm-sc-' + pfx + '-name');
+      const retEl  = document.getElementById('rdm-sc-' + pfx + '-return');
+      const descEl = document.getElementById('rdm-sc-' + pfx + '-desc');
+      if (nameEl && sc.scenario_name != null) nameEl.value = sc.scenario_name;
+      if (retEl  && sc.return_percentage != null) retEl.value = sc.return_percentage;
+      if (descEl && sc.description != null) descEl.value = sc.description;
+    });
+  }
+
+  async function rdmSaveScenario(type) {
+    const pfxMap = { pessimistic: 'pess', base: 'base', optimistic: 'opt' };
+    const pfx = pfxMap[type]; if (!pfx) return;
+    const name   = document.getElementById('rdm-sc-' + pfx + '-name').value.trim()   || type;
+    const ret    = parseFloat(document.getElementById('rdm-sc-' + pfx + '-return').value) || 0;
+    const desc   = document.getElementById('rdm-sc-' + pfx + '-desc').value.trim();
+    const payload = { project_name: RDM_PROJECT, scenario_name: type, return_percentage: ret, description: desc };
+
+    const { data: existing } = await supabaseClient
+      .from('project_scenarios').select('id').eq('project_name', RDM_PROJECT).eq('scenario_name', type).maybeSingle();
+    let error;
+    if (existing) {
+      ({ error } = await supabaseClient.from('project_scenarios').update(payload).eq('id', existing.id));
+    } else {
+      ({ error } = await supabaseClient.from('project_scenarios').insert(payload));
+    }
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
+    showToast(type.charAt(0).toUpperCase() + type.slice(1) + ' scenario saved.');
+  }
+
+  /* ══════════════════════════
+     4. CAPITAL STRUCTURE
+  ══════════════════════════ */
+
+  let rdmCapitalCache = {};
+  let rdmCapitalCount = 0;
+  let rdmCapitalEditingId = null;
+
+  async function rdmLoadCapital() {
+    const tbody = document.getElementById('rdm-capital-tbody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+    const { data, error } = await supabaseClient
+      .from('project_capital_structure').select('*').eq('project_name', RDM_PROJECT)
+      .order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true });
+    if (error) { showToast('Failed to load RDM capital: ' + error.message, true); return; }
+    rdmRenderCapitalTable(data || []);
+  }
+
+  function rdmRenderCapitalTable(data) {
+    rdmCapitalCache = {}; rdmCapitalCount = data.length;
+    data.forEach(r => { rdmCapitalCache[r.id] = r; });
+    const tbody = document.getElementById('rdm-capital-tbody');
+    const count = document.getElementById('rdm-capital-count');
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No rows yet. Add EntreOcéanos 70% ($560,000) and AEDIFIKA 30% ($240,000).</td></tr>';
+      if (count) count.textContent = '0 rows';
+      return;
+    }
+    tbody.innerHTML = data.map((r, i) => {
+      const fore = r.forecasted || 0, act = r.actual || 0;
+      const v = fore - act;
+      const vc = v >= 0 ? 'color:#1A7F4A;font-weight:600' : 'color:#C0392B;font-weight:600';
+      return `<tr data-id="${r.id}" style="${r.is_total ? 'background:#FAFAF8' : ''}">
+        <td style="${r.is_total ? 'font-weight:700' : ''}">${escAdminHtml(r.item)}</td>
+        <td class="td-mono">${fmt(fore)}</td>
+        <td class="td-mono">${fmt(act)}</td>
+        <td style="color:#6B6B6B">${r.stake || '—'}</td>
+        <td style="text-align:center;color:#1A7F4A;font-weight:700">${r.is_total ? '✓' : ''}</td>
+        <td style="color:#9B9B9B">${r.sort_order ?? i}</td>
+        <td class="td-actions">
+          <button class="btn-edit" onclick="rdmOpenEditCapital('${r.id}')">Edit</button>
+          <button class="btn-delete" onclick="rdmDeleteCapital('${r.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+    if (count) count.textContent = data.length + ' rows';
+  }
+
+  function rdmOpenAddCapital() {
+    rdmCapitalEditingId = null;
+    document.getElementById('rdm-modal-capital-title').textContent = 'Add Capital Row';
+    document.getElementById('rdm-modal-capital-save').textContent  = 'Add Row';
+    ['rdm-cr-item','rdm-cr-forecasted','rdm-cr-actual'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rdm-cr-sort').value = rdmCapitalCount;
+    document.getElementById('rdm-cr-is-total').checked = false;
+    document.getElementById('rdm-modal-capital').classList.add('open');
+  }
+
+  function rdmOpenEditCapital(id) {
+    rdmCapitalEditingId = id;
+    const r = rdmCapitalCache[id]; if (!r) return;
+    document.getElementById('rdm-modal-capital-title').textContent = 'Edit Capital Row';
+    document.getElementById('rdm-modal-capital-save').textContent  = 'Save';
+    document.getElementById('rdm-cr-item').value       = r.item        || '';
+    document.getElementById('rdm-cr-forecasted').value = r.forecasted  || '';
+    document.getElementById('rdm-cr-actual').value     = r.actual      || '';
+    document.getElementById('rdm-cr-sort').value       = r.sort_order  ?? 0;
+    document.getElementById('rdm-cr-is-total').checked = !!r.is_total;
+    document.getElementById('rdm-modal-capital').classList.add('open');
+  }
+
+  async function rdmDeleteCapital(id) {
+    if (!confirm('Delete this capital row?')) return;
+    const { error } = await supabaseClient.from('project_capital_structure').delete().eq('id', id);
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    showToast('Row deleted.'); rdmLoadCapital();
+  }
+
+  async function rdmSaveCapital() {
+    const item       = document.getElementById('rdm-cr-item').value.trim();
+    const forecasted = parseFloat(document.getElementById('rdm-cr-forecasted').value) || 0;
+    const actual     = parseFloat(document.getElementById('rdm-cr-actual').value)     || 0;
+    const sortOrder  = parseInt(document.getElementById('rdm-cr-sort').value)          || 0;
+    const isTotal    = document.getElementById('rdm-cr-is-total').checked;
+    if (!item) { alert('Item name is required.'); return; }
+    const btn = document.getElementById('rdm-modal-capital-save'); btn.disabled = true;
+    const payload = { project_name: RDM_PROJECT, item, forecasted, actual, is_total: isTotal, sort_order: sortOrder };
+    let error;
+    if (rdmCapitalEditingId) {
+      ({ error } = await supabaseClient.from('project_capital_structure').update(payload).eq('id', rdmCapitalEditingId));
+    } else {
+      ({ error } = await supabaseClient.from('project_capital_structure').insert(payload));
+    }
+    btn.disabled = false;
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
+    document.getElementById('rdm-modal-capital').classList.remove('open');
+    showToast('Row saved.'); rdmLoadCapital();
+  }
+
+  document.getElementById('rdm-btn-add-capital').addEventListener('click', rdmOpenAddCapital);
+  document.getElementById('rdm-modal-capital-close').addEventListener('click', () => document.getElementById('rdm-modal-capital').classList.remove('open'));
+  document.getElementById('rdm-modal-capital-cancel').addEventListener('click', () => document.getElementById('rdm-modal-capital').classList.remove('open'));
+  document.getElementById('rdm-modal-capital-save').addEventListener('click', rdmSaveCapital);
+  document.getElementById('rdm-modal-capital').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+
+  /* ══════════════════════════
+     5. INVESTOR POSITIONS (commitments)
+  ══════════════════════════ */
+
+  let rdmCommitmentsCache = {};
+  let rdmCommitmentEditingId = null;
+
+  async function rdmLoadPositions() {
+    const tbody = document.getElementById('rdm-positions-tbody');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+    const { data, error } = await supabaseClient
+      .from('commitments').select('*').eq('project_name', RDM_PROJECT)
+      .order('created_at', { ascending: true });
+    if (error) { showToast('Failed to load RDM commitments: ' + error.message, true); return; }
+    rdmRenderPositionsTable(data || []);
+  }
+
+  function rdmRenderPositionsTable(data) {
+    rdmCommitmentsCache = {};
+    data.forEach(r => { rdmCommitmentsCache[r.id] = r; });
+    const tbody = document.getElementById('rdm-positions-tbody');
+    const count = document.getElementById('rdm-positions-count');
+    const total = data.reduce((s, r) => s + Number(r.amount), 0);
+    const pct   = Math.min(total / RDM_GOAL * 100, 100);
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No commitments yet. Add AEDIFIKA\'s $240,000 and investor commitments.</td></tr>';
+    } else {
+      tbody.innerHTML = data.map(r => {
+        const dateStr = r.created_at ? r.created_at.slice(0, 10) : '—';
+        return `<tr data-id="${r.id}">
+          <td style="font-weight:600">${escAdminHtml(r.investor_name || '—')}</td>
+          <td style="color:#6B6B6B;font-size:13px">${escAdminHtml(r.investor_email || '—')}</td>
+          <td class="td-mono td-green">${fmt(r.amount || 0)}</td>
+          <td style="color:#6B6B6B;font-size:13px">${dateStr}</td>
+          <td class="td-actions">
+            <button class="btn-edit" onclick="rdmOpenEditCommitment('${r.id}')">Edit</button>
+            <button class="btn-delete" onclick="rdmDeleteCommitment('${r.id}')">Delete</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    const remaining = Math.max(0, RDM_GOAL - total);
+    document.getElementById('rdm-sum-committed').textContent = fmt(total);
+    document.getElementById('rdm-sum-remaining').textContent = fmt(remaining);
+    document.getElementById('rdm-sum-pct-lbl').textContent   = Math.round(pct) + '% funded';
+    document.getElementById('rdm-commit-prog-fill').style.width = pct.toFixed(2) + '%';
+    if (count) count.textContent = data.length + ' commitment' + (data.length !== 1 ? 's' : '') + ' · ' + fmt(total) + ' total';
+  }
+
+  function rdmOpenAddCommitment() {
+    rdmCommitmentEditingId = null;
+    document.getElementById('rdm-modal-commitment-title').textContent = 'Add Commitment';
+    document.getElementById('rdm-modal-commitment-save').textContent  = 'Add Commitment';
+    document.getElementById('rdm-cm-name').value   = '';
+    document.getElementById('rdm-cm-email').value  = '';
+    document.getElementById('rdm-cm-amount').value = '';
+    document.getElementById('rdm-cm-date').value   = new Date().toISOString().slice(0, 10);
+    document.getElementById('rdm-modal-commitment').classList.add('open');
+  }
+
+  function rdmOpenEditCommitment(id) {
+    rdmCommitmentEditingId = id;
+    const r = rdmCommitmentsCache[id]; if (!r) return;
+    document.getElementById('rdm-modal-commitment-title').textContent = 'Edit Commitment';
+    document.getElementById('rdm-modal-commitment-save').textContent  = 'Save';
+    document.getElementById('rdm-cm-name').value   = r.investor_name  || '';
+    document.getElementById('rdm-cm-email').value  = r.investor_email || '';
+    document.getElementById('rdm-cm-amount').value = r.amount         || '';
+    document.getElementById('rdm-cm-date').value   = (r.created_at || '').slice(0, 10);
+    document.getElementById('rdm-modal-commitment').classList.add('open');
+  }
+
+  async function rdmDeleteCommitment(id) {
+    if (!confirm('Delete this commitment?')) return;
+    const { error } = await supabaseClient.from('commitments').delete().eq('id', id);
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    showToast('Commitment deleted.'); rdmLoadPositions();
+  }
+
+  async function rdmSaveCommitment() {
+    const name   = document.getElementById('rdm-cm-name').value.trim();
+    const email  = document.getElementById('rdm-cm-email').value.trim().toLowerCase();
+    const amount = parseFloat(document.getElementById('rdm-cm-amount').value) || 0;
+    const date   = document.getElementById('rdm-cm-date').value || null;
+    if (!name || amount <= 0) { alert('Name and a valid amount are required.'); return; }
+    const btn = document.getElementById('rdm-modal-commitment-save'); btn.disabled = true;
+    const payload = { investor_name: name, investor_email: email, amount, project_name: RDM_PROJECT };
+    if (date) payload.created_at = date + 'T12:00:00.000Z';
+    let error;
+    if (rdmCommitmentEditingId) {
+      ({ error } = await supabaseClient.from('commitments').update({ investor_name: name, investor_email: email, amount }).eq('id', rdmCommitmentEditingId));
+    } else {
+      ({ error } = await supabaseClient.from('commitments').insert(payload));
+    }
+    btn.disabled = false;
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
+    document.getElementById('rdm-modal-commitment').classList.remove('open');
+    showToast('Commitment saved.'); rdmLoadPositions();
+  }
+
+  document.getElementById('rdm-btn-add-commitment').addEventListener('click', rdmOpenAddCommitment);
+  document.getElementById('rdm-modal-commitment-close').addEventListener('click', () => document.getElementById('rdm-modal-commitment').classList.remove('open'));
+  document.getElementById('rdm-modal-commitment-cancel').addEventListener('click', () => document.getElementById('rdm-modal-commitment').classList.remove('open'));
+  document.getElementById('rdm-modal-commitment-save').addEventListener('click', rdmSaveCommitment);
+  document.getElementById('rdm-modal-commitment').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+
+  /* ══════════════════════════
+     6. UPDATES
+  ══════════════════════════ */
+
+  let rdmUpdatesData = [];
+
+  async function rdmLoadUpdates() {
+    const { data, error } = await supabaseClient
+      .from('project_updates').select('*').eq('project_name', RDM_PROJECT)
+      .order('published_at', { ascending: false });
+    if (error) { showToast('Failed to load RDM updates: ' + error.message, true); return; }
+    rdmUpdatesData = data || [];
+    rdmRenderAdminUpdates();
+  }
+
+  function rdmRenderAdminUpdates() {
+    const list  = document.getElementById('rdm-updates-admin-list');
+    const count = document.getElementById('rdm-updates-count');
+    if (count) count.textContent = rdmUpdatesData.length + ' update' + (rdmUpdatesData.length !== 1 ? 's' : '');
+    if (rdmUpdatesData.length === 0) {
+      list.innerHTML = '<div class="empty-state">No updates yet. Add one above.</div>';
+      return;
+    }
+    list.innerHTML = rdmUpdatesData.map((u, i) => `
+      <div class="highlight-item" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:10px;width:100%">
+          <span style="font-size:11px;color:#9B9B9B;font-weight:500">${escAdminHtml(fmtDateShort(u.published_at))}</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border-radius:100px;padding:3px 9px;background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC">${escAdminHtml(u.category)}</span>
+          <div style="flex:1"></div>
+          <button class="btn-arrow" onclick="rdmOpenUpdateForm(${i})">Edit</button>
+          <button class="btn-delete" onclick="rdmDeleteUpdate(${i})">Delete</button>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:#0D0D0D">${escAdminHtml(u.title)}</div>
+        <div style="font-size:13px;color:#6B6B6B">${escAdminHtml((u.body || '').slice(0, 100))}${u.body && u.body.length > 100 ? '…' : ''}</div>
+      </div>
+    `).join('');
+  }
+
+  function rdmOpenUpdateForm(idx) {
+    const formWrap = document.getElementById('rdm-update-form-wrap');
+    const titleEl  = document.getElementById('rdm-update-form-title');
+    document.getElementById('rdm-uf-id').value       = idx !== undefined ? (rdmUpdatesData[idx]?.id ?? '') : '';
+    document.getElementById('rdm-uf-title').value    = idx !== undefined ? (rdmUpdatesData[idx]?.title || '') : '';
+    document.getElementById('rdm-uf-category').value = idx !== undefined ? (rdmUpdatesData[idx]?.category || 'General') : 'General';
+    document.getElementById('rdm-uf-date').value     = idx !== undefined ? (rdmUpdatesData[idx]?.published_at || todayISO()) : todayISO();
+    document.getElementById('rdm-uf-body').value     = idx !== undefined ? (rdmUpdatesData[idx]?.body || '') : '';
+    document.getElementById('rdm-uf-photo').value    = idx !== undefined ? (rdmUpdatesData[idx]?.photo_url || '') : '';
+    titleEl.textContent = idx !== undefined ? 'Edit Update' : 'New Update';
+    document.getElementById('rdm-btn-save-update').dataset.editIdx = idx !== undefined ? idx : '';
+    formWrap.style.display = 'block';
+    formWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function rdmDeleteUpdate(idx) {
+    if (!confirm('Delete this update?')) return;
+    const u = rdmUpdatesData[idx];
+    if (u?.id) {
+      const { error } = await supabaseClient.from('project_updates').delete().eq('id', u.id);
+      if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    }
+    showToast('Update deleted.'); rdmLoadUpdates();
+  }
+
+  document.getElementById('rdm-btn-add-update').addEventListener('click', () => rdmOpenUpdateForm());
+  document.getElementById('rdm-btn-cancel-update').addEventListener('click', () => {
+    document.getElementById('rdm-update-form-wrap').style.display = 'none';
+  });
+
+  document.getElementById('rdm-btn-save-update').addEventListener('click', async () => {
+    const btn     = document.getElementById('rdm-btn-save-update');
+    const editIdx = btn.dataset.editIdx;
+    const title   = document.getElementById('rdm-uf-title').value.trim();
+    const category= document.getElementById('rdm-uf-category').value;
+    const date    = document.getElementById('rdm-uf-date').value;
+    const body    = document.getElementById('rdm-uf-body').value.trim();
+    const photo   = document.getElementById('rdm-uf-photo').value.trim() || null;
+    if (!title || !date) { showToast('Title and date are required.', true); return; }
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const payload = { project_name: RDM_PROJECT, title, category, published_at: date, body, photo_url: photo };
+    let dbErr;
+    if (editIdx !== '' && rdmUpdatesData[editIdx]?.id) {
+      const { error } = await supabaseClient.from('project_updates').update(payload).eq('id', rdmUpdatesData[editIdx].id);
+      dbErr = error;
+    } else {
+      const { error } = await supabaseClient.from('project_updates').insert(payload);
+      dbErr = error;
+    }
+    btn.disabled = false; btn.textContent = 'Save Update';
+    if (dbErr) { showToast('Save failed: ' + dbErr.message, true); return; }
+    document.getElementById('rdm-update-form-wrap').style.display = 'none';
+    showToast('Update saved.'); rdmLoadUpdates();
+  });
+
+  /* ══════════════════════════
+     7. GALLERY
+  ══════════════════════════ */
+
+  let rdmGalleryData = [];
+
+  async function rdmLoadGallery() {
+    const grid  = document.getElementById('rdm-gallery-admin-grid');
+    const count = document.getElementById('rdm-gallery-count');
+    if (grid) grid.innerHTML = '<div style="color:#9B9B9B;font-size:13px;padding:8px 0">Loading…</div>';
+    const { data, error } = await supabaseClient
+      .from('project_gallery').select('*').eq('project_name', RDM_PROJECT)
+      .order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true });
+    if (error) { showToast('Failed to load RDM gallery: ' + error.message, true); return; }
+    rdmGalleryData = data || [];
+    if (count) count.textContent = rdmGalleryData.length + ' item' + (rdmGalleryData.length !== 1 ? 's' : '');
+    rdmRenderAdminGallery();
+  }
+
+  function rdmRenderAdminGallery() {
+    const grid = document.getElementById('rdm-gallery-admin-grid');
+    if (!grid) return;
+    if (rdmGalleryData.length === 0) {
+      grid.innerHTML = '<div style="color:#9B9B9B;font-size:13px;padding:8px 0">No gallery items yet. Upload photos or videos above.</div>';
+      return;
+    }
+    const last = rdmGalleryData.length - 1;
+    grid.innerHTML = rdmGalleryData.map((item, idx) => {
+      const isVideo = item.file_type === 'video';
+      const thumbHtml = isVideo
+        ? `<video src="${escAdminHtml(item.url)}" style="width:100%;height:100%;object-fit:cover" muted preload="metadata"></video>
+           <div class="play-overlay"><svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.5)"/><polygon points="10,8 18,12 10,16" fill="white"/></svg></div>`
+        : `<img src="${escAdminHtml(item.url)}" alt="${escAdminHtml(item.caption || '')}" loading="lazy">`;
+      return `<div class="gallery-admin-item" data-id="${item.id}">
+        <div class="gallery-admin-thumb">${thumbHtml}</div>
+        <div class="gallery-admin-body">
+          <textarea class="gallery-admin-caption" placeholder="Add a caption…" data-id="${item.id}">${escAdminHtml(item.caption || '')}</textarea>
+          <div class="gallery-admin-actions">
+            <button class="gallery-admin-sort-btn" onclick="rdmMoveGallery('${item.id}','up')" title="Move up" ${idx === 0 ? 'disabled' : ''}>↑</button>
+            <button class="gallery-admin-sort-btn" onclick="rdmMoveGallery('${item.id}','down')" title="Move down" ${idx === last ? 'disabled' : ''}>↓</button>
+            <button class="gallery-admin-del-btn" onclick="rdmDeleteGallery('${item.id}','${escAdminHtml(item.storage_path || '')}')">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    grid.querySelectorAll('.gallery-admin-caption').forEach(ta => {
+      ta.addEventListener('blur', async function() {
+        const id = this.dataset.id, caption = this.value;
+        const { error } = await supabaseClient.from('project_gallery').update({ caption }).eq('id', id);
+        if (error) showToast('Caption save failed: ' + error.message, true); else showToast('Caption saved.');
+        const item = rdmGalleryData.find(g => String(g.id) === String(id));
+        if (item) item.caption = caption;
+      });
+    });
+  }
+
+  async function rdmMoveGallery(id, dir) {
+    const idx = rdmGalleryData.findIndex(g => String(g.id) === String(id));
+    if (idx < 0) return;
+    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= rdmGalleryData.length) return;
+    const a = rdmGalleryData[idx], b = rdmGalleryData[swapIdx];
+    const aSort = a.sort_order ?? idx, bSort = b.sort_order ?? swapIdx;
+    await Promise.all([
+      supabaseClient.from('project_gallery').update({ sort_order: bSort }).eq('id', a.id),
+      supabaseClient.from('project_gallery').update({ sort_order: aSort }).eq('id', b.id)
+    ]);
+    rdmLoadGallery();
+  }
+
+  async function rdmDeleteGallery(id, storagePath) {
+    if (!confirm('Delete this gallery item?')) return;
+    if (storagePath) await supabaseClient.storage.from('project-assets').remove([storagePath]);
+    const { error } = await supabaseClient.from('project_gallery').delete().eq('id', id);
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    showToast('Item deleted.'); rdmLoadGallery();
+  }
+
+  (function initRdmGalleryUpload() {
+    const dropZone  = document.getElementById('rdm-gallery-drop-zone');
+    const fileInput = document.getElementById('rdm-gallery-file-input');
+    if (!dropZone || !fileInput) return;
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#0D0D0D'; dropZone.style.background = '#F0F0EE'; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#D0D0CC'; dropZone.style.background = '#FAFAF8'; });
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.style.borderColor = '#D0D0CC'; dropZone.style.background = '#FAFAF8';
+      rdmUploadGalleryFiles(Array.from(e.dataTransfer.files));
+    });
+    fileInput.addEventListener('change', () => {
+      rdmUploadGalleryFiles(Array.from(fileInput.files)); fileInput.value = '';
+    });
+  })();
+
+  async function rdmUploadGalleryFiles(files) {
+    if (!files.length) return;
+    const progressWrap = document.getElementById('rdm-gallery-upload-progress');
+    const progressBar  = document.getElementById('rdm-gallery-upload-bar');
+    const progressLbl  = document.getElementById('rdm-gallery-upload-label');
+    progressWrap.style.display = 'block';
+    for (let i = 0; i < files.length; i++) {
+      const file    = files[i];
+      const isVideo = file.type.startsWith('video/');
+      const folder  = isVideo ? 'real-del-monte/videos/' : 'real-del-monte/photos/';
+      const ext     = file.name.split('.').pop();
+      const path    = folder + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
+      if (progressLbl) progressLbl.textContent = 'Uploading ' + (i + 1) + ' of ' + files.length + ': ' + file.name;
+      if (progressBar) progressBar.style.width = Math.round((i / files.length) * 100) + '%';
+      const { error: upErr } = await supabaseClient.storage.from('project-assets').upload(path, file, { cacheControl: '3600', upsert: false });
+      if (upErr) { showToast('Upload failed: ' + upErr.message, true); continue; }
+      const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+      const publicUrl = urlData?.publicUrl;
+      if (!publicUrl) { showToast('Could not get public URL.', true); continue; }
+      const maxSort = rdmGalleryData.length > 0 ? Math.max(...rdmGalleryData.map(g => g.sort_order ?? 0)) + 1 : 0;
+      const { error: dbErr } = await supabaseClient.from('project_gallery').insert({
+        project_name: RDM_PROJECT, url: publicUrl, storage_path: path,
+        file_type: isVideo ? 'video' : 'image', caption: '', sort_order: maxSort
+      });
+      if (dbErr) showToast('DB insert failed: ' + dbErr.message, true);
+    }
+    if (progressBar) progressBar.style.width = '100%';
+    if (progressLbl) progressLbl.textContent = 'Upload complete!';
+    setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 1800);
+    rdmLoadGallery();
   }
 
   /* ═══════════════════════════════════════════

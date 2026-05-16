@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { -webkit-font-smoothing: antialiased; }
@@ -1179,6 +1180,10 @@
 <!-- ══════════════════════════════════════════
      DASHBOARD
 ══════════════════════════════════════════ -->
+<div id="funded-banner" style="display:none;background:#0D1F15;color:#FFFFFF;padding:14px 32px;text-align:center;font-size:14px;font-weight:600;letter-spacing:-0.01em;position:relative;z-index:40">
+  🎉 Real del Monte is fully funded! Thank you to all investors.
+</div>
+
 <div id="dashboard">
 
   <header class="hdr">
@@ -1265,17 +1270,17 @@
 
         <div class="prog-hdr">
           <span class="prog-hdr-lbl">Funding progress</span>
-          <span class="prog-hdr-pct">31%</span>
+          <span class="prog-hdr-pct" id="prog-hdr-pct">—%</span>
         </div>
         <div class="prog-track">
           <div class="prog-fill" id="prog-fill"></div>
         </div>
         <div class="prog-amts">
-          <span>$250,000 raised</span>
+          <span id="prog-raised">Loading…</span>
           <span>$800,000 goal</span>
         </div>
 
-        <button class="btn-opp" onclick="window.location.href='projects.html'">View Details &rarr;</button>
+        <button class="btn-opp" onclick="window.location.href='real-del-monte.html'">View Details &rarr;</button>
       </div>
 
     </div>
@@ -1399,7 +1404,7 @@
 <div id="invest-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeModal()">
   <div class="modal-card">
 
-    <!-- Step 1: Amount -->
+    <!-- Step 1: Project + Amount -->
     <div id="modal-step-1" class="modal-inner">
       <div class="modal-step-bar">
         <div class="modal-step-dot active"></div>
@@ -1408,10 +1413,11 @@
         <span class="modal-step-label">Step 1 of 3</span>
       </div>
 
-      <div class="modal-title">Commit to Real del Monte</div>
-      <div class="modal-project-badge">
-        <span class="opp-dot"></span>
-        Now Funding
+      <div class="modal-title">Invest Now</div>
+
+      <div class="modal-field-lbl" style="margin-bottom:8px">Select a project</div>
+      <div id="modal-project-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+        <div style="font-size:13px;color:#9B9B9B;padding:16px 0;">Loading available projects…</div>
       </div>
 
       <div class="modal-balance">
@@ -1434,7 +1440,7 @@
       </div>
 
       <div class="modal-ownership dim" id="modal-ownership">
-        <span class="modal-ownership-lbl">Your EntreOceanos Stake</span>
+        <span class="modal-ownership-lbl">Your EntreOcéanos Stake</span>
         <span class="modal-ownership-val" id="modal-ownership-val">Enter an amount</span>
       </div>
 
@@ -1459,7 +1465,7 @@
         </div>
         <div class="modal-summary-row">
           <span class="modal-summary-lbl">Project</span>
-          <span class="modal-summary-val">Real del Monte</span>
+          <span class="modal-summary-val" id="s2-project">Real del Monte</span>
         </div>
         <div class="modal-summary-row">
           <span class="modal-summary-lbl">Amount</span>
@@ -1472,7 +1478,7 @@
       </div>
 
       <div class="modal-returns-box">
-        <div class="modal-returns-lbl">Target return &middot; 20&ndash;25% over 24 months</div>
+        <div class="modal-returns-lbl" id="s2-returns-lbl">Target return &middot; 20–30% over 24 months</div>
         <div class="modal-returns-val" id="s2-returns">—</div>
         <div class="modal-returns-note">Estimated profit on your investment</div>
       </div>
@@ -1519,7 +1525,7 @@
         </div>
         <div class="modal-success-row">
           <span class="modal-success-lbl">Project</span>
-          <span class="modal-success-val">Real del Monte</span>
+          <span class="modal-success-val" id="s3-project">Real del Monte</span>
         </div>
         <div class="modal-success-row">
           <span class="modal-success-lbl">Amount</span>
@@ -1544,6 +1550,8 @@
 
 
 <script>
+  emailjs.init('qgN_CHVLPlAOPz0Td');
+
   /* ── Supabase client ── */
   const { createClient } = window.supabase;
   const supabaseClient = createClient(
@@ -1551,24 +1559,97 @@
     'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
   );
 
-  const BASE_RAISED = 250000; // commitments captured before live tracking
   const GOAL = 800000;
 
-  // Return multipliers — from project_details.actual_return (gross) and project_details.net_return (net, to be added)
   const ALLURE_GROSS_MULTIPLIER = 1.3431;
   const ALLURE_NET_MULTIPLIER   = 1.3088;
 
+  /* ── Active projects cache ── */
+  let activeProjects = [];
+  let selectedProject = null;
+
+  async function loadActiveProjects() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('project_details')
+        .select('project_name, location, target_return, duration_months')
+        .eq('status', 'Active');
+      if (error) throw error;
+      activeProjects = data || [];
+      if (activeProjects.length === 0) {
+        activeProjects = [{ project_name: 'Real del Monte', location: 'Tijuana, Mexico', target_return: 25, duration_months: 24 }];
+      }
+    } catch (_) {
+      activeProjects = [{ project_name: 'Real del Monte', location: 'Tijuana, Mexico', target_return: 25, duration_months: 24 }];
+    }
+    renderProjectList();
+  }
+
+  function renderProjectList() {
+    const container = document.getElementById('modal-project-list');
+    if (!container) return;
+    if (activeProjects.length === 0) {
+      container.innerHTML = '<div style="font-size:13px;color:#9B9B9B;padding:8px 0">No active projects at this time.</div>';
+      return;
+    }
+    container.innerHTML = activeProjects.map((p, i) => {
+      const isSelected = selectedProject && selectedProject.project_name === p.project_name;
+      return `<div class="modal-project-option${isSelected ? ' selected' : ''}" data-idx="${i}" onclick="selectProject(${i})" style="
+        border: 1.5px solid ${isSelected ? '#0D0D0D' : '#E8E8E4'};
+        background: ${isSelected ? '#0D0D0D' : '#FFFFFF'};
+        color: ${isSelected ? '#FFFFFF' : '#0D0D0D'};
+        border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s;">
+        <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px;">${escHtml(p.project_name)}</div>
+        <div style="font-size: 12px; opacity: 0.65; display: flex; gap: 14px;">
+          <span>${escHtml(p.location || '—')}</span>
+          <span>${p.target_return != null ? p.target_return + '% target return' : ''}</span>
+          <span>${p.duration_months != null ? p.duration_months + ' months' : ''}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function selectProject(idx) {
+    selectedProject = activeProjects[idx];
+    renderProjectList();
+    updateOwnership(0);
+  }
+
   async function saveCommitmentToSupabase() {
     try {
+      const projectName = selectedProject ? selectedProject.project_name : 'Real del Monte';
       const { error } = await supabaseClient.from('commitments').insert({
         investor_email: currentInvestorEmail,
         investor_name:  currentInvestor.name,
         amount:         modalAmount,
-        project_name:   'Real del Monte'
+        project_name:   projectName
       });
       if (error) console.error('Supabase insert error:', error);
     } catch (err) {
       console.error('Failed to save commitment:', err);
+    }
+  }
+
+  async function checkFullyFunded(projectName) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('commitments')
+        .select('amount')
+        .eq('project_name', projectName);
+      if (error) return;
+      const total = (data || []).reduce((s, r) => s + Number(r.amount), 0);
+      if (total >= GOAL) {
+        document.getElementById('funded-banner').style.display = 'block';
+        emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+          to_email:   'ferzuniga@gmail.com',
+          subject:    projectName + ' — FULLY FUNDED',
+          from_name:  'Entremares Portal',
+          from_email: 'portal@entremares.com',
+          message:    projectName + ' has reached its funding target of $800,000. All investor commitments have been received.'
+        }).catch(err => console.error('EmailJS fully-funded notification failed:', err));
+      }
+    } catch (err) {
+      console.error('Failed to check fully funded:', err);
     }
   }
 
@@ -1579,14 +1660,16 @@
         .select('amount')
         .eq('project_name', 'Real del Monte');
 
-      const liveTotal  = error ? 0 : data.reduce((s, r) => s + Number(r.amount), 0);
-      const totalRaised = BASE_RAISED + liveTotal;
+      const totalRaised = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
       const pct = Math.min(totalRaised / GOAL * 100, 100);
 
       document.getElementById('prog-fill').style.width = pct.toFixed(2) + '%';
-      document.querySelector('.prog-hdr-pct').textContent = Math.round(pct) + '%';
-      document.querySelector('.prog-amts span:first-child').textContent =
-        '$' + totalRaised.toLocaleString('en-US') + ' raised';
+      document.getElementById('prog-hdr-pct').textContent = Math.round(pct) + '%';
+      document.getElementById('prog-raised').textContent = '$' + totalRaised.toLocaleString('en-US') + ' raised';
+
+      if (totalRaised >= GOAL) {
+        document.getElementById('funded-banner').style.display = 'block';
+      }
     } catch (err) {
       console.error('Failed to fetch commitments:', err);
     }
@@ -1949,12 +2032,14 @@
     /* Funding bar and live balance — from Supabase */
     setTimeout(() => updateFundingProgress(), 150);
     loadDashboardData(email || currentInvestorEmail);
+    loadActiveProjects();
   }
 
   /* ── Modal functions ── */
   function openModal() {
     if (!currentInvestor) return;
-    document.getElementById('modal-wallet-display').textContent = fmt(currentInvestor.wallet);
+    const availableBalance = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    document.getElementById('modal-wallet-display').textContent = fmt(availableBalance);
     const inp = document.getElementById('modal-amount-input');
     inp.value = '';
     inp.classList.remove('error');
@@ -1962,9 +2047,15 @@
     document.getElementById('modal-min-notice').textContent  = '$25,000 minimum investment';
     document.querySelectorAll('.modal-preset-btn').forEach(b => b.classList.remove('selected'));
     updateOwnership(0);
-    document.getElementById('chk-binding').checked          = false;
-    document.getElementById('chk-funds').checked            = false;
-    document.getElementById('btn-modal-confirm').disabled   = true;
+    document.getElementById('chk-binding').checked        = false;
+    document.getElementById('chk-funds').checked          = false;
+    document.getElementById('btn-modal-confirm').disabled = true;
+    // Pre-select Real del Monte if available
+    if (!selectedProject && activeProjects.length > 0) {
+      const rdm = activeProjects.find(p => p.project_name === 'Real del Monte') || activeProjects[0];
+      selectedProject = rdm;
+      renderProjectList();
+    }
     showStep(1);
     document.getElementById('invest-modal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -1986,29 +2077,36 @@
   function updateOwnership(amount) {
     const el  = document.getElementById('modal-ownership');
     const val = document.getElementById('modal-ownership-val');
-    if (amount >= 25000) {
+    if (amount >= 25000 && selectedProject) {
+      const goal = selectedProject.total_capex || GOAL;
       el.classList.remove('dim');
-      val.textContent = (amount / 800000 * 100).toFixed(2) + '% of project';
+      val.textContent = (amount / goal * 100).toFixed(2) + '% of ' + selectedProject.project_name;
     } else {
       el.classList.add('dim');
-      val.textContent = 'Enter an amount';
+      val.textContent = selectedProject ? 'Enter an amount' : 'Select a project first';
     }
   }
 
   function setPreset(fraction) {
-    const raw    = currentInvestor.wallet * fraction;
-    const amount = Math.max(25000, Math.round(raw));
+    const balance = getAvailableBalance();
+    const raw     = balance * fraction;
+    const amount  = Math.max(25000, Math.round(raw));
     document.getElementById('modal-amount-input').value = amount;
     document.querySelectorAll('.modal-preset-btn').forEach(b => {
       b.classList.toggle('selected', parseFloat(b.dataset.pct) === fraction);
     });
     validateAmount(amount);
-    updateOwnership(amount <= currentInvestor.wallet ? amount : 0);
+    updateOwnership(amount <= balance ? amount : 0);
+  }
+
+  function getAvailableBalance() {
+    return Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
   }
 
   function validateAmount(amount) {
-    const inp    = document.getElementById('modal-amount-input');
-    const notice = document.getElementById('modal-min-notice');
+    const inp     = document.getElementById('modal-amount-input');
+    const notice  = document.getElementById('modal-min-notice');
+    const balance = getAvailableBalance();
     if (!amount || amount <= 0) {
       inp.classList.remove('error');
       notice.className   = 'modal-min-notice';
@@ -2021,10 +2119,16 @@
       notice.textContent = 'Minimum investment is $25,000';
       return false;
     }
-    if (amount > currentInvestor.wallet) {
+    if (amount > balance) {
       inp.classList.add('error');
       notice.className   = 'modal-min-notice error';
-      notice.textContent = 'Amount exceeds your available balance';
+      notice.textContent = 'Amount exceeds your available balance (' + fmt(balance) + ')';
+      return false;
+    }
+    if (!selectedProject) {
+      inp.classList.add('error');
+      notice.className   = 'modal-min-notice error';
+      notice.textContent = 'Please select a project first';
       return false;
     }
     inp.classList.remove('error');
@@ -2040,10 +2144,24 @@
       document.getElementById('modal-amount-input').focus();
       return;
     }
+    if (!selectedProject) { alert('Please select a project.'); return; }
     modalAmount = amount;
+    const projectName = selectedProject.project_name;
+    const targetReturn = selectedProject.target_return || 25;
+    const duration     = selectedProject.duration_months || 24;
     document.getElementById('s2-investor').textContent = currentInvestor.name;
+    document.getElementById('s2-project').textContent  = projectName;
     document.getElementById('s2-amount').textContent   = fmt(amount);
-    document.getElementById('s2-returns').textContent  = fmt(amount * 0.20) + ' – ' + fmt(amount * 0.25);
+    document.getElementById('s2-returns-lbl').textContent = 'Target return · ' + targetReturn + '% over ' + duration + ' months';
+    document.getElementById('s2-returns').textContent  = fmt(amount * targetReturn * 0.8 / 100) + ' – ' + fmt(amount * targetReturn * 1.2 / 100);
+    const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.querySelectorAll('[id^="s2-"] + .modal-summary-val, .modal-summary-val').forEach(() => {});
+    // Update date fields
+    document.querySelectorAll('.modal-summary-row').forEach(row => {
+      const lbl = row.querySelector('.modal-summary-lbl');
+      const val = row.querySelector('.modal-summary-val');
+      if (lbl && val && lbl.textContent === 'Date') val.textContent = today;
+    });
     showStep(2);
   }
 
@@ -2053,27 +2171,33 @@
     if (!document.getElementById('chk-binding').checked ||
         !document.getElementById('chk-funds').checked) return;
 
+    const projectName = selectedProject ? selectedProject.project_name : 'Real del Monte';
     modalRefNum = String(Math.floor(100000 + Math.random() * 900000));
 
-    document.getElementById('s3-email').textContent  = currentInvestorEmail;
-    document.getElementById('s3-name').textContent   = currentInvestor.name;
-    document.getElementById('s3-amount').textContent = fmt(modalAmount);
-    document.getElementById('s3-ref').textContent    = '#' + modalRefNum;
+    const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('s3-email').textContent   = currentInvestorEmail;
+    document.getElementById('s3-name').textContent    = currentInvestor.name;
+    document.getElementById('s3-amount').textContent  = fmt(modalAmount);
+    document.getElementById('s3-project').textContent = projectName;
+    document.getElementById('s3-ref').textContent     = '#' + modalRefNum;
 
-    const subject = encodeURIComponent(
-      'New Investment Commitment – ' + currentInvestor.name + ' – ' + fmt(modalAmount)
-    );
+    // Update date in success card
+    document.querySelectorAll('#modal-step-3 .modal-success-row').forEach(row => {
+      const lbl = row.querySelector('.modal-success-lbl');
+      const val = row.querySelector('.modal-success-val');
+      if (lbl && val && lbl.textContent === 'Date') val.textContent = today;
+    });
+
+    const subject = encodeURIComponent('New Investment Commitment – ' + currentInvestor.name + ' – ' + fmt(modalAmount));
     const body = encodeURIComponent(
       'New Investment Commitment\n\n' +
-      'Investor:    ' + currentInvestor.name  + '\n' +
-      'Email:       ' + currentInvestorEmail   + '\n' +
-      'Project:     Real del Monte\n'           +
-      'Amount:      ' + fmt(modalAmount)        + '\n' +
-      'Date:        May 2, 2026\n'              +
-      'Reference:   #' + modalRefNum            + '\n\n' +
+      'Investor:    ' + currentInvestor.name + '\n' +
+      'Email:       ' + currentInvestorEmail  + '\n' +
+      'Project:     ' + projectName           + '\n' +
+      'Amount:      ' + fmt(modalAmount)       + '\n' +
+      'Date:        ' + today                  + '\n' +
+      'Reference:   #' + modalRefNum           + '\n\n' +
       'Ownership:   ' + (modalAmount / 800000 * 100).toFixed(2) + '% of project\n' +
-      'Est. return (20%): ' + fmt(modalAmount * 0.20) + '\n' +
-      'Est. return (25%): ' + fmt(modalAmount * 0.25) + '\n\n' +
       'Please review and send the Shareholders Loan Agreement to the investor.'
     );
     document.getElementById('btn-notify-admin').href =
@@ -2081,8 +2205,8 @@
 
     showStep(3);
 
-    // Persist commitment, refresh progress bar, and show active investment
     await saveCommitmentToSupabase();
+    await checkFullyFunded(projectName);
     updateFundingProgress();
     await loadCommitmentStatus(currentInvestorEmail);
     setFade('wallet-balance', fmt(Math.max(0, currentInvestor.wallet - rdmCommittedAmount)));
@@ -2094,12 +2218,13 @@
   document.getElementById('btn-invest').addEventListener('click', openModal);
 
   document.getElementById('modal-amount-input').addEventListener('input', function() {
-    const amount = parseFloat(this.value.replace(/,/g, '')) || 0;
+    const amount  = parseFloat(this.value.replace(/,/g, '')) || 0;
+    const balance = getAvailableBalance();
     document.querySelectorAll('.modal-preset-btn').forEach(b => b.classList.remove('selected'));
     this.classList.remove('error');
     document.getElementById('modal-min-notice').className   = 'modal-min-notice';
     document.getElementById('modal-min-notice').textContent = '$25,000 minimum investment';
-    updateOwnership(amount >= 25000 && amount <= (currentInvestor ? currentInvestor.wallet : 0) ? amount : 0);
+    updateOwnership(amount >= 25000 && amount <= balance ? amount : 0);
   });
 
   document.getElementById('chk-binding').addEventListener('change', syncConfirmBtn);
