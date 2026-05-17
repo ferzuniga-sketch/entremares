@@ -2023,7 +2023,8 @@
         .from('commitments')
         .select('amount')
         .ilike('investor_email', email.toLowerCase())
-        .eq('project_name', 'Real del Monte');
+        .neq('project_name', 'Kabil')
+        .neq('project_name', 'Allure');
 
       if (error || !data || data.length === 0) {
         document.getElementById('active-investments-section').style.display = 'none';
@@ -2076,7 +2077,7 @@
         .from('withdrawal_requests')
         .select('id, amount, reference_number, investor_name')
         .ilike('investor_email', email)
-        .eq('status', 'pending');
+        .in('status', ['pending', 'approved']);
       if (!error && data) {
         pendingWithdrawalAmount   = data.reduce((s, r) => s + Number(r.amount), 0);
         pendingWithdrawalRequests = data;
@@ -2158,6 +2159,37 @@
       updateNetDistributionDisplay();
     }
     loadProjectDetails();
+    setupWithdrawalSubscription(email);
+  }
+
+  let _wdChannel = null;
+  function setupWithdrawalSubscription(email) {
+    if (_wdChannel) { supabaseClient.removeChannel(_wdChannel); _wdChannel = null; }
+    _wdChannel = supabaseClient
+      .channel('wd-live-' + Date.now())
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'withdrawal_requests' }, async (payload) => {
+        const row = payload.new;
+        if (!row.investor_email || row.investor_email.toLowerCase() !== email.toLowerCase()) return;
+        const newStatus = row.status;
+        const amount = Number(row.amount);
+        if (newStatus === 'cancelled') {
+          pendingWithdrawalAmount = Math.max(0, pendingWithdrawalAmount - amount);
+          pendingWithdrawalRequests = pendingWithdrawalRequests.filter(r => r.id !== row.id);
+          updatePendingWithdrawalNote();
+          const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
+          setFade('wallet-balance', fmt(remaining));
+          if (currentNetDistribution > 0) updateNetDistributionDisplay();
+          setTimeout(() => loadActivityTimeline(currentInvestorEmail), 1500);
+        } else if (newStatus === 'approved' || newStatus === 'transferred') {
+          await loadPendingWithdrawals(email);
+          updatePendingWithdrawalNote();
+          const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
+          setFade('wallet-balance', fmt(remaining));
+          if (currentNetDistribution > 0) updateNetDistributionDisplay();
+          setTimeout(() => loadActivityTimeline(currentInvestorEmail), 1500);
+        }
+      })
+      .subscribe();
   }
 
   /* ── Investor database ── */

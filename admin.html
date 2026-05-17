@@ -6628,6 +6628,7 @@
               <option value="cancelled"${w.status === 'cancelled' ? ' selected' : ''}>Cancelled</option>
             </select>
             <button class="btn-save-inline" data-action="save-wd-status" style="font-size:12px">Save Status</button>
+            <button class="btn-delete" data-action="delete-wd" style="font-size:12px;margin-left:6px">Delete</button>
           </td>
         </tr>
         <tr id="wdbank-${escHtml(w.id)}" style="display:none;background:#FAFAF8">
@@ -6671,16 +6672,34 @@
     if (statusCell) statusCell.innerHTML = withdrawalStatusBadge(newStatus);
 
     const today = new Date().toISOString().slice(0, 10);
+    const wdDate = (w.created_at || today).slice(0, 10);
 
-    if (newStatus === 'transferred') {
-      await supabaseClient.from('investor_activity').insert({
-        investor_email: w.investor_email,
-        activity_type:  'Withdrawal',
-        description:    'Withdrawal transferred to your bank account',
-        amount:         -Math.abs(Number(w.amount)),
-        project_name:   'General',
-        activity_date:  today
-      });
+    async function upsertWithdrawalActivity(updatePayload, insertPayload) {
+      const { data: existing } = await supabaseClient
+        .from('investor_activity')
+        .select('id')
+        .ilike('investor_email', w.investor_email)
+        .ilike('description', '%withdrawal%')
+        .eq('activity_date', wdDate)
+        .limit(1);
+      if (existing && existing.length > 0) {
+        await supabaseClient.from('investor_activity').update(updatePayload).eq('id', existing[0].id);
+      } else {
+        await supabaseClient.from('investor_activity').insert(insertPayload);
+      }
+    }
+
+    if (newStatus === 'approved') {
+      await upsertWithdrawalActivity(
+        { description: 'Withdrawal request approved - processing initiated', activity_type: 'Withdrawal Request' },
+        { investor_email: w.investor_email, activity_type: 'Withdrawal Request', description: 'Withdrawal request approved - processing initiated', amount: -Math.abs(Number(w.amount)), project_name: 'General', activity_date: today }
+      );
+      showToast('Status updated to approved.');
+    } else if (newStatus === 'transferred') {
+      await upsertWithdrawalActivity(
+        { description: 'Withdrawal transferred to your bank account', activity_type: 'Withdrawal' },
+        { investor_email: w.investor_email, activity_type: 'Withdrawal', description: 'Withdrawal transferred to your bank account', amount: -Math.abs(Number(w.amount)), project_name: 'General', activity_date: today }
+      );
 
       try {
         emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
@@ -6696,21 +6715,39 @@
 
       showToast('Transfer confirmed. Investor notified by email.');
     } else if (newStatus === 'cancelled') {
-      await supabaseClient.from('investor_activity').insert({
-        investor_email: w.investor_email,
-        activity_type:  'Withdrawal Cancelled',
-        description:    'Withdrawal request cancelled',
-        amount:         Math.abs(Number(w.amount)),
-        project_name:   'General',
-        activity_date:  today
-      });
-
+      await upsertWithdrawalActivity(
+        { description: 'Withdrawal request cancelled', activity_type: 'Withdrawal Cancelled' },
+        { investor_email: w.investor_email, activity_type: 'Withdrawal Cancelled', description: 'Withdrawal request cancelled', amount: Math.abs(Number(w.amount)), project_name: 'General', activity_date: today }
+      );
       showToast('Withdrawal cancelled. Balance restored in activity log.');
     } else {
       showToast('Status updated.');
     }
 
     if (btn) { btn.disabled = false; btn.textContent = 'Save Status'; }
+    renderWithdrawalsTable(Object.values(withdrawalsCache));
+  }
+
+  async function deleteWithdrawal(id) {
+    if (!confirm('Permanently delete this withdrawal request?')) return;
+    const w = withdrawalsCache[id];
+    if (!w) return;
+
+    const { error } = await supabaseClient.from('withdrawal_requests').delete().eq('id', id);
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
+
+    const wdDate = (w.created_at || '').slice(0, 10);
+    if (wdDate) {
+      await supabaseClient
+        .from('investor_activity')
+        .delete()
+        .ilike('investor_email', w.investor_email)
+        .ilike('description', '%withdrawal%')
+        .eq('activity_date', wdDate);
+    }
+
+    showToast('Withdrawal deleted.');
+    delete withdrawalsCache[id];
     renderWithdrawalsTable(Object.values(withdrawalsCache));
   }
 
@@ -6730,6 +6767,8 @@
       }
     } else if (btn.dataset.action === 'save-wd-status') {
       saveWithdrawalStatus(id);
+    } else if (btn.dataset.action === 'delete-wd') {
+      deleteWithdrawal(id);
     }
   });
 </script>
