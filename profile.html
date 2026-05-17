@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile — Entremares Investor Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #F5F5F3;
+      color: #0D0D0D;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 62px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid #E8E8E4;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hdr-back {
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B6B6B;
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      transition: color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .hdr-back:hover { color: #0D0D0D; }
+
+    .hdr-logo {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #0D0D0D;
+      text-decoration: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .hdr-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hdr-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0D0D0D;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .hdr-name {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 44px 32px 80px;
+    }
+
+    .page-hdr {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      margin-bottom: 4px;
+    }
+
+    .page-email {
+      font-size: 13px;
+      color: #9B9B9B;
+    }
+
+    /* ── Profile cards ── */
+    .profile-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEE9;
+      border-radius: 14px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    .card-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #9B9B9B;
+      margin-bottom: 22px;
+    }
+
+    .card-note {
+      font-size: 13px;
+      color: #9B9B9B;
+      margin-top: -14px;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    /* ── Form fields ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .form-field { }
+    .form-field.full { grid-column: 1 / -1; }
+
+    .form-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6B6B6B;
+      margin-bottom: 8px;
+    }
+
+    .form-field input {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #0D0D0D;
+      background: #F5F5F3;
+      border: 1.5px solid #E8E8E4;
+      border-radius: 9px;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .form-field input::placeholder { color: #BEBEBE; }
+
+    .form-field input:focus {
+      border-color: #0D0D0D;
+      background: #FFFFFF;
+    }
+
+    .form-field input[readonly] {
+      color: #B0B0AA;
+      cursor: default;
+      background: #FAFAFA;
+    }
+
+    .form-field input[readonly]:focus {
+      border-color: #E8E8E4;
+      background: #FAFAFA;
+    }
+
+    .field-note {
+      font-size: 11px;
+      color: #B0B0AA;
+      margin-top: 5px;
+    }
+
+    /* ── Card footer ── */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-save {
+      padding: 13px 28px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #FFFFFF;
+      background: #0D0D0D;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-save:hover  { opacity: 0.82; }
+    .btn-save:active { opacity: 0.68; }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .save-status {
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+    }
+    .save-status.success { color: #1A7F4A; display: block; }
+    .save-status.error   { color: #C0392B; display: block; }
+
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      .hdr { padding: 0 18px; }
+      .hdr-logo { position: static; transform: none; }
+      .hdr-name { display: none; }
+      .page { padding: 24px 18px 60px; }
+      .profile-card { padding: 22px 18px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .card-footer { flex-direction: column; align-items: flex-start; }
+      .btn-save { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="profile-page" style="display:none">
+
+  <header class="hdr">
+    <a href="dashboard.html" class="hdr-back">← Dashboard</a>
+    <a href="dashboard.html" class="hdr-logo">Entremares</a>
+    <div class="hdr-user">
+      <div class="hdr-avatar" id="hdr-initials">--</div>
+      <span class="hdr-name" id="hdr-name"></span>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <div class="page-hdr">
+      <div class="page-title">My Profile</div>
+      <div class="page-email" id="page-email"></div>
+    </div>
+
+    <!-- ── Personal Information ── -->
+    <div class="profile-card">
+      <div class="card-section-title">Personal Information</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="inp-first-name">First Name</label>
+          <input type="text" id="inp-first-name" placeholder="First name" autocomplete="given-name">
+        </div>
+        <div class="form-field">
+          <label for="inp-last-name">Last Name</label>
+          <input type="text" id="inp-last-name" placeholder="Last name" autocomplete="family-name">
+        </div>
+        <div class="form-field">
+          <label for="inp-phone">Phone Number</label>
+          <input type="tel" id="inp-phone" placeholder="+1 555 000 0000" autocomplete="tel">
+        </div>
+        <div class="form-field">
+          <label for="inp-email-display">Email</label>
+          <input type="email" id="inp-email-display" readonly autocomplete="off">
+          <div class="field-note">Email is tied to your account and cannot be changed here.</div>
+        </div>
+        <div class="form-field">
+          <label for="inp-country">Country of Residence</label>
+          <input type="text" id="inp-country" placeholder="e.g. Mexico" autocomplete="country-name">
+        </div>
+        <div class="form-field">
+          <label for="inp-city">City</label>
+          <input type="text" id="inp-city" placeholder="e.g. Tijuana" autocomplete="address-level2">
+        </div>
+        <div class="form-field full">
+          <label for="inp-address">Address</label>
+          <input type="text" id="inp-address" placeholder="Street address" autocomplete="street-address">
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="save-status" id="personal-status"></div>
+        <button class="btn-save" id="btn-save-personal" onclick="savePersonalInfo()">Save Personal Information</button>
+      </div>
+    </div>
+
+    <!-- ── Bank Account Details ── -->
+    <div class="profile-card">
+      <div class="card-section-title">Bank Account Details</div>
+      <p class="card-note">Your bank details are used exclusively for processing withdrawal requests.</p>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="inp-beneficiary">Beneficiary Name</label>
+          <input type="text" id="inp-beneficiary" placeholder="Full legal name on account">
+        </div>
+        <div class="form-field">
+          <label for="inp-bank-name">Bank Name</label>
+          <input type="text" id="inp-bank-name" placeholder="e.g. BBVA, Santander">
+        </div>
+        <div class="form-field">
+          <label for="inp-bank-country">Country</label>
+          <input type="text" id="inp-bank-country" placeholder="Bank's country">
+        </div>
+        <div class="form-field">
+          <label for="inp-swift">SWIFT / BIC Code</label>
+          <input type="text" id="inp-swift" placeholder="e.g. BBVAMXMM" style="text-transform:uppercase">
+        </div>
+        <div class="form-field">
+          <label for="inp-currency">Currency</label>
+          <input type="text" id="inp-currency" placeholder="e.g. USD, MXN, EUR" style="text-transform:uppercase">
+        </div>
+        <div class="form-field">
+          <label for="inp-account-type">Account Type</label>
+          <input type="text" id="inp-account-type" placeholder="e.g. Checking, Savings">
+        </div>
+        <div class="form-field full">
+          <label for="inp-iban">IBAN / Account Number</label>
+          <input type="text" id="inp-iban" placeholder="Full IBAN or account number">
+        </div>
+        <div class="form-field full">
+          <label for="inp-bank-address">Bank Address <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input type="text" id="inp-bank-address" placeholder="Bank street address">
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="save-status" id="bank-status"></div>
+        <button class="btn-save" id="btn-save-bank" onclick="saveBankDetails()">Save Bank Details</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  /* ══════════════════════════════════════════
+     REQUIRED SUPABASE TABLES
+     Run once in the Supabase SQL Editor:
+
+     CREATE TABLE IF NOT EXISTS investor_profiles (
+       id              uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+       investor_email  text UNIQUE NOT NULL,
+       first_name      text, last_name   text, phone       text,
+       country         text, address     text, city        text,
+       beneficiary_name text, bank_name  text, bank_country text,
+       swift_code      text, currency    text, account_type text,
+       iban            text, bank_address text,
+       updated_at      timestamptz DEFAULT now()
+     );
+
+     CREATE TABLE IF NOT EXISTS withdrawal_requests (
+       id               uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+       investor_email   text NOT NULL,
+       investor_name    text,
+       amount           numeric NOT NULL,
+       bank_details     text,
+       reference_number text,
+       status           text DEFAULT 'pending',
+       created_at       timestamptz DEFAULT now()
+     );
+  ══════════════════════════════════════════ */
+
+  const { createClient } = window.supabase;
+  const supabaseClient = createClient(
+    'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+    'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+  );
+
+  const INVESTORS = {
+    'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
+    'gilito.iii@gmail.com':          { name: 'Gilberto Padilla',       initials: 'GP' },
+    'alvaroilanes@gmail.com':        { name: 'Alvaro Villasante',      initials: 'AV' },
+    'cuellarolmos@gmail.com':        { name: 'Alberto Cuellar',        initials: 'AC' },
+    'sergio.gmd@gmail.com':          { name: 'Sergio Gomez',           initials: 'SG' },
+    'nacho.lucas@gmail.com':         { name: 'Nacho Lucas',            initials: 'NL' },
+    'ferzuniga@gmail.com':           { name: 'Fernando Zuniga',        initials: 'FZ' },
+    'madelcarmen.galindo@zuksa.net': { name: 'Ma del Carmen Galindo',  initials: 'MG' }
+  };
+
+  let currentEmail = '';
+
+  function getInitials(name) {
+    return (name || 'I').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  (async function init() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    currentEmail = session.user.email.toLowerCase();
+    const inv         = INVESTORS[currentEmail];
+    const displayName = inv ? inv.name : session.user.email;
+    const initials    = inv ? inv.initials : getInitials(displayName);
+
+    document.getElementById('hdr-initials').textContent   = initials;
+    document.getElementById('hdr-name').textContent       = displayName;
+    document.getElementById('page-email').textContent     = currentEmail;
+    document.getElementById('inp-email-display').value    = currentEmail;
+
+    document.getElementById('profile-page').style.display = '';
+
+    await loadProfile();
+  })();
+
+  async function loadProfile() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('investor_profiles')
+        .select('*')
+        .ilike('investor_email', currentEmail)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('investor_profiles table may not exist yet:', error.message);
+        return;
+      }
+      if (!data) return;
+
+      const fieldMap = {
+        'inp-first-name':   data.first_name,
+        'inp-last-name':    data.last_name,
+        'inp-phone':        data.phone,
+        'inp-country':      data.country,
+        'inp-address':      data.address,
+        'inp-city':         data.city,
+        'inp-beneficiary':  data.beneficiary_name,
+        'inp-bank-name':    data.bank_name,
+        'inp-bank-country': data.bank_country,
+        'inp-swift':        data.swift_code,
+        'inp-currency':     data.currency,
+        'inp-account-type': data.account_type,
+        'inp-iban':         data.iban,
+        'inp-bank-address': data.bank_address,
+      };
+
+      Object.entries(fieldMap).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el && val != null) el.value = val;
+      });
+    } catch (err) {
+      console.error('Failed to load profile:', err);
+    }
+  }
+
+  function showStatus(id, type, msg) {
+    const el = document.getElementById(id);
+    el.className   = 'save-status ' + type;
+    el.textContent = msg;
+    setTimeout(() => { el.className = 'save-status'; el.textContent = ''; }, 4000);
+  }
+
+  async function savePersonalInfo() {
+    const btn = document.getElementById('btn-save-personal');
+    btn.disabled    = true;
+    btn.textContent = 'Saving…';
+
+    const payload = {
+      investor_email: currentEmail,
+      first_name:  document.getElementById('inp-first-name').value.trim() || null,
+      last_name:   document.getElementById('inp-last-name').value.trim()  || null,
+      phone:       document.getElementById('inp-phone').value.trim()      || null,
+      country:     document.getElementById('inp-country').value.trim()    || null,
+      address:     document.getElementById('inp-address').value.trim()    || null,
+      city:        document.getElementById('inp-city').value.trim()       || null,
+      updated_at:  new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabaseClient
+        .from('investor_profiles')
+        .upsert(payload, { onConflict: 'investor_email' });
+      if (error) throw error;
+      showStatus('personal-status', 'success', '✓ Personal information saved.');
+    } catch (err) {
+      console.error('Failed to save personal info:', err);
+      showStatus('personal-status', 'error', 'Failed to save. Please try again.');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = 'Save Personal Information';
+  }
+
+  async function saveBankDetails() {
+    const btn = document.getElementById('btn-save-bank');
+    btn.disabled    = true;
+    btn.textContent = 'Saving…';
+
+    const payload = {
+      investor_email:   currentEmail,
+      beneficiary_name: document.getElementById('inp-beneficiary').value.trim()    || null,
+      bank_name:        document.getElementById('inp-bank-name').value.trim()       || null,
+      bank_country:     document.getElementById('inp-bank-country').value.trim()    || null,
+      swift_code:       (document.getElementById('inp-swift').value.trim().toUpperCase()) || null,
+      currency:         (document.getElementById('inp-currency').value.trim().toUpperCase()) || null,
+      account_type:     document.getElementById('inp-account-type').value.trim()    || null,
+      iban:             document.getElementById('inp-iban').value.trim()             || null,
+      bank_address:     document.getElementById('inp-bank-address').value.trim()    || null,
+      updated_at:       new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabaseClient
+        .from('investor_profiles')
+        .upsert(payload, { onConflict: 'investor_email' });
+      if (error) throw error;
+      showStatus('bank-status', 'success', '✓ Bank details saved.');
+    } catch (err) {
+      console.error('Failed to save bank details:', err);
+      showStatus('bank-status', 'error', 'Failed to save. Please try again.');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = 'Save Bank Details';
+  }
+</script>
+
+</body>
+</html>

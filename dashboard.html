@@ -1217,6 +1217,97 @@
       font-size: 12px;
       color: #BEBEBE;
     }
+
+    /* ── User dropdown ── */
+    .hdr-user-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .hdr-user-wrap:hover { background: #F5F5F3; }
+
+    .hdr-dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: #FFFFFF;
+      border: 1px solid #E8E8E4;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
+      min-width: 170px;
+      z-index: 200;
+      overflow: hidden;
+    }
+
+    .hdr-dropdown a,
+    .hdr-dropdown-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0D0D0D;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: background 0.12s;
+    }
+    .hdr-dropdown a:hover,
+    .hdr-dropdown-btn:hover { background: #F5F5F3; }
+    .hdr-dropdown-btn.danger { color: #C0392B; }
+    .hdr-dropdown-btn.danger:hover { background: #FEF0EE; }
+
+    /* ── Withdraw button ── */
+    .btn-withdraw {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.65);
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.22);
+      border-radius: 9px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      margin-top: 10px;
+    }
+    .btn-withdraw:hover {
+      color: #FFFFFF;
+      border-color: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* ── Full-amount button in withdraw modal ── */
+    .btn-full-amount {
+      display: block;
+      width: 100%;
+      padding: 11px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B6B6B;
+      background: #F5F5F3;
+      border: 1.5px solid #E8E8E4;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 18px;
+      transition: all 0.15s;
+    }
+    .btn-full-amount:hover { border-color: #0D0D0D; color: #0D0D0D; background: #FFFFFF; }
   </style>
 </head>
 <body>
@@ -1281,11 +1372,14 @@
   <header class="hdr">
     <a href="index.html" class="hdr-logo">Entremares</a>
     <div class="hdr-right">
-      <div class="hdr-user">
+      <div class="hdr-user-wrap" id="hdr-user-menu">
         <div class="hdr-avatar" id="hdr-initials">--</div>
         <span class="hdr-name" id="hdr-name"></span>
+        <div class="hdr-dropdown" id="hdr-dropdown" style="display:none">
+          <a href="profile.html">My Profile</a>
+          <button class="hdr-dropdown-btn danger" onclick="signOut()">Sign Out</button>
+        </div>
       </div>
-      <button class="btn-signout" id="btn-signout">Sign Out</button>
     </div>
   </header>
 
@@ -1335,6 +1429,7 @@
           <div class="wallet-amount" id="wallet-balance">—</div>
         </div>
         <button class="btn-invest" id="btn-invest">Invest Now &rarr;</button>
+        <button class="btn-withdraw" id="btn-withdraw">Request Withdrawal &rarr;</button>
       </div>
 
       <div class="opp-card">
@@ -1663,6 +1758,90 @@
       </div>
 
       <button class="btn-modal-primary" onclick="closeModal()">Close</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     WITHDRAWAL MODAL
+══════════════════════════════════════════ -->
+<div id="withdraw-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeWithdrawModal()">
+  <div class="modal-card">
+
+    <!-- Step 1: Amount -->
+    <div id="wd-step-1" class="modal-inner">
+      <div class="modal-step-bar">
+        <div class="modal-step-dot active"></div>
+        <div class="modal-step-dot"></div>
+        <div class="modal-step-dot"></div>
+        <span class="modal-step-label">Step 1 of 3</span>
+      </div>
+      <div class="modal-title">Request a Withdrawal</div>
+      <p style="font-size:14px;color:#6B6B6B;margin:6px 0 22px;line-height:1.6">How much would you like to withdraw?</p>
+
+      <div class="modal-balance">
+        <span class="modal-balance-lbl">Available Balance</span>
+        <span class="modal-balance-val" id="wd-balance-display">—</span>
+      </div>
+
+      <div class="modal-field-lbl">Withdrawal amount</div>
+      <div class="modal-amount-wrap">
+        <span class="modal-amount-prefix">$</span>
+        <input type="number" step="0.01" min="0" class="modal-amount-input" id="wd-amount-input" placeholder="0.00" autocomplete="off">
+      </div>
+      <div class="modal-min-notice" id="wd-amount-notice" style="margin-bottom:16px">&nbsp;</div>
+
+      <button class="btn-full-amount" onclick="wdRequestFull()">Request Full Amount</button>
+
+      <button class="btn-modal-primary" onclick="wdGoStep2()">Next &rarr;</button>
+    </div>
+
+    <!-- Step 2: Bank Details -->
+    <div id="wd-step-2" class="modal-inner" style="display:none;">
+      <div class="modal-step-bar">
+        <div class="modal-step-dot done"></div>
+        <div class="modal-step-dot active"></div>
+        <div class="modal-step-dot"></div>
+        <span class="modal-step-label">Step 2 of 3</span>
+      </div>
+      <div class="modal-title">Confirm Bank Details</div>
+
+      <div id="wd-bank-content" style="margin:18px 0 0"></div>
+
+      <p style="font-size:12px;font-style:italic;color:#9B9B9B;line-height:1.65;margin-bottom:22px">Withdrawal requests are processed once funds are available at the EntreOceanos level. You will be notified when your transfer has been initiated.</p>
+
+      <button class="btn-modal-primary" id="wd-confirm-btn" onclick="wdGoStep3()">Confirm Withdrawal Request</button>
+      <button class="btn-modal-back" onclick="wdShowStep(1)">&larr; Go back</button>
+    </div>
+
+    <!-- Step 3: Submitted -->
+    <div id="wd-step-3" class="modal-inner" style="display:none;">
+      <div class="modal-success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A7F4A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="modal-success-title">Request Submitted!</div>
+      <div class="modal-success-msg" id="wd-success-msg">Your withdrawal request has been received.</div>
+
+      <div class="modal-success-card">
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Amount</span>
+          <span class="modal-success-val" id="wd-s3-amount">—</span>
+        </div>
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Reference</span>
+          <span class="modal-success-val" id="wd-s3-ref">—</span>
+        </div>
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Status</span>
+          <span class="modal-success-val">Pending review</span>
+        </div>
+      </div>
+
+      <button class="btn-modal-primary" onclick="closeWithdrawModal()">Return to Dashboard</button>
     </div>
 
   </div>
@@ -2414,8 +2593,8 @@
   /* ── Event listeners ── */
   document.getElementById('btn-login').addEventListener('click', attemptLogin);
   document.getElementById('btn-magic-link').addEventListener('click', sendMagicLink);
-  document.getElementById('btn-signout').addEventListener('click', signOut);
   document.getElementById('btn-invest').addEventListener('click', openModal);
+  document.getElementById('btn-withdraw').addEventListener('click', openWithdrawModal);
 
   document.getElementById('modal-amount-input').addEventListener('input', function() {
     const amount  = parseFloat(this.value.replace(/,/g, '')) || 0;
@@ -2436,8 +2615,9 @@
   }
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.getElementById('invest-modal').style.display !== 'none') {
-      closeModal(); return;
+    if (e.key === 'Escape') {
+      if (document.getElementById('invest-modal').style.display !== 'none')   { closeModal();         return; }
+      if (document.getElementById('withdraw-modal').style.display !== 'none') { closeWithdrawModal(); return; }
     }
     if (e.key !== 'Enter') return;
     if (document.getElementById('login-screen').style.display !== 'none') attemptLogin();
@@ -2540,6 +2720,224 @@
       emailBtn.textContent = 'Send via Email';
     });
   })();
+
+  /* ══════════════════════════════════════════
+     REQUIRED SUPABASE TABLES
+     Run once in the Supabase SQL Editor:
+
+     CREATE TABLE IF NOT EXISTS investor_profiles (
+       id              uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+       investor_email  text UNIQUE NOT NULL,
+       first_name      text, last_name   text, phone       text,
+       country         text, address     text, city        text,
+       beneficiary_name text, bank_name  text, bank_country text,
+       swift_code      text, currency    text, account_type text,
+       iban            text, bank_address text,
+       updated_at      timestamptz DEFAULT now()
+     );
+
+     CREATE TABLE IF NOT EXISTS withdrawal_requests (
+       id               uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+       investor_email   text NOT NULL,
+       investor_name    text,
+       amount           numeric NOT NULL,
+       bank_details     text,
+       reference_number text,
+       status           text DEFAULT 'pending',
+       created_at       timestamptz DEFAULT now()
+     );
+  ══════════════════════════════════════════ */
+
+  /* ── User dropdown ── */
+  (function initDropdown() {
+    const menu = document.getElementById('hdr-user-menu');
+    const dd   = document.getElementById('hdr-dropdown');
+    if (!menu || !dd) return;
+    menu.addEventListener('click', function(e) {
+      e.stopPropagation();
+      dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', function() {
+      if (dd) dd.style.display = 'none';
+    });
+  })();
+
+  /* ── Withdrawal Modal ── */
+  let wdAmount   = 0;
+  let wdRefNum   = '';
+  let wdBankData = null;
+
+  function openWithdrawModal() {
+    if (!currentInvestor) return;
+    const available = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    document.getElementById('wd-balance-display').textContent = fmt(available);
+    const inp = document.getElementById('wd-amount-input');
+    inp.value = '';
+    inp.classList.remove('error');
+    document.getElementById('wd-amount-notice').textContent  = '';
+    document.getElementById('wd-amount-notice').style.color  = '#9B9B9B';
+    wdBankData = null;
+    wdShowStep(1);
+    document.getElementById('withdraw-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => inp.focus(), 60);
+  }
+
+  function closeWithdrawModal() {
+    document.getElementById('withdraw-modal').style.display = 'none';
+    document.body.style.overflow = '';
+    wdBankData = null;
+  }
+
+  function wdShowStep(n) {
+    const card = document.querySelector('#withdraw-modal .modal-card');
+    if (card) card.scrollTop = 0;
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('wd-step-' + i).style.display = (i === n) ? '' : 'none';
+    }
+  }
+
+  function wdRequestFull() {
+    const available = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    document.getElementById('wd-amount-input').value = available.toFixed(2);
+    document.getElementById('wd-amount-input').classList.remove('error');
+    document.getElementById('wd-amount-notice').textContent = '';
+  }
+
+  async function wdGoStep2() {
+    const raw       = parseFloat(document.getElementById('wd-amount-input').value) || 0;
+    const available = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    const notice    = document.getElementById('wd-amount-notice');
+    const inp       = document.getElementById('wd-amount-input');
+
+    if (!raw || raw <= 0) {
+      inp.classList.add('error');
+      notice.className   = 'modal-min-notice error';
+      notice.textContent = 'Please enter a valid amount.';
+      return;
+    }
+    if (raw > available + 0.01) {
+      inp.classList.add('error');
+      notice.className   = 'modal-min-notice error';
+      notice.textContent = 'Amount exceeds your available balance (' + fmt(available) + ')';
+      return;
+    }
+
+    wdAmount = raw;
+    inp.classList.remove('error');
+    notice.className   = 'modal-min-notice';
+    notice.textContent = '';
+
+    const bankContent = document.getElementById('wd-bank-content');
+    bankContent.innerHTML = '<div style="padding:16px;text-align:center;color:#B0B0AA;font-size:13px">Loading bank details…</div>';
+    wdBankData = null;
+    document.getElementById('wd-confirm-btn').disabled = true;
+    wdShowStep(2);
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('investor_profiles')
+        .select('beneficiary_name, bank_name, bank_country, swift_code, currency, account_type, iban')
+        .ilike('investor_email', currentInvestorEmail)
+        .maybeSingle();
+
+      if (!error && data && data.bank_name) {
+        wdBankData = data;
+        bankContent.innerHTML =
+          '<div class="modal-summary-card" style="margin-bottom:18px">' +
+            '<div class="modal-summary-row">' +
+              '<span class="modal-summary-lbl">Withdrawal Amount</span>' +
+              '<span class="modal-summary-val">' + fmt(wdAmount) + '</span>' +
+            '</div>' +
+            '<div class="modal-summary-row">' +
+              '<span class="modal-summary-lbl">Beneficiary</span>' +
+              '<span class="modal-summary-val">' + escHtml(data.beneficiary_name || '—') + '</span>' +
+            '</div>' +
+            '<div class="modal-summary-row">' +
+              '<span class="modal-summary-lbl">Bank</span>' +
+              '<span class="modal-summary-val">' + escHtml(data.bank_name || '—') + '</span>' +
+            '</div>' +
+            '<div class="modal-summary-row">' +
+              '<span class="modal-summary-lbl">IBAN / Account</span>' +
+              '<span class="modal-summary-val">' + escHtml(data.iban || '—') + '</span>' +
+            '</div>' +
+            '<div class="modal-summary-row">' +
+              '<span class="modal-summary-lbl">SWIFT / BIC</span>' +
+              '<span class="modal-summary-val">' + escHtml(data.swift_code || '—') + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<p style="font-size:12px;color:#B0B0AA;margin-bottom:20px">' +
+            '<a href="profile.html" style="color:#1A5FA8;text-decoration:none;font-weight:500">Edit in My Profile →</a>' +
+          '</p>';
+        document.getElementById('wd-confirm-btn').disabled = false;
+      } else {
+        bankContent.innerHTML =
+          '<div style="background:#FFF7E6;border:1px solid #FFE0A3;border-radius:12px;padding:18px 20px;margin-bottom:20px">' +
+            '<p style="font-size:14px;font-weight:600;color:#9B5D00;margin-bottom:8px">No bank details found</p>' +
+            '<p style="font-size:13px;color:#6B6B6B;line-height:1.6">' +
+              'Please add your bank details in <a href="profile.html" style="color:#1A5FA8;text-decoration:none;font-weight:600">My Profile</a> before submitting a withdrawal request.' +
+            '</p>' +
+          '</div>';
+        document.getElementById('wd-confirm-btn').disabled = true;
+      }
+    } catch (err) {
+      console.error('Failed to load bank details:', err);
+      bankContent.innerHTML = '<div style="font-size:13px;color:#C0392B;padding:8px 0">Failed to load bank details. Please try again.</div>';
+      document.getElementById('wd-confirm-btn').disabled = true;
+    }
+  }
+
+  async function wdGoStep3() {
+    const confirmBtn = document.getElementById('wd-confirm-btn');
+    confirmBtn.disabled    = true;
+    confirmBtn.textContent = 'Processing…';
+
+    wdRefNum = String(10000000 + Math.floor(Math.random() * 90000000));
+
+    document.getElementById('wd-s3-amount').textContent = fmt(wdAmount);
+    document.getElementById('wd-s3-ref').textContent    = '#' + wdRefNum;
+    document.getElementById('wd-success-msg').innerHTML =
+      'Your withdrawal request for <strong>' + fmt(wdAmount) + '</strong> has been received.';
+
+    wdShowStep(3);
+    confirmBtn.disabled    = false;
+    confirmBtn.textContent = 'Confirm Withdrawal Request';
+
+    try {
+      const bankJson = wdBankData ? JSON.stringify(wdBankData) : null;
+      const { error } = await supabaseClient.from('withdrawal_requests').insert({
+        investor_email:   currentInvestorEmail,
+        investor_name:    currentInvestor.name,
+        amount:           wdAmount,
+        bank_details:     bankJson,
+        reference_number: wdRefNum,
+        status:           'pending'
+      });
+      if (error) console.error('Failed to save withdrawal request:', error);
+    } catch (err) {
+      console.error('Failed to save withdrawal request:', err);
+    }
+
+    try {
+      const bankName = wdBankData ? (wdBankData.bank_name  || '—') : '—';
+      const iban     = wdBankData ? (wdBankData.iban        || '—') : '—';
+      const swift    = wdBankData ? (wdBankData.swift_code  || '—') : '—';
+      emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+        name:              'Withdrawal Request',
+        email:             currentInvestorEmail,
+        country:           currentInvestor.name,
+        investment_amount: fmt(wdAmount),
+        message:           'Withdrawal request received from ' + currentInvestor.name +
+                           ' for ' + fmt(wdAmount) +
+                           '. Bank: ' + bankName +
+                           ', IBAN: ' + iban +
+                           ', Swift: ' + swift +
+                           '. Reference: #' + wdRefNum
+      }).catch(err => console.error('EmailJS withdrawal alert failed:', err));
+    } catch (err) {
+      console.error('Failed to send withdrawal email:', err);
+    }
+  }
 </script>
 
 </body>
