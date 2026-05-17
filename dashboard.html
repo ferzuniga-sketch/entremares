@@ -1468,6 +1468,7 @@
           <span id="prog-raised">Loading…</span>
           <span>$800,000 goal</span>
         </div>
+        <div style="margin-top:5px;font-size:11px;color:#B0B0AA">Remaining: <span id="prog-remaining">—</span></div>
 
         <button class="btn-opp" onclick="window.location.href='real-del-monte.html'">View Details &rarr;</button>
       </div>
@@ -1993,6 +1994,8 @@
       document.getElementById('prog-fill').style.width = pct.toFixed(2) + '%';
       document.getElementById('prog-hdr-pct').textContent = Math.round(pct) + '%';
       document.getElementById('prog-raised').textContent = '$' + totalRaised.toLocaleString('en-US') + ' raised';
+      const rdmRemaining = Math.max(0, GOAL - totalRaised);
+      document.getElementById('prog-remaining').textContent = '$' + rdmRemaining.toLocaleString('en-US');
 
       if (totalRaised >= GOAL) {
         document.getElementById('funded-banner').style.display = 'block';
@@ -2146,7 +2149,7 @@
       loadCommitmentStatus(email),
       loadPendingWithdrawals(email)
     ]);
-    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
     setFade('wallet-balance', fmt(remaining));
     if (currentNetDistribution > 0) {
       updateNetDistributionDisplay();
@@ -2509,7 +2512,7 @@
   }
 
   function getAvailableBalance() {
-    return Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    return Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
   }
 
   async function fetchAndUpdateBalance() {
@@ -2524,7 +2527,7 @@
         rdmCommittedAmount = data.reduce((s, r) => s + Number(r.amount), 0);
       }
     } catch (_) {}
-    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
     setFade('wallet-balance', fmt(remaining));
   }
 
@@ -2948,6 +2951,8 @@
 
     pendingWithdrawalAmount += wdAmount;
     updateNetDistributionDisplay();
+    const walletRemaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
+    setFade('wallet-balance', fmt(walletRemaining));
 
     try {
       const bankJson = wdBankData ? JSON.stringify(wdBankData) : null;
