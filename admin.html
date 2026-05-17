@@ -2257,56 +2257,40 @@
       <div class="form-section-label">Personal Details</div>
       <div class="form-grid-2">
         <div class="field">
-          <label>Full Name</label>
-          <input type="text" id="f-name" placeholder="Full name">
+          <label>First Name</label>
+          <input type="text" id="f-first-name" placeholder="First name">
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" id="f-last-name" placeholder="Last name">
         </div>
         <div class="field">
           <label>Email</label>
           <input type="email" id="f-email" placeholder="email@example.com">
         </div>
         <div class="field">
-          <label>Password</label>
-          <input type="text" id="f-password" placeholder="Password">
+          <label>Temporary Password</label>
+          <input type="text" id="f-password" placeholder="Entremares2024!">
         </div>
         <div class="field">
-          <label>Country</label>
-          <input type="text" id="f-country" placeholder="Country">
+          <label>Phone <span style="font-weight:400;text-transform:none;font-size:10px">(optional)</span></label>
+          <input type="text" id="f-phone" placeholder="+1 555 000 0000">
         </div>
-      </div>
-      <div class="field">
-        <label>Phone</label>
-        <input type="text" id="f-phone" placeholder="+1 555 000 0000">
+        <div class="field">
+          <label>Member Since</label>
+          <input type="date" id="f-member-since">
+        </div>
       </div>
 
-      <div class="divider"></div>
-      <div class="form-section-label">Investment Data</div>
-      <div class="form-grid-2">
-        <div class="field">
-          <label>Kabil — Invested ($)</label>
-          <input type="number" id="f-kabil-invested" placeholder="0.00" step="0.01">
-        </div>
-        <div class="field">
-          <label>Kabil — Profit ($)</label>
-          <input type="number" id="f-kabil-profit" placeholder="0.00" step="0.01">
-        </div>
-        <div class="field">
-          <label>Allure — Invested ($)</label>
-          <input type="number" id="f-allure-invested" placeholder="0.00" step="0.01">
-        </div>
-        <div class="field">
-          <label>Allure — Profit ($)</label>
-          <input type="number" id="f-allure-profit" placeholder="0.00" step="0.01">
-        </div>
-      </div>
-      <div class="field">
-        <label>Wallet Balance ($)</label>
-        <input type="number" id="f-wallet" placeholder="0.00" step="0.01">
-      </div>
+      <div id="investor-form-msg" style="display:none;margin-top:16px;font-size:13px;padding:10px 14px;border-radius:8px;line-height:1.5;"></div>
+
+      <div class="divider" style="margin-top:20px;"></div>
+      <p style="font-size:12px;color:#9B9B9B;line-height:1.6;">After creating the investor, remember to add their investment positions in the relevant project sections (Allure, Real del Monte, etc.)</p>
 
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" id="modal-investor-cancel">Cancel</button>
-      <button class="btn-save" id="modal-investor-save">Save Investor</button>
+      <button class="btn-save" id="modal-investor-save">Create Investor</button>
     </div>
   </div>
 </div>
@@ -3329,10 +3313,14 @@
   function openAddInvestor() {
     editingInvId = null;
     document.getElementById('modal-investor-title').textContent = 'Add New Investor';
-    document.getElementById('modal-investor-save').textContent  = 'Add Investor';
-    ['f-name','f-email','f-password','f-country','f-phone',
-     'f-kabil-invested','f-kabil-profit','f-allure-invested','f-allure-profit','f-wallet']
-      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('modal-investor-save').textContent  = 'Create Investor';
+    document.getElementById('modal-investor-save').disabled     = false;
+    ['f-first-name','f-last-name','f-email','f-phone'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-password').value     = 'Entremares2024!';
+    document.getElementById('f-member-since').value = new Date().toISOString().slice(0, 10);
+    const msg = document.getElementById('investor-form-msg');
+    msg.style.display = 'none';
+    msg.textContent   = '';
     document.getElementById('modal-investor').classList.add('open');
   }
 
@@ -3342,16 +3330,17 @@
     editingInvId = id;
     document.getElementById('modal-investor-title').textContent = 'Edit Investor';
     document.getElementById('modal-investor-save').textContent  = 'Save Changes';
-    document.getElementById('f-name').value           = inv.name;
-    document.getElementById('f-email').value          = inv.email;
-    document.getElementById('f-password').value       = inv.password;
-    document.getElementById('f-country').value        = inv.country;
-    document.getElementById('f-phone').value          = inv.phone;
-    document.getElementById('f-kabil-invested').value = inv.kabil.invested;
-    document.getElementById('f-kabil-profit').value   = inv.kabil.profit;
-    document.getElementById('f-allure-invested').value = inv.allure.invested;
-    document.getElementById('f-allure-profit').value  = inv.allure.profit;
-    document.getElementById('f-wallet').value         = inv.wallet;
+    document.getElementById('modal-investor-save').disabled     = false;
+    const parts = (inv.name || '').split(' ');
+    document.getElementById('f-first-name').value  = parts[0] || '';
+    document.getElementById('f-last-name').value   = parts.slice(1).join(' ') || '';
+    document.getElementById('f-email').value        = inv.email;
+    document.getElementById('f-password').value     = inv.password || '';
+    document.getElementById('f-phone').value        = inv.phone || '';
+    document.getElementById('f-member-since').value = inv.memberSince || new Date().toISOString().slice(0, 10);
+    const msg = document.getElementById('investor-form-msg');
+    msg.style.display = 'none';
+    msg.textContent   = '';
     document.getElementById('modal-investor').classList.add('open');
   }
 
@@ -3359,37 +3348,75 @@
     document.getElementById('modal-investor').classList.remove('open');
   }
 
-  function saveInvestor() {
-    const name     = document.getElementById('f-name').value.trim();
-    const email    = document.getElementById('f-email').value.trim().toLowerCase();
-    const password = document.getElementById('f-password').value.trim();
-    const country  = document.getElementById('f-country').value.trim();
-    const phone    = document.getElementById('f-phone').value.trim();
-    const kabilInv = parseFloat(document.getElementById('f-kabil-invested').value) || 0;
-    const kabilPro = parseFloat(document.getElementById('f-kabil-profit').value)   || 0;
-    const allureInv= parseFloat(document.getElementById('f-allure-invested').value)|| 0;
-    const allurePro= parseFloat(document.getElementById('f-allure-profit').value)  || 0;
-    const wallet   = parseFloat(document.getElementById('f-wallet').value)         || 0;
+  function showInvestorMsg(text, isError) {
+    const msg = document.getElementById('investor-form-msg');
+    msg.style.display  = 'block';
+    msg.style.background = isError ? '#FEF0EE' : '#F0FEF4';
+    msg.style.border     = isError ? '1px solid #F5C6C1' : '1px solid #BBF7D0';
+    msg.style.color      = isError ? '#C0392B' : '#166534';
+    msg.textContent      = text;
+  }
 
-    if (!name || !email) { alert('Name and email are required.'); return; }
+  async function saveInvestor() {
+    const firstName   = document.getElementById('f-first-name').value.trim();
+    const lastName    = document.getElementById('f-last-name').value.trim();
+    const email       = document.getElementById('f-email').value.trim().toLowerCase();
+    const password    = document.getElementById('f-password').value.trim();
+    const phone       = document.getElementById('f-phone').value.trim();
+    const memberSince = document.getElementById('f-member-since').value;
+    const name        = [firstName, lastName].filter(Boolean).join(' ');
+
+    if (!firstName || !email) { alert('First name and email are required.'); return; }
 
     if (editingInvId !== null) {
       const idx = INVESTORS_DATA.findIndex(i => i.id === editingInvId);
       if (idx !== -1) {
-        INVESTORS_DATA[idx] = { ...INVESTORS_DATA[idx], name, email, password, country, phone, wallet,
-          kabil:  { invested: kabilInv, profit: kabilPro },
-          allure: { invested: allureInv, profit: allurePro }
-        };
+        INVESTORS_DATA[idx] = { ...INVESTORS_DATA[idx], name, email, password, phone, memberSince };
       }
-    } else {
-      INVESTORS_DATA.push({ id: nextInvId++, name, email, password, country, phone, wallet,
-        kabil:  { invested: kabilInv, profit: kabilPro },
-        allure: { invested: allureInv, profit: allurePro }
-      });
+      renderInvestors();
+      closeInvestorModal();
+      return;
     }
 
+    const saveBtn = document.getElementById('modal-investor-save');
+    saveBtn.disabled    = true;
+    saveBtn.textContent = 'Creating…';
+    document.getElementById('investor-form-msg').style.display = 'none';
+
+    const { data, error } = await supabaseClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { first_name: firstName, last_name: lastName, phone, member_since: memberSince }
+    });
+
+    saveBtn.disabled    = false;
+    saveBtn.textContent = 'Create Investor';
+
+    if (error) {
+      const isAlreadyExists = error.message &&
+        (error.message.toLowerCase().includes('already registered') ||
+         error.message.toLowerCase().includes('already exists') ||
+         error.code === 'email_exists');
+      showInvestorMsg(
+        isAlreadyExists ? 'This email is already registered.' : (error.message || 'An error occurred. Please try again.'),
+        true
+      );
+      return;
+    }
+
+    showInvestorMsg('Investor created successfully! They can now log in with their email and password or use Magic Link.', false);
+
+    INVESTORS_DATA.push({
+      id: nextInvId++, name, email, password, phone, memberSince,
+      country: '',
+      wallet: 0,
+      kabil:  { invested: 0, profit: 0 },
+      allure: { invested: 0, profit: 0 }
+    });
     renderInvestors();
-    closeInvestorModal();
+
+    setTimeout(closeInvestorModal, 3000);
   }
 
   document.getElementById('btn-add-investor').addEventListener('click', openAddInvestor);
