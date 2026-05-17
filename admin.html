@@ -441,6 +441,48 @@
     .td-green { color: #1A7F4A; font-weight: 600; }
     .td-actions { white-space: nowrap; }
 
+    /* ── Withdrawals table ── */
+    .wd-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #withdrawals-table td { font-size: 13px; }
+    #withdrawals-table .th-actions,
+    #withdrawals-table .td-actions {
+      position: sticky;
+      right: 0;
+      width: 140px;
+      min-width: 140px;
+      z-index: 1;
+      box-shadow: -2px 0 6px rgba(0,0,0,0.04);
+    }
+    #withdrawals-table .th-actions { background: #FAFAF8; }
+    #withdrawals-table .td-actions { background: #FFFFFF; }
+    #withdrawals-table tr:hover .td-actions { background: #FAFAF8; }
+    .wd-actions-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: stretch;
+    }
+    .wd-actions-cell select {
+      font-family: inherit;
+      font-size: 12px;
+      padding: 5px 8px;
+      border: 1px solid #E0E0DC;
+      border-radius: 6px;
+      background: #FAFAF8;
+      color: #0D0D0D;
+      cursor: pointer;
+      width: 100%;
+    }
+    .wd-actions-cell .btn-delete { margin-left: 0; }
+    .wd-bank-preview {
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+      color: #6B6B6B;
+    }
+
     /* ── Badges ── */
     .badge {
       display: inline-block;
@@ -1884,21 +1926,23 @@
       </div>
 
       <div class="table-card">
-        <table class="data-table" id="withdrawals-table">
-          <thead>
-            <tr>
-              <th>Ref #</th>
-              <th>Investor</th>
-              <th>Email</th>
-              <th>Amount</th>
-              <th>Bank Details</th>
-              <th>Date Requested</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="withdrawals-tbody"></tbody>
-        </table>
+        <div class="wd-table-wrap">
+          <table class="data-table" id="withdrawals-table">
+            <thead>
+              <tr>
+                <th>Ref #</th>
+                <th>Investor</th>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Bank Details</th>
+                <th>Date Requested</th>
+                <th>Status</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="withdrawals-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -6614,21 +6658,25 @@
           <td class="td-email">${escHtml(w.investor_email || '—')}</td>
           <td class="td-mono" style="font-weight:700">${fmt(w.amount)}</td>
           <td>
-            <button class="btn-edit" data-action="toggle-bank" style="font-size:11px;padding:4px 10px">
-              ${bankParsed ? 'Show Details' : 'No Details'}
-            </button>
+            ${bankParsed
+              ? `<div class="wd-bank-preview">${escHtml(bankParsed.beneficiary_name || '')}${bankParsed.bank_name ? ' — ' + escHtml(bankParsed.bank_name) : ''}</div>`
+              : '<span style="color:#9B9B9B;font-size:12px">—</span>'
+            }
           </td>
-          <td style="color:#9B9B9B;font-size:13px">${dateStr}</td>
+          <td style="color:#9B9B9B">${dateStr}</td>
           <td id="wdstatus-${escHtml(w.id)}">${withdrawalStatusBadge(w.status)}</td>
           <td class="td-actions" id="wdactions-${escHtml(w.id)}">
-            <select id="wdselect-${escHtml(w.id)}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:1px solid #E0E0DC;border-radius:6px;background:#FAFAF8;color:#0D0D0D;margin-right:6px;cursor:pointer">
-              <option value="pending"${w.status === 'pending' ? ' selected' : ''}>Pending</option>
-              <option value="approved"${w.status === 'approved' ? ' selected' : ''}>Approved</option>
-              <option value="transferred"${w.status === 'transferred' ? ' selected' : ''}>Transferred</option>
-              <option value="cancelled"${w.status === 'cancelled' ? ' selected' : ''}>Cancelled</option>
-            </select>
-            <button class="btn-save-inline" data-action="save-wd-status" style="font-size:12px">Save Status</button>
-            <button class="btn-delete" data-action="delete-wd" style="font-size:12px;margin-left:6px">Delete</button>
+            <div class="wd-actions-cell">
+              <button class="btn-edit" data-action="toggle-bank" style="font-size:11px;padding:4px 10px">${bankParsed ? 'Show Details' : 'No Details'}</button>
+              <select id="wdselect-${escHtml(w.id)}">
+                <option value="pending"${w.status === 'pending' ? ' selected' : ''}>Pending</option>
+                <option value="approved"${w.status === 'approved' ? ' selected' : ''}>Approved</option>
+                <option value="transferred"${w.status === 'transferred' ? ' selected' : ''}>Transferred</option>
+                <option value="cancelled"${w.status === 'cancelled' ? ' selected' : ''}>Cancelled</option>
+              </select>
+              <button class="btn-save-inline" data-action="save-wd-status" style="font-size:12px">Save Status</button>
+              <button class="btn-delete" data-action="delete-wd" style="font-size:12px">Delete</button>
+            </div>
           </td>
         </tr>
         <tr id="wdbank-${escHtml(w.id)}" style="display:none;background:#FAFAF8">
