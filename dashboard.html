@@ -1925,13 +1925,25 @@
   async function saveCommitmentToSupabase() {
     try {
       const projectName = selectedProject ? selectedProject.project_name : 'Real del Monte';
+      // -- ALTER TABLE commitments ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'confirmed';
       const { error } = await supabaseClient.from('commitments').insert({
         investor_email: currentInvestorEmail,
         investor_name:  currentInvestor.name,
         amount:         modalAmount,
-        project_name:   projectName
+        project_name:   projectName,
+        status:         'pending'
       });
       if (error) console.error('Supabase insert error:', error);
+
+      const today = new Date().toISOString().slice(0, 10);
+      await supabaseClient.from('investor_activity').insert({
+        investor_email: currentInvestorEmail,
+        activity_type:  'Commitment',
+        description:    'Capital committed to ' + projectName + ' — pending confirmation',
+        amount:         modalAmount,
+        project_name:   projectName,
+        activity_date:  today
+      });
     } catch (err) {
       console.error('Failed to save commitment:', err);
     }
@@ -2296,26 +2308,30 @@
       }
 
       const ICON_CFG = {
-        'Investment':          { symbol: '↑', bg: '#F0FBF5', color: '#1A7F4A' },
-        'Return':              { symbol: '↑', bg: '#F0FBF5', color: '#1A7F4A' },
-        'Distribution':        { symbol: '$', bg: '#EFF6FF', color: '#2563EB' },
-        'Update':              { symbol: '·', bg: '#FFF7E6', color: '#9B5D00' },
-        'Document':            { symbol: '↓', bg: '#EEF4FD', color: '#1A5FA8' },
-        'Other':               { symbol: '·', bg: '#F5F5F3', color: '#9B9B9B' },
-        'Withdrawal Request':  { symbol: '⏳', bg: '#FFFBEB', color: '#D97706' },
-        'Withdrawal Cancelled':{ symbol: '✗', bg: '#F5F5F3', color: '#6B6B6B' },
-        'Withdrawal':          { symbol: '✓', bg: '#F0FBF5', color: '#1A7F4A' }
+        'Investment':           { symbol: '↑', bg: '#F0FBF5', color: '#1A7F4A' },
+        'Return':               { symbol: '↑', bg: '#F0FBF5', color: '#1A7F4A' },
+        'Commitment':           { symbol: '⏳', bg: '#FFFBEB', color: '#D97706' },
+        'Commitment Cancelled': { symbol: '✗', bg: '#F5F5F3', color: '#6B6B6B' },
+        'Distribution':         { symbol: '$', bg: '#EFF6FF', color: '#2563EB' },
+        'Update':               { symbol: '·', bg: '#FFF7E6', color: '#9B5D00' },
+        'Document':             { symbol: '↓', bg: '#EEF4FD', color: '#1A5FA8' },
+        'Other':                { symbol: '·', bg: '#F5F5F3', color: '#9B9B9B' },
+        'Withdrawal Request':   { symbol: '⏳', bg: '#FFFBEB', color: '#D97706' },
+        'Withdrawal Cancelled': { symbol: '✗', bg: '#F5F5F3', color: '#6B6B6B' },
+        'Withdrawal':           { symbol: '✓', bg: '#F0FBF5', color: '#1A7F4A' }
       };
       const BADGE_STYLE = {
-        'Investment':          'background:#F0F0EE;color:#0D0D0D;border:1px solid #E0E0DC',
-        'Return':              'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
-        'Distribution':        'background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE',
-        'Update':              'background:#FFF7E6;color:#9B5D00;border:1px solid #FFE0A3',
-        'Document':            'background:#EEF4FD;color:#1A5FA8;border:1px solid #BDD3F5',
-        'Other':               'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC',
-        'Withdrawal Request':  'background:#FFFBEB;color:#92400E;border:1px solid #FDE68A',
-        'Withdrawal Cancelled':'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC',
-        'Withdrawal':          'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2'
+        'Investment':           'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
+        'Return':               'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
+        'Commitment':           'background:#FFFBEB;color:#92400E;border:1px solid #FDE68A',
+        'Commitment Cancelled': 'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC',
+        'Distribution':         'background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE',
+        'Update':               'background:#FFF7E6;color:#9B5D00;border:1px solid #FFE0A3',
+        'Document':             'background:#EEF4FD;color:#1A5FA8;border:1px solid #BDD3F5',
+        'Other':                'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC',
+        'Withdrawal Request':   'background:#FFFBEB;color:#92400E;border:1px solid #FDE68A',
+        'Withdrawal Cancelled': 'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC',
+        'Withdrawal':           'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2'
       };
       const ACT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       function fmtActDate(iso) {
@@ -2333,27 +2349,33 @@
         const fmtAbs = fmt(abs);
         const base = 'font-size:14px;font-weight:700;text-align:right;white-space:nowrap;padding-left:12px';
         if (type === 'Investment' || type === 'Return') {
-          return `<span class="tl-amt pos">+${fmtAbs}</span>`;
+          return `<span class="tl-amt" style="${base};color:#1A7F4A">+${fmtAbs}</span>`;
+        } else if (type === 'Commitment') {
+          return `<span class="tl-amt" style="${base};color:#D97706">+${fmtAbs}</span>`;
         } else if (type === 'Distribution') {
           return `<span class="tl-amt" style="${base};color:#2563EB">+${fmtAbs}</span>`;
         } else if (type === 'Withdrawal Request') {
           return `<span class="tl-amt" style="${base};color:#D97706">&minus;${fmtAbs}</span>`;
-        } else if (type === 'Withdrawal Cancelled') {
-          return `<span class="tl-amt" style="${base};color:#9B9B9B">+${fmtAbs}</span>`;
         } else if (type === 'Withdrawal') {
-          return `<span class="tl-amt neg">&minus;${fmtAbs}</span>`;
+          return `<span class="tl-amt" style="${base};color:#C0392B">&minus;${fmtAbs}</span>`;
+        } else if (type === 'Withdrawal Cancelled' || type === 'Commitment Cancelled') {
+          return `<span class="tl-amt" style="${base};color:#9B9B9B">${fmtAbs}</span>`;
         }
-        return `<span class="tl-amt neg">&minus;${fmtAbs}</span>`;
+        return `<span class="tl-amt" style="${base};color:#9B9B9B">${fmtAbs}</span>`;
       }
       function actStatusBadge(type) {
-        if (type === 'Withdrawal Request') {
-          return ' <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;margin-left:5px">(Pending)</span>';
+        const s = 'display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;margin-left:5px';
+        if (type === 'Commitment') {
+          return ` <span style="${s};background:#FFFBEB;color:#92400E;border:1px solid #FDE68A">(In Process)</span>`;
         }
-        if (type === 'Withdrawal Cancelled') {
-          return ' <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC;margin-left:5px">(Cancelled)</span>';
+        if (type === 'Withdrawal Request') {
+          return ` <span style="${s};background:#FFFBEB;color:#92400E;border:1px solid #FDE68A">(Pending)</span>`;
+        }
+        if (type === 'Withdrawal Cancelled' || type === 'Commitment Cancelled') {
+          return ` <span style="${s};background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC">(Cancelled)</span>`;
         }
         if (type === 'Withdrawal') {
-          return ' <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2;margin-left:5px">(Transferred)</span>';
+          return ` <span style="${s};background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2">(Transferred)</span>`;
         }
         return '';
       }
@@ -2709,6 +2731,7 @@
     updateFundingProgress();
     await loadCommitmentStatus(currentInvestorEmail);
     await fetchAndUpdateBalance();
+    loadActivityTimeline(currentInvestorEmail);
   }
 
   /* ── Event listeners ── */

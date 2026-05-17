@@ -1101,6 +1101,7 @@
               <th>Project</th>
               <th>Amount</th>
               <th>Date</th>
+              <th>Status</th>
               <th></th>
             </tr>
           </thead>
@@ -3092,7 +3093,7 @@
 
   async function loadCommitmentsFromSupabase() {
     const tbody = document.getElementById('commitment-tbody');
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
 
     console.log('[Supabase] Loading commitments...');
     const { data, error } = await supabaseClient
@@ -3106,7 +3107,7 @@
       const msg = 'Failed to load commitments: ' + error.message + ' (code: ' + error.code + ')';
       console.error('[Supabase]', msg);
       showDbError(msg);
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#C0392B;padding:40px 20px">'
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#C0392B;padding:40px 20px">'
         + escHtml(msg) + '</td></tr>';
       return;
     }
@@ -3124,7 +3125,7 @@
     const tbody = document.getElementById('commitment-tbody');
 
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No commitments yet. Add one above.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No commitments yet. Add one above.</td></tr>';
       updateCommitmentSummary([]);
       return;
     }
@@ -3133,6 +3134,8 @@
       const dateStr = new Date(c.created_at).toLocaleDateString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric'
       });
+      // status: old rows without status field default to 'confirmed'
+      const status = c.status || 'confirmed';
       return `
         <tr id="row-${c.id}" data-id="${c.id}">
           <td class="td-name">${escHtml(c.investor_name)}</td>
@@ -3140,6 +3143,16 @@
           <td>${escHtml(c.project_name)}</td>
           <td class="td-mono" id="cell-amount-${c.id}">${fmt(c.amount)}</td>
           <td style="color:#9B9B9B;font-size:13px">${dateStr}</td>
+          <td id="cell-status-${c.id}" style="min-width:130px">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+              <select id="status-select-${c.id}" style="font-size:12px;padding:4px 8px;border:1px solid #E8E8E4;border-radius:6px;background:#FAFAF8;cursor:pointer">
+                <option value="pending"${status === 'pending' ? ' selected' : ''}>Pending</option>
+                <option value="confirmed"${status === 'confirmed' ? ' selected' : ''}>Confirmed</option>
+                <option value="cancelled"${status === 'cancelled' ? ' selected' : ''}>Cancelled</option>
+              </select>
+              <button class="btn-save-inline" data-action="save-status" style="font-size:11px;padding:3px 10px">Save Status</button>
+            </div>
+          </td>
           <td class="td-actions" id="cell-actions-${c.id}">${commitmentActionBtns()}</td>
         </tr>
       `;
@@ -3290,10 +3303,103 @@
     loadFundingSummary();
   }
 
+  /* ── Save Commitment Status ── */
+  async function saveCommitmentStatus(id) {
+    const select = document.getElementById('status-select-' + id);
+    if (!select) return;
+    const newStatus = select.value;
+    const c = commitmentsCache[id];
+    if (!c) return;
+
+    const btn = document.querySelector(`#cell-status-${id} button[data-action="save-status"]`);
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    const { error } = await supabaseClient
+      .from('commitments')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      showToast('Save failed: ' + error.message, true);
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Status'; }
+      return;
+    }
+
+    commitmentsCache[id] = { ...c, status: newStatus };
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Find matching activity entry for this commitment
+    const { data: actData } = await supabaseClient
+      .from('investor_activity')
+      .select('id')
+      .ilike('investor_email', c.investor_email)
+      .eq('project_name', c.project_name)
+      .in('activity_type', ['Commitment', 'Investment', 'Commitment Cancelled'])
+      .limit(1);
+
+    if (newStatus === 'confirmed') {
+      if (actData && actData.length > 0) {
+        await supabaseClient.from('investor_activity').update({
+          description:   'Capital confirmed for ' + c.project_name,
+          activity_type: 'Investment'
+        }).eq('id', actData[0].id);
+      } else {
+        await supabaseClient.from('investor_activity').insert({
+          investor_email: c.investor_email,
+          activity_type:  'Investment',
+          description:    'Capital confirmed for ' + c.project_name,
+          amount:         Number(c.amount),
+          project_name:   c.project_name,
+          activity_date:  today
+        });
+      }
+      try {
+        emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+          name:              'Commitment Confirmed',
+          email:             c.investor_email,
+          country:           c.investor_name || '',
+          investment_amount: fmt(c.amount),
+          message:           'Your commitment of ' + fmt(c.amount) + ' to ' + c.project_name + ' has been confirmed by Entremares.'
+        }).catch(err => console.error('EmailJS confirmation failed:', err));
+      } catch (err) {
+        console.error('Failed to send confirmation email:', err);
+      }
+      showToast('Commitment confirmed. Investor notified by email.');
+    } else if (newStatus === 'cancelled') {
+      if (actData && actData.length > 0) {
+        await supabaseClient.from('investor_activity').update({
+          description:   'Commitment Cancelled for ' + c.project_name,
+          activity_type: 'Commitment Cancelled'
+        }).eq('id', actData[0].id);
+      } else {
+        await supabaseClient.from('investor_activity').insert({
+          investor_email: c.investor_email,
+          activity_type:  'Commitment Cancelled',
+          description:    'Commitment Cancelled for ' + c.project_name,
+          amount:         Number(c.amount),
+          project_name:   c.project_name,
+          activity_date:  today
+        });
+      }
+      showToast('Commitment cancelled. Balance restored for investor.');
+    } else {
+      if (actData && actData.length > 0) {
+        await supabaseClient.from('investor_activity').update({
+          description:   'Capital committed to ' + c.project_name + ' — pending confirmation',
+          activity_type: 'Commitment'
+        }).eq('id', actData[0].id);
+      }
+      showToast('Status set back to pending.');
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Status'; }
+  }
+
   /* ── Delete ── */
   async function deleteCommitment(id) {
     if (!confirm('Are you sure you want to delete this commitment?')) return;
 
+    const c = commitmentsCache[id];
     console.log('[Supabase] Deleting commitment — id:', id);
 
     const { data, error } = await supabaseClient
@@ -3316,6 +3422,16 @@
       console.warn('[Supabase]', msg);
       showDbError(msg);
       return;
+    }
+
+    // Also delete matching activity entry
+    if (c) {
+      await supabaseClient
+        .from('investor_activity')
+        .delete()
+        .ilike('investor_email', c.investor_email)
+        .eq('project_name', c.project_name)
+        .in('activity_type', ['Commitment', 'Investment', 'Commitment Cancelled']);
     }
 
     console.log('[Supabase] Delete successful — rows deleted:', data.length, data);
@@ -3352,7 +3468,7 @@
     btn.disabled = true;
     btn.textContent = 'Saving…';
 
-    const payload = { investor_email: email, investor_name: name, amount, project_name: project };
+    const payload = { investor_email: email, investor_name: name, amount, project_name: project, status: 'confirmed' };
     console.log('[Supabase] Inserting commitment:', payload);
 
     const { data, error } = await supabaseClient
@@ -3402,6 +3518,8 @@
       saveEditCommitment(id);
     } else if (action === 'cancel') {
       cancelEditCommitment(id);
+    } else if (action === 'save-status') {
+      saveCommitmentStatus(id);
     }
   });
 
