@@ -316,8 +316,9 @@
           </div>
           <div class="funding-bar-amts">
             <span id="overview-raised">Loading…</span>
-            <span>$800,000 goal</span>
+            <span id="overview-goal-lbl">~$800,000 goal</span>
           </div>
+          <p style="font-size:11px;color:#B0B0AA;margin-top:8px;font-style:italic">Target amount is approximate and subject to final project requirements.</p>
         </div>
 
         <div class="specs-row">
@@ -429,23 +430,23 @@
               <tbody>
                 <tr>
                   <td>EntreOcéanos</td>
-                  <td>$560,000</td>
+                  <td id="cap-entreoc-amount">—</td>
                   <td style="color:#6B6B6B">70%</td>
                 </tr>
                 <tr>
-                  <td>AEDIFIKA</td>
-                  <td>$240,000</td>
+                  <td>AEDIFIKA (30%) — Committed</td>
+                  <td style="color:#9B9B9B;font-style:italic">Construction equity</td>
                   <td style="color:#6B6B6B">30%</td>
                 </tr>
                 <tr class="row-total">
                   <td>Total</td>
-                  <td>$800,000</td>
+                  <td id="cap-total-amount">~$800,000</td>
                   <td style="color:#6B6B6B">100%</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p class="fin-note" style="font-style:normal">EntreOcéanos holds 70% equity. AEDIFIKA holds the remaining 30% as construction equity partner. AEDIFIKA has committed $240,000.</p>
+          <p class="fin-note" style="font-style:normal">EntreOcéanos holds 70% equity. AEDIFIKA (Construction Partner) holds the remaining 30% as construction equity — committed.</p>
         </div>
 
         <!-- Project Budget -->
@@ -617,7 +618,7 @@
         <div class="mini-card-title">Funding Status</div>
         <div class="mini-row">
           <span class="mini-lbl">Goal</span>
-          <span class="mini-val">$800,000</span>
+          <span class="mini-val" id="sidebar-goal-val">~$800,000</span>
         </div>
         <div class="mini-row">
           <span class="mini-lbl">Raised</span>
@@ -682,7 +683,8 @@
   );
 
   const PROJECT_NAME = 'Real del Monte';
-  const GOAL = 800000;
+  let GOAL = 800000;
+  const AEDIFIKA_COMMITTED = 240000;
 
   const INVESTORS = {
     'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
@@ -1008,19 +1010,30 @@
       .select('amount')
       .eq('project_name', PROJECT_NAME);
 
-    const total = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
+    const investorTotal = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
+    const total = investorTotal + AEDIFIKA_COMMITTED;
     const pct   = Math.min(total / GOAL * 100, 100);
     const pctRounded = Math.round(pct);
 
+    const goalFull = '~$' + GOAL.toLocaleString('en-US');
+    const goalK    = '~$' + Math.round(GOAL / 1000) + 'K';
+
     set('overview-fund-pct', pctRounded + '%');
     set('overview-raised', '$' + total.toLocaleString('en-US') + ' raised');
+    set('overview-goal-lbl', goalFull + ' goal');
     const fill = document.getElementById('overview-prog-fill');
     if (fill) fill.style.width = pct.toFixed(2) + '%';
 
     set('sidebar-raised', '$' + total.toLocaleString('en-US'));
     set('sidebar-prog-pct', pctRounded + '%');
+    set('sidebar-goal-val', goalFull);
     const sideFill = document.getElementById('sidebar-prog-fill');
     if (sideFill) sideFill.style.width = pct.toFixed(2) + '%';
+
+    const capEntreoc = document.getElementById('cap-entreoc-amount');
+    if (capEntreoc) capEntreoc.textContent = '$' + investorTotal.toLocaleString('en-US');
+    const capTotal = document.getElementById('cap-total-amount');
+    if (capTotal) capTotal.textContent = goalFull;
   }
 
   async function loadInvestorCommitment(email) {
@@ -1074,6 +1087,7 @@
     if (e4) console.error('project_scenarios:', e4);
     if (e5) console.error('project_updates:', e5);
 
+    if (pd?.total_capex) GOAL = pd.total_capex;
     renderProjectDetails(pd);
     renderBudget(budget);
     renderScenarios(scen);

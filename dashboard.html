@@ -1449,7 +1449,7 @@
           </div>
           <div>
             <div class="opp-meta-lbl">Total Capex</div>
-            <div class="opp-meta-val">$800,000</div>
+            <div class="opp-meta-val" id="rdm-capex-val">~$800,000</div>
           </div>
           <div>
             <div class="opp-meta-lbl">Timeline</div>
@@ -1466,7 +1466,7 @@
         </div>
         <div class="prog-amts">
           <span id="prog-raised">Loading…</span>
-          <span>$800,000 goal</span>
+          <span id="prog-goal-lbl">~$800K target</span>
         </div>
         <div style="margin-top:5px;font-size:11px;color:#B0B0AA">Remaining: <span id="prog-remaining">—</span></div>
 
@@ -1866,7 +1866,8 @@
     'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
   );
 
-  const GOAL = 800000;
+  let GOAL = 800000;
+  const AEDIFIKA_COMMITTED = 240000;
 
   const ALLURE_GROSS_MULTIPLIER = 1.3431;
   const ALLURE_NET_MULTIPLIER   = 1.3088;
@@ -1879,7 +1880,7 @@
     try {
       const { data, error } = await supabaseClient
         .from('project_details')
-        .select('project_name, location, target_return, duration_months')
+        .select('project_name, location, target_return, duration_months, total_capex')
         .eq('status', 'Active');
       if (error) throw error;
       activeProjects = data || [];
@@ -1888,6 +1889,16 @@
       }
     } catch (_) {
       activeProjects = [{ project_name: 'Real del Monte', location: 'Tijuana, Mexico', target_return: 25, duration_months: 24 }];
+    }
+    const rdm = activeProjects.find(p => p.project_name === 'Real del Monte');
+    if (rdm?.total_capex) {
+      GOAL = rdm.total_capex;
+      const goalFull = '~$' + GOAL.toLocaleString('en-US');
+      const goalK    = '~$' + Math.round(GOAL / 1000) + 'K';
+      const capexEl = document.getElementById('rdm-capex-val');
+      if (capexEl) capexEl.textContent = goalFull;
+      const goalLbl = document.getElementById('prog-goal-lbl');
+      if (goalLbl) goalLbl.textContent = goalK + ' target';
     }
     renderProjectList();
   }
@@ -1985,7 +1996,7 @@
           subject:    projectName + ' — FULLY FUNDED',
           from_name:  'Entremares Portal',
           from_email: 'portal@entremares.com',
-          message:    projectName + ' has reached its funding target of $800,000. All investor commitments have been received.'
+          message:    projectName + ' has reached its funding target of ~$' + GOAL.toLocaleString('en-US') + '. All investor commitments have been received.'
         }).catch(err => console.error('EmailJS fully-funded notification failed:', err));
       }
     } catch (err) {
@@ -2000,12 +2011,16 @@
         .select('amount')
         .eq('project_name', 'Real del Monte');
 
-      const totalRaised = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
+      const investorTotal = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
+      const totalRaised = investorTotal + AEDIFIKA_COMMITTED;
       const pct = Math.min(totalRaised / GOAL * 100, 100);
+      const goalK = '~$' + Math.round(GOAL / 1000) + 'K';
 
       document.getElementById('prog-fill').style.width = pct.toFixed(2) + '%';
       document.getElementById('prog-hdr-pct').textContent = Math.round(pct) + '%';
-      document.getElementById('prog-raised').textContent = '$' + totalRaised.toLocaleString('en-US') + ' raised';
+      document.getElementById('prog-raised').textContent = '$' + totalRaised.toLocaleString('en-US') + ' raised of ' + goalK + ' target';
+      const goalLbl = document.getElementById('prog-goal-lbl');
+      if (goalLbl) goalLbl.style.display = 'none';
       const rdmRemaining = Math.max(0, GOAL - totalRaised);
       document.getElementById('prog-remaining').textContent = '$' + rdmRemaining.toLocaleString('en-US');
 
