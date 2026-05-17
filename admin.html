@@ -3607,7 +3607,28 @@
         INVESTORS_DATA[idx] = { ...INVESTORS_DATA[idx], name, email, password, phone, memberSince };
       }
       renderInvestors();
-      closeInvestorModal();
+
+      const saveBtn = document.getElementById('modal-investor-save');
+      saveBtn.disabled    = true;
+      saveBtn.textContent = 'Saving…';
+      document.getElementById('investor-form-msg').style.display = 'none';
+
+      const { error: upsertError } = await supabaseClient
+        .from('investor_profiles')
+        .upsert(
+          { investor_email: email, first_name: firstName, last_name: lastName, updated_at: new Date().toISOString() },
+          { onConflict: 'investor_email' }
+        );
+
+      saveBtn.disabled    = false;
+      saveBtn.textContent = 'Save Changes';
+
+      if (upsertError) {
+        showInvestorMsg('Failed to update profile: ' + upsertError.message, true);
+      } else {
+        showInvestorMsg('Investor updated successfully.', false);
+        setTimeout(closeInvestorModal, 2000);
+      }
       return;
     }
 

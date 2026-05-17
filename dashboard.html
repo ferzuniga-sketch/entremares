@@ -2433,7 +2433,7 @@
     }
 
     errEl.style.display = 'none';
-    renderDashboard(inv, userEmail);
+    await initDashboard(inv, userEmail);
   }
 
   async function sendMagicLink() {
@@ -2481,6 +2481,24 @@
     document.getElementById('inp-email').value    = '';
     document.getElementById('inp-password').value = '';
     document.getElementById('login-error').style.display = 'none';
+  }
+
+  /* ── Load profile overrides then render ── */
+  async function initDashboard(inv, email) {
+    const { data: profile } = await supabaseClient
+      .from('investor_profiles')
+      .select('first_name, last_name')
+      .ilike('investor_email', email)
+      .maybeSingle();
+
+    if (profile && (profile.first_name || profile.last_name)) {
+      const first    = profile.first_name || '';
+      const last     = profile.last_name  || '';
+      const fullName = [first, last].filter(Boolean).join(' ');
+      const initials = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase() || inv.initials;
+      inv = { ...inv, name: fullName, initials };
+    }
+    renderDashboard(inv, email);
   }
 
   /* ── Render dashboard with investor data ── */
@@ -2773,7 +2791,7 @@
     if (!session) return;
     const email = session.user.email.toLowerCase();
     const inv = INVESTORS[email];
-    if (inv) renderDashboard(inv, email);
+    if (inv) await initDashboard(inv, email);
     else await supabaseClient.auth.signOut();
   })();
 

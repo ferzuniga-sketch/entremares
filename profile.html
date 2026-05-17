@@ -488,7 +488,7 @@
         .from('investor_profiles')
         .upsert(payload, { onConflict: 'investor_email' });
       if (error) throw error;
-      showStatus('personal-status', 'success', '✓ Personal information saved.');
+      showStatus('personal-status', 'success', '✓ Profile updated successfully!');
     } catch (err) {
       console.error('Failed to save personal info:', err);
       showStatus('personal-status', 'error', 'Failed to save. Please try again.');
