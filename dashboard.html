@@ -1407,6 +1407,7 @@
         <div class="stat-lbl">Net Distribution</div>
         <div class="stat-val green" id="stat-net-distribution">—</div>
         <div class="stat-note">After withholding tax</div>
+        <div class="stat-note" id="stat-pending-withdrawal" style="display:none;color:#D97706"></div>
       </div>
       <div class="stat">
         <div class="stat-lbl">Projects Completed</div>
@@ -1781,9 +1782,15 @@
       <div class="modal-title">Request a Withdrawal</div>
       <p style="font-size:14px;color:#6B6B6B;margin:6px 0 22px;line-height:1.6">How much would you like to withdraw?</p>
 
-      <div class="modal-balance">
-        <span class="modal-balance-lbl">Available Balance</span>
-        <span class="modal-balance-val" id="wd-balance-display">—</span>
+      <div class="modal-balance" style="flex-direction:column;align-items:stretch;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="modal-balance-lbl">Available to Reinvest</span>
+          <span class="modal-balance-val" id="wd-gross-display">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="modal-balance-lbl" style="color:#1A7F4A">Available to Withdraw (net after WHT)</span>
+          <span class="modal-balance-val" id="wd-net-display" style="color:#1A7F4A">—</span>
+        </div>
       </div>
 
       <div class="modal-field-lbl">Withdrawal amount</div>
@@ -1793,7 +1800,7 @@
       </div>
       <div class="modal-min-notice" id="wd-amount-notice" style="margin-bottom:16px">&nbsp;</div>
 
-      <button class="btn-full-amount" onclick="wdRequestFull()">Request Full Amount</button>
+      <button class="btn-full-amount" onclick="wdRequestFull()">Withdraw Full Net Amount</button>
 
       <button class="btn-modal-primary" onclick="wdGoStep2()">Next &rarr;</button>
     </div>
@@ -2002,6 +2009,8 @@
   let modalRefNum = '';
   let rdmCommittedAmount = 0;
   let currentGrossDistribution = 0;
+  let currentNetDistribution = 0;
+  let pendingWithdrawalAmount = 0;
 
   async function loadCommitmentStatus(email) {
     if (!email) return;
@@ -2050,10 +2059,43 @@
 
       currentInvestor.wallet = gross;
       currentGrossDistribution = gross;
-      setFade('stat-net-distribution', '+' + fmt(net));
+      currentNetDistribution = net;
     } catch (err) {
       console.error('Failed to load Allure balance:', err);
     }
+  }
+
+  async function loadPendingWithdrawals(email) {
+    if (!email) return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('withdrawal_requests')
+        .select('amount')
+        .ilike('investor_email', email)
+        .eq('status', 'pending');
+      if (!error && data) {
+        pendingWithdrawalAmount = data.reduce((s, r) => s + Number(r.amount), 0);
+      }
+    } catch (err) {
+      console.error('Failed to load pending withdrawals:', err);
+    }
+  }
+
+  function updatePendingWithdrawalNote() {
+    const noteEl = document.getElementById('stat-pending-withdrawal');
+    if (!noteEl) return;
+    if (pendingWithdrawalAmount > 0) {
+      noteEl.textContent = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal pending';
+      noteEl.style.display = '';
+    } else {
+      noteEl.style.display = 'none';
+    }
+  }
+
+  function updateNetDistributionDisplay() {
+    const netAfterPending = Math.max(0, currentNetDistribution - pendingWithdrawalAmount);
+    setFade('stat-net-distribution', '+' + fmt(netAfterPending));
+    updatePendingWithdrawalNote();
   }
 
   async function loadProjectDetails() {
@@ -2101,13 +2143,13 @@
   async function loadDashboardData(email) {
     await Promise.all([
       loadAllureBalance(email),
-      loadCommitmentStatus(email)
+      loadCommitmentStatus(email),
+      loadPendingWithdrawals(email)
     ]);
     const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
     setFade('wallet-balance', fmt(remaining));
-    if (currentGrossDistribution > 0 && rdmCommittedAmount > 0) {
-      const netRemaining = remaining <= 0 ? 0 : remaining * (ALLURE_NET_MULTIPLIER / ALLURE_GROSS_MULTIPLIER);
-      setFade('stat-net-distribution', remaining <= 0 ? fmt(0) : '+' + fmt(netRemaining));
+    if (currentNetDistribution > 0) {
+      updateNetDistributionDisplay();
     }
     loadProjectDetails();
   }
@@ -2345,6 +2387,8 @@
     currentInvestorEmail = email || '';
     rdmCommittedAmount = 0;
     currentGrossDistribution = 0;
+    currentNetDistribution = 0;
+    pendingWithdrawalAmount = 0;
     document.getElementById('active-investments-section').style.display = 'none';
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('dashboard').style.display    = 'block';
@@ -2482,10 +2526,6 @@
     } catch (_) {}
     const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
     setFade('wallet-balance', fmt(remaining));
-    if (currentGrossDistribution > 0) {
-      const netRemaining = remaining <= 0 ? 0 : remaining * (ALLURE_NET_MULTIPLIER / ALLURE_GROSS_MULTIPLIER);
-      setFade('stat-net-distribution', remaining <= 0 ? fmt(0) : '+' + fmt(netRemaining));
-    }
   }
 
   function validateAmount(amount) {
@@ -2769,13 +2809,16 @@
 
   function openWithdrawModal() {
     if (!currentInvestor) return;
-    const available = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
-    document.getElementById('wd-balance-display').textContent = fmt(available);
+    const grossAvailable = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    const netAvailable   = Math.max(0, currentNetDistribution - pendingWithdrawalAmount);
+    document.getElementById('wd-gross-display').textContent = fmt(grossAvailable);
+    document.getElementById('wd-net-display').textContent   = fmt(netAvailable);
     const inp = document.getElementById('wd-amount-input');
+    inp.max   = netAvailable.toFixed(2);
     inp.value = '';
     inp.classList.remove('error');
-    document.getElementById('wd-amount-notice').textContent  = '';
-    document.getElementById('wd-amount-notice').style.color  = '#9B9B9B';
+    document.getElementById('wd-amount-notice').textContent = '';
+    document.getElementById('wd-amount-notice').style.color = '#9B9B9B';
     wdBankData = null;
     wdShowStep(1);
     document.getElementById('withdraw-modal').style.display = 'flex';
@@ -2798,17 +2841,17 @@
   }
 
   function wdRequestFull() {
-    const available = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
-    document.getElementById('wd-amount-input').value = available.toFixed(2);
+    const netAvailable = Math.max(0, currentNetDistribution - pendingWithdrawalAmount);
+    document.getElementById('wd-amount-input').value = netAvailable.toFixed(2);
     document.getElementById('wd-amount-input').classList.remove('error');
     document.getElementById('wd-amount-notice').textContent = '';
   }
 
   async function wdGoStep2() {
-    const raw       = parseFloat(document.getElementById('wd-amount-input').value) || 0;
-    const available = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
-    const notice    = document.getElementById('wd-amount-notice');
-    const inp       = document.getElementById('wd-amount-input');
+    const raw          = parseFloat(document.getElementById('wd-amount-input').value) || 0;
+    const netAvailable = Math.max(0, currentNetDistribution - pendingWithdrawalAmount);
+    const notice       = document.getElementById('wd-amount-notice');
+    const inp          = document.getElementById('wd-amount-input');
 
     if (!raw || raw <= 0) {
       inp.classList.add('error');
@@ -2816,10 +2859,10 @@
       notice.textContent = 'Please enter a valid amount.';
       return;
     }
-    if (raw > available + 0.01) {
+    if (raw > netAvailable + 0.01) {
       inp.classList.add('error');
       notice.className   = 'modal-min-notice error';
-      notice.textContent = 'Amount exceeds your available balance (' + fmt(available) + ')';
+      notice.textContent = 'Amount exceeds your available net distribution (' + fmt(netAvailable) + ')';
       return;
     }
 
@@ -2902,6 +2945,9 @@
     wdShowStep(3);
     confirmBtn.disabled    = false;
     confirmBtn.textContent = 'Confirm Withdrawal Request';
+
+    pendingWithdrawalAmount += wdAmount;
+    updateNetDistributionDisplay();
 
     try {
       const bankJson = wdBankData ? JSON.stringify(wdBankData) : null;
