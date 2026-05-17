@@ -2014,6 +2014,7 @@
   let currentGrossDistribution = 0;
   let currentNetDistribution = 0;
   let pendingWithdrawalAmount = 0;
+  let pendingWithdrawalRequests = [];
 
   async function loadCommitmentStatus(email) {
     if (!email) return;
@@ -2073,11 +2074,12 @@
     try {
       const { data, error } = await supabaseClient
         .from('withdrawal_requests')
-        .select('amount')
+        .select('id, amount, reference_number, investor_name')
         .ilike('investor_email', email)
         .eq('status', 'pending');
       if (!error && data) {
-        pendingWithdrawalAmount = data.reduce((s, r) => s + Number(r.amount), 0);
+        pendingWithdrawalAmount   = data.reduce((s, r) => s + Number(r.amount), 0);
+        pendingWithdrawalRequests = data;
       }
     } catch (err) {
       console.error('Failed to load pending withdrawals:', err);
@@ -2088,7 +2090,8 @@
     const noteEl = document.getElementById('stat-pending-withdrawal');
     if (!noteEl) return;
     if (pendingWithdrawalAmount > 0) {
-      noteEl.textContent = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal pending';
+      noteEl.innerHTML = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal pending' +
+        ' &nbsp;<a href="javascript:void(0)" onclick="requestCancellation()" style="font-size:11px;color:#D97706;text-decoration:underline;font-weight:600;white-space:nowrap">Request Cancellation</a>';
       noteEl.style.display = '';
     } else {
       noteEl.style.display = 'none';
@@ -2260,14 +2263,27 @@
         return;
       }
 
-      const DOT_COLOR = { Investment: 'black', Return: 'green', Distribution: 'green' };
+      const ICON_CFG = {
+        'Investment':          { symbol: '↑', bg: '#F0FBF5', color: '#1A7F4A' },
+        'Return':              { symbol: '↑', bg: '#F0FBF5', color: '#1A7F4A' },
+        'Distribution':        { symbol: '$', bg: '#EFF6FF', color: '#2563EB' },
+        'Update':              { symbol: '·', bg: '#FFF7E6', color: '#9B5D00' },
+        'Document':            { symbol: '↓', bg: '#EEF4FD', color: '#1A5FA8' },
+        'Other':               { symbol: '·', bg: '#F5F5F3', color: '#9B9B9B' },
+        'Withdrawal Request':  { symbol: '⏳', bg: '#FFFBEB', color: '#D97706' },
+        'Withdrawal Cancelled':{ symbol: '✗', bg: '#F5F5F3', color: '#6B6B6B' },
+        'Withdrawal':          { symbol: '✓', bg: '#F0FBF5', color: '#1A7F4A' }
+      };
       const BADGE_STYLE = {
-        Investment:   'background:#F0F0EE;color:#0D0D0D;border:1px solid #E0E0DC',
-        Return:       'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
-        Distribution: 'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
-        Update:       'background:#FFF7E6;color:#9B5D00;border:1px solid #FFE0A3',
-        Document:     'background:#EEF4FD;color:#1A5FA8;border:1px solid #BDD3F5',
-        Other:        'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC'
+        'Investment':          'background:#F0F0EE;color:#0D0D0D;border:1px solid #E0E0DC',
+        'Return':              'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2',
+        'Distribution':        'background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE',
+        'Update':              'background:#FFF7E6;color:#9B5D00;border:1px solid #FFE0A3',
+        'Document':            'background:#EEF4FD;color:#1A5FA8;border:1px solid #BDD3F5',
+        'Other':               'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC',
+        'Withdrawal Request':  'background:#FFFBEB;color:#92400E;border:1px solid #FDE68A',
+        'Withdrawal Cancelled':'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC',
+        'Withdrawal':          'background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2'
       };
       const ACT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       function fmtActDate(iso) {
@@ -2275,24 +2291,53 @@
         const d = new Date(iso + 'T12:00:00');
         return ACT_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
       }
+      function actIconHtml(type) {
+        const c = ICON_CFG[type] || { symbol: '·', bg: '#F5F5F3', color: '#9B9B9B' };
+        return `<div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:${c.bg};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${c.color};margin-top:1px">${c.symbol}</div>`;
+      }
+      function actAmtHtml(type, amount) {
+        if (amount == null) return '';
+        const abs = Math.abs(Number(amount));
+        const fmtAbs = fmt(abs);
+        const base = 'font-size:14px;font-weight:700;text-align:right;white-space:nowrap;padding-left:12px';
+        if (type === 'Investment' || type === 'Return') {
+          return `<span class="tl-amt pos">+${fmtAbs}</span>`;
+        } else if (type === 'Distribution') {
+          return `<span class="tl-amt" style="${base};color:#2563EB">+${fmtAbs}</span>`;
+        } else if (type === 'Withdrawal Request') {
+          return `<span class="tl-amt" style="${base};color:#D97706">&minus;${fmtAbs}</span>`;
+        } else if (type === 'Withdrawal Cancelled') {
+          return `<span class="tl-amt" style="${base};color:#9B9B9B">+${fmtAbs}</span>`;
+        } else if (type === 'Withdrawal') {
+          return `<span class="tl-amt neg">&minus;${fmtAbs}</span>`;
+        }
+        return `<span class="tl-amt neg">&minus;${fmtAbs}</span>`;
+      }
+      function actStatusBadge(type) {
+        if (type === 'Withdrawal Request') {
+          return ' <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;margin-left:5px">(Pending)</span>';
+        }
+        if (type === 'Withdrawal Cancelled') {
+          return ' <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC;margin-left:5px">(Cancelled)</span>';
+        }
+        if (type === 'Withdrawal') {
+          return ' <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;background:#F0FBF5;color:#1A7F4A;border:1px solid #C3E8D2;margin-left:5px">(Transferred)</span>';
+        }
+        return '';
+      }
 
       timelineEl.innerHTML = data.map(a => {
-        const dot    = DOT_COLOR[a.activity_type]   || 'gray';
-        const bdg    = BADGE_STYLE[a.activity_type] || 'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC';
-        const isPos  = a.activity_type === 'Return' || a.activity_type === 'Distribution';
-        const parts  = [a.project_name, fmtActDate(a.activity_date)].filter(Boolean);
-        const amtHtml = a.amount != null
-          ? `<span class="tl-amt ${isPos ? 'pos' : 'neg'}">${isPos ? '+' : '&minus;'}${fmt(a.amount)}</span>`
-          : '';
+        const bdg   = BADGE_STYLE[a.activity_type] || 'background:#F5F5F3;color:#6B6B6B;border:1px solid #E0E0DC';
+        const parts = [a.project_name, fmtActDate(a.activity_date)].filter(Boolean);
         return `
           <div class="tl-item">
-            <div class="tl-dot ${dot}"></div>
+            ${actIconHtml(a.activity_type)}
             <div class="tl-body">
               <div>
-                <div class="tl-desc"><span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;margin-right:7px;${bdg}">${escHtml(a.activity_type)}</span>${escHtml(a.description || '')}</div>
+                <div class="tl-desc"><span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:100px;padding:2px 9px;margin-right:7px;${bdg}">${escHtml(a.activity_type)}</span>${escHtml(a.description || '')}${actStatusBadge(a.activity_type)}</div>
                 <div class="tl-date">${escHtml(parts.join(' · '))}</div>
               </div>
-              ${amtHtml}
+              ${actAmtHtml(a.activity_type, a.amount)}
             </div>
           </div>`;
       }).join('');
@@ -2391,7 +2436,8 @@
     rdmCommittedAmount = 0;
     currentGrossDistribution = 0;
     currentNetDistribution = 0;
-    pendingWithdrawalAmount = 0;
+    pendingWithdrawalAmount   = 0;
+    pendingWithdrawalRequests = [];
     document.getElementById('active-investments-section').style.display = 'none';
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('dashboard').style.display    = 'block';
@@ -2970,6 +3016,19 @@
     }
 
     try {
+      await supabaseClient.from('investor_activity').insert({
+        investor_email: currentInvestorEmail,
+        activity_type:  'Withdrawal Request',
+        description:    'Withdrawal request submitted for ' + fmt(wdAmount),
+        amount:         -Math.abs(wdAmount),
+        project_name:   'General',
+        activity_date:  new Date().toISOString().slice(0, 10)
+      });
+    } catch (err) {
+      console.error('Failed to add withdrawal activity:', err);
+    }
+
+    try {
       const bankName = wdBankData ? (wdBankData.bank_name  || '—') : '—';
       const iban     = wdBankData ? (wdBankData.iban        || '—') : '—';
       const swift    = wdBankData ? (wdBankData.swift_code  || '—') : '—';
@@ -2987,6 +3046,41 @@
       }).catch(err => console.error('EmailJS withdrawal alert failed:', err));
     } catch (err) {
       console.error('Failed to send withdrawal email:', err);
+    }
+  }
+
+  /* ── Investor cancellation request ── */
+  function requestCancellation() {
+    const amount = pendingWithdrawalAmount;
+    const req    = pendingWithdrawalRequests.length > 0 ? pendingWithdrawalRequests[0] : null;
+    const refNum = req ? (req.reference_number || (req.id || '').slice(0, 8) || '—') : '—';
+    const invName = currentInvestor ? currentInvestor.name : '';
+
+    if (!confirm('Are you sure you want to request cancellation of your ' + fmt(amount) + ' withdrawal?')) return;
+
+    try {
+      emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+        name:              'Withdrawal Cancellation Request',
+        email:             'ferzuniga@gmail.com',
+        country:           invName,
+        investment_amount: fmt(amount),
+        message:           'Investor: ' + invName +
+                           '\nAmount: ' + fmt(amount) +
+                           '\nReference: #' + refNum +
+                           '\n\nThis investor is requesting cancellation of their withdrawal.'
+      }).catch(err => console.error('EmailJS cancellation request failed:', err));
+    } catch (err) {
+      console.error('Failed to send cancellation email:', err);
+    }
+
+    const waMsg = encodeURIComponent(
+      'Hi Fernando, I would like to cancel my withdrawal request of ' + fmt(amount) + '. Reference: #' + refNum
+    );
+    window.open('https://wa.me/50769824455?text=' + waMsg, '_blank');
+
+    const noteEl = document.getElementById('stat-pending-withdrawal');
+    if (noteEl) {
+      noteEl.innerHTML = '⏳ ' + fmt(amount) + ' withdrawal pending &nbsp;<span style="color:#2563EB;font-size:11px;font-weight:600">Cancellation requested. We\'ll process it shortly.</span>';
     }
   }
 </script>

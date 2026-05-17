@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { -webkit-font-smoothing: antialiased; }
@@ -476,6 +477,25 @@
     .badge-document     { color: #1A5FA8; background: #EEF4FD; border: 1px solid #BDD3F5; }
     .badge-other        { color: #6B6B6B; background: #F5F5F3; border: 1px solid #E0E0DC; }
 
+    .badge-wd-pending     { color: #92400E; background: #FFFBEB; border: 1px solid #FDE68A; }
+    .badge-wd-approved    { color: #1D4ED8; background: #EFF6FF; border: 1px solid #BFDBFE; }
+    .badge-wd-transferred { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
+    .badge-wd-cancelled   { color: #6B6B6B; background: #F5F5F3; border: 1px solid #E0E0DC; }
+
+    .wd-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .wd-summary-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEE9;
+      border-radius: 14px;
+      padding: 22px 24px 20px;
+    }
+
     /* ── Summary card (Commitments) ── */
     .summary-strip {
       background: #FFFFFF;
@@ -917,6 +937,7 @@
         <button class="tab-btn" data-tab="allure">Allure</button>
         <button class="tab-btn" data-tab="realdelmente">Real del Monte</button>
         <button class="tab-btn" data-tab="activity">Activity</button>
+        <button class="tab-btn" data-tab="withdrawals">Withdrawals</button>
         <button class="tab-btn" data-tab="landingpage">Landing Page</button>
       </div>
     </div>
@@ -1829,6 +1850,54 @@
             </tr>
           </thead>
           <tbody id="activity-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════
+         TAB: WITHDRAWALS
+    ═══════════════════════════ -->
+    <div class="tab-content" id="tab-withdrawals">
+      <div class="sec-top">
+        <div>
+          <div class="sec-heading">Withdrawal Requests</div>
+          <div class="sec-count" id="wd-count">Loading…</div>
+        </div>
+      </div>
+
+      <div class="wd-summary-grid">
+        <div class="wd-summary-card">
+          <div class="sum-lbl">Pending</div>
+          <div class="sum-val" id="wd-sum-pending-count">—</div>
+          <div style="font-size:14px;color:#92400E;font-weight:700;margin-top:4px" id="wd-sum-pending-amt">—</div>
+        </div>
+        <div class="wd-summary-card">
+          <div class="sum-lbl">Transferred</div>
+          <div class="sum-val green" id="wd-sum-transferred-count">—</div>
+          <div style="font-size:14px;color:#1A7F4A;font-weight:700;margin-top:4px" id="wd-sum-transferred-amt">—</div>
+        </div>
+        <div class="wd-summary-card">
+          <div class="sum-lbl">Cancelled</div>
+          <div class="sum-val" style="color:#6B6B6B" id="wd-sum-cancelled-count">—</div>
+          <div style="font-size:14px;color:#6B6B6B;font-weight:700;margin-top:4px" id="wd-sum-cancelled-amt">—</div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table" id="withdrawals-table">
+          <thead>
+            <tr>
+              <th>Ref #</th>
+              <th>Investor</th>
+              <th>Email</th>
+              <th>Amount</th>
+              <th>Bank Details</th>
+              <th>Date Requested</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="withdrawals-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -2937,6 +3006,7 @@
     const { createClient } = window.supabase;
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
     console.log('[Supabase] Client created:', supabaseClient);
+    emailjs.init('qgN_CHVLPlAOPz0Td');
   });
 
   let commitmentsCache = {};
@@ -3303,6 +3373,7 @@
       if (btn.dataset.tab === 'commitments') { loadCommitmentsFromSupabase(); loadFundingSummary(); }
       if (btn.dataset.tab === 'allure')       loadAllureDetails();
       if (btn.dataset.tab === 'activity')     loadActivities();
+      if (btn.dataset.tab === 'withdrawals')  loadWithdrawals();
       if (btn.dataset.tab === 'landingpage')  loadLandingPage();
     });
   });
@@ -6472,6 +6543,195 @@
   document.getElementById('btn-save-lp-allure-detail').addEventListener('click', saveLandingPageAllureDetail);
   document.getElementById('btn-save-lp-kabil-detail').addEventListener('click', saveLandingPageKabilDetail);
   document.getElementById('btn-save-lp-rdm-detail').addEventListener('click', saveLandingPageRdmDetail);
+
+  /* ═══════════════════════════════════════════
+     9. WITHDRAWALS
+  ═══════════════════════════════════════════ */
+  let withdrawalsCache = {};
+
+  function withdrawalStatusBadge(status) {
+    const map = {
+      pending:     'badge-wd-pending',
+      approved:    'badge-wd-approved',
+      transferred: 'badge-wd-transferred',
+      cancelled:   'badge-wd-cancelled'
+    };
+    const cls = map[(status || '').toLowerCase()] || 'badge-other';
+    return `<span class="badge ${cls}">${escHtml(status || 'pending')}</span>`;
+  }
+
+  async function loadWithdrawals() {
+    const tbody = document.getElementById('withdrawals-tbody');
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
+
+    const { data, error } = await supabaseClient
+      .from('withdrawal_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#C0392B;padding:40px 20px">' + escHtml(error.message) + '</td></tr>';
+      return;
+    }
+
+    renderWithdrawalsTable(data || []);
+  }
+
+  function renderWithdrawalsTable(data) {
+    withdrawalsCache = {};
+    data.forEach(w => { withdrawalsCache[w.id] = w; });
+
+    const pending     = data.filter(w => w.status === 'pending');
+    const transferred = data.filter(w => w.status === 'transferred');
+    const cancelled   = data.filter(w => w.status === 'cancelled');
+    const sum = arr => arr.reduce((s, w) => s + Number(w.amount), 0);
+
+    document.getElementById('wd-sum-pending-count').textContent     = pending.length + ' request' + (pending.length !== 1 ? 's' : '');
+    document.getElementById('wd-sum-pending-amt').textContent       = fmt(sum(pending));
+    document.getElementById('wd-sum-transferred-count').textContent = transferred.length + ' request' + (transferred.length !== 1 ? 's' : '');
+    document.getElementById('wd-sum-transferred-amt').textContent   = fmt(sum(transferred));
+    document.getElementById('wd-sum-cancelled-count').textContent   = cancelled.length + ' request' + (cancelled.length !== 1 ? 's' : '');
+    document.getElementById('wd-sum-cancelled-amt').textContent     = fmt(sum(cancelled));
+    document.getElementById('wd-count').textContent = data.length + ' request' + (data.length !== 1 ? 's' : '');
+
+    const tbody = document.getElementById('withdrawals-tbody');
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No withdrawal requests yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(w => {
+      const dateStr = new Date(w.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      let bankParsed = null;
+      try { bankParsed = w.bank_details ? JSON.parse(w.bank_details) : null; } catch (_) {}
+      const refDisplay = escHtml('#' + (w.reference_number || w.id.slice(0,8)));
+
+      return `
+        <tr id="wdrow-${escHtml(w.id)}" data-wd-id="${escHtml(w.id)}">
+          <td class="td-mono" style="font-size:12px;color:#9B9B9B">${refDisplay}</td>
+          <td class="td-name">${escHtml(w.investor_name || '—')}</td>
+          <td class="td-email">${escHtml(w.investor_email || '—')}</td>
+          <td class="td-mono" style="font-weight:700">${fmt(w.amount)}</td>
+          <td>
+            <button class="btn-edit" data-action="toggle-bank" style="font-size:11px;padding:4px 10px">
+              ${bankParsed ? 'Show Details' : 'No Details'}
+            </button>
+          </td>
+          <td style="color:#9B9B9B;font-size:13px">${dateStr}</td>
+          <td id="wdstatus-${escHtml(w.id)}">${withdrawalStatusBadge(w.status)}</td>
+          <td class="td-actions" id="wdactions-${escHtml(w.id)}">
+            <select id="wdselect-${escHtml(w.id)}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:1px solid #E0E0DC;border-radius:6px;background:#FAFAF8;color:#0D0D0D;margin-right:6px;cursor:pointer">
+              <option value="pending"${w.status === 'pending' ? ' selected' : ''}>Pending</option>
+              <option value="approved"${w.status === 'approved' ? ' selected' : ''}>Approved</option>
+              <option value="transferred"${w.status === 'transferred' ? ' selected' : ''}>Transferred</option>
+              <option value="cancelled"${w.status === 'cancelled' ? ' selected' : ''}>Cancelled</option>
+            </select>
+            <button class="btn-save-inline" data-action="save-wd-status" style="font-size:12px">Save Status</button>
+          </td>
+        </tr>
+        <tr id="wdbank-${escHtml(w.id)}" style="display:none;background:#FAFAF8">
+          <td colspan="8" style="padding:16px 18px 20px">
+            ${bankParsed ? `
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;font-size:13px">
+              <div><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B0B0AA;margin-bottom:4px">Beneficiary</div><div style="font-weight:600">${escHtml(bankParsed.beneficiary_name||'—')}</div></div>
+              <div><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B0B0AA;margin-bottom:4px">Bank</div><div style="font-weight:600">${escHtml(bankParsed.bank_name||'—')}</div></div>
+              <div><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B0B0AA;margin-bottom:4px">IBAN</div><div style="font-weight:600;font-variant-numeric:tabular-nums;word-break:break-all">${escHtml(bankParsed.iban||'—')}</div></div>
+              <div><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B0B0AA;margin-bottom:4px">Swift</div><div style="font-weight:600">${escHtml(bankParsed.swift_code||'—')}</div></div>
+              <div><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B0B0AA;margin-bottom:4px">Currency</div><div style="font-weight:600">${escHtml(bankParsed.currency||'—')}</div></div>
+            </div>` : '<div style="color:#9B9B9B;font-size:13px">No bank details on file.</div>'}
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  async function saveWithdrawalStatus(id) {
+    const select = document.getElementById('wdselect-' + id);
+    if (!select) return;
+    const newStatus = select.value;
+    const w = withdrawalsCache[id];
+    if (!w) return;
+
+    const btn = document.querySelector(`#wdactions-${id} button[data-action="save-wd-status"]`);
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    const { error } = await supabaseClient
+      .from('withdrawal_requests')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      showToast('Save failed: ' + error.message, true);
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Status'; }
+      return;
+    }
+
+    withdrawalsCache[id] = { ...w, status: newStatus };
+    const statusCell = document.getElementById('wdstatus-' + id);
+    if (statusCell) statusCell.innerHTML = withdrawalStatusBadge(newStatus);
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    if (newStatus === 'transferred') {
+      await supabaseClient.from('investor_activity').insert({
+        investor_email: w.investor_email,
+        activity_type:  'Withdrawal',
+        description:    'Withdrawal transferred to your bank account',
+        amount:         -Math.abs(Number(w.amount)),
+        project_name:   'General',
+        activity_date:  today
+      });
+
+      try {
+        emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+          name:              'Withdrawal Transferred',
+          email:             w.investor_email,
+          country:           w.investor_name || '',
+          investment_amount: fmt(w.amount),
+          message:           'Your withdrawal of ' + fmt(w.amount) + ' has been transferred to your bank account. Reference: #' + (w.reference_number || w.id.slice(0,8))
+        }).catch(err => console.error('EmailJS transfer notification failed:', err));
+      } catch (err) {
+        console.error('Failed to send transfer email:', err);
+      }
+
+      showToast('Transfer confirmed. Investor notified by email.');
+    } else if (newStatus === 'cancelled') {
+      await supabaseClient.from('investor_activity').insert({
+        investor_email: w.investor_email,
+        activity_type:  'Withdrawal Cancelled',
+        description:    'Withdrawal request cancelled',
+        amount:         Math.abs(Number(w.amount)),
+        project_name:   'General',
+        activity_date:  today
+      });
+
+      showToast('Withdrawal cancelled. Balance restored in activity log.');
+    } else {
+      showToast('Status updated.');
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Status'; }
+    renderWithdrawalsTable(Object.values(withdrawalsCache));
+  }
+
+  document.getElementById('withdrawals-tbody').addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const row = btn.closest('tr[data-wd-id]');
+    if (!row) return;
+    const id = row.dataset.wdId;
+
+    if (btn.dataset.action === 'toggle-bank') {
+      const bankRow = document.getElementById('wdbank-' + id);
+      if (bankRow) {
+        const isHidden = bankRow.style.display === 'none';
+        bankRow.style.display = isHidden ? '' : 'none';
+        btn.textContent = isHidden ? 'Hide Details' : 'Show Details';
+      }
+    } else if (btn.dataset.action === 'save-wd-status') {
+      saveWithdrawalStatus(id);
+    }
+  });
 </script>
 
 </body>
