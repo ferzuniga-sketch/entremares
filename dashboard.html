@@ -1315,7 +1315,7 @@
 <!-- ══════════════════════════════════════════
      LOGIN SCREEN
 ══════════════════════════════════════════ -->
-<div id="login-screen">
+<div id="login-screen" style="display:none">
   <div class="login-wrap">
 
     <a href="index.html" class="login-back">&larr; Back to Entremares</a>
@@ -2806,11 +2806,18 @@
   /* ── Restore session ── */
   (async function checkSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      document.getElementById('login-screen').style.display = 'flex';
+      return;
+    }
     const email = session.user.email.toLowerCase();
     const inv = INVESTORS[email];
-    if (inv) await initDashboard(inv, email);
-    else await supabaseClient.auth.signOut();
+    if (inv) {
+      await initDashboard(inv, email);
+    } else {
+      await supabaseClient.auth.signOut();
+      document.getElementById('login-screen').style.display = 'flex';
+    }
   })();
 
   supabaseClient.auth.onAuthStateChange((event, session) => {
