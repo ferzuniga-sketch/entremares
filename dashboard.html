@@ -2012,7 +2012,7 @@
         .eq('project_name', 'Real del Monte');
 
       const investorTotal = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
-      const totalRaised = investorTotal + AEDIFIKA_COMMITTED;
+      const totalRaised = investorTotal;
       const pct = Math.min(totalRaised / GOAL * 100, 100);
       const goalK = '~$' + Math.round(GOAL / 1000) + 'K';
 
