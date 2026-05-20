@@ -993,7 +993,7 @@
       return 'perf-red';
     }
 
-    const targetAnn = ((Math.pow(1 + ALLURE_TARGET_RETURN / 100, 12 / PLANNED_MONTHS) - 1) * 100).toFixed(1);
+    const targetAnn = '13.7'; // Kabil annualized benchmark (31.71% over 26 months)
     const actualAnn = durationMonths != null
       ? ((Math.pow(1 + ALLURE_NET_RETURN_PCT / 100, 12 / durationMonths) - 1) * 100).toFixed(1)
       : null;

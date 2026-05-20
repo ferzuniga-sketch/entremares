@@ -14,6 +14,7 @@
 
     <style>
         /* Page-specific overrides */
+        .dynamic-content { opacity: 0; transition: opacity 0.4s ease; }
         .hero { min-height: 100vh; }
         .hero-content { padding-top: 0; }
 
@@ -414,13 +415,13 @@
             <div class="container">
                 <div class="hero-eyebrow fade-up">Private Investment Club · Est. 2020</div>
 
-                <h1 class="hero-title" style="opacity:0;transition:opacity 0.4s ease;transition-delay:0.08s" id="hero-title">
+                <h1 class="hero-title dynamic-content" id="hero-title">
                     Where trusted capital<br>
                     meets premium<br>
                     <em>real estate.</em>
                 </h1>
 
-                <p class="hero-subtitle" style="opacity:0;transition:opacity 0.4s ease;transition-delay:0.16s" id="hero-subtitle">
+                <p class="hero-subtitle dynamic-content" id="hero-subtitle">
                     Entremares is a private club connecting accredited investors with exceptional residential development opportunities across Mexico and Latin America.
                 </p>
 
@@ -542,21 +543,21 @@
             <div class="stats-grid" data-stagger style="--stats-cols: 3">
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span id="stat-capital" style="opacity:0;transition:opacity 0.4s ease">$1.1M+</span>
+                        <span id="stat-capital" class="dynamic-content">$1.1M+</span>
                     </div>
-                    <div class="stat-label" id="stat-capital-lbl" style="opacity:0;transition:opacity 0.4s ease">Total Capital Deployed</div>
+                    <div class="stat-label dynamic-content" id="stat-capital-lbl">Total Capital Deployed</div>
                 </div>
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span id="stat-return" style="opacity:0;transition:opacity 0.4s ease">30.0%</span>
+                        <span id="stat-return" class="dynamic-content">30.0%</span>
                     </div>
-                    <div class="stat-label" id="stat-return-lbl" style="opacity:0;transition:opacity 0.4s ease">Average Investor Return</div>
+                    <div class="stat-label dynamic-content" id="stat-return-lbl">Average Investor Return</div>
                 </div>
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span id="stat-investors" style="opacity:0;transition:opacity 0.4s ease">10+</span>
+                        <span id="stat-investors" class="dynamic-content">10+</span>
                     </div>
-                    <div class="stat-label" id="stat-investors-lbl" style="opacity:0;transition:opacity 0.4s ease">Active Investors</div>
+                    <div class="stat-label dynamic-content" id="stat-investors-lbl">Active Investors</div>
                 </div>
             </div>
         </div>
@@ -610,7 +611,7 @@
                 </h2>
             </div>
 
-            <div class="projects-row">
+            <div class="projects-row dynamic-content">
 
                 <!-- KABIL -->
                 <article class="proj-card fade-up">
@@ -627,10 +628,10 @@
                     <div class="proj-card-body">
                         <div class="proj-card-meta">
                             <span>Tijuana, Mexico</span>
-                            <span id="kabil-dates">Jun 2020 – Dec 2022</span>
+                            <span id="kabil-dates">Jun 2020 – Aug 2022</span>
                         </div>
                         <h3 class="proj-card-title">Kabil</h3>
-                        <p class="proj-card-desc" id="kabil-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.</p>
+                        <p class="proj-card-desc dynamic-content" id="kabil-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 26 months — 3 months from first listing to sold out.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
                                 <div class="proj-num-val" id="kabil-investment">$227,345</div>
@@ -641,7 +642,7 @@
                                 <div class="proj-num-lbl">Net Return</div>
                             </div>
                             <div class="proj-num">
-                                <div class="proj-num-val" id="kabil-timeline">30 mo.</div>
+                                <div class="proj-num-val dynamic-content" id="kabil-timeline">26 mo.</div>
                                 <div class="proj-num-lbl">Duration</div>
                             </div>
                         </div>
@@ -740,10 +741,10 @@
 
                 <div class="why-left">
                     <div class="why-eyebrow">Location</div>
-                    <h2 class="why-title" id="wt-title">Why Tijuana?</h2>
-                    <p class="why-subtitle" id="wt-subtitle">A unique cross-border investment opportunity</p>
-                    <p class="why-body" id="wt-body">Tijuana sits on the world's busiest land border crossing, with direct access to the $9 trillion US economy and a rapidly growing local middle class. The city's real estate market is driven by surging demand from both sides of the border — making it one of Latin America's most compelling development opportunities for accredited investors.</p>
-                    <div class="why-chips">
+                    <h2 class="why-title dynamic-content" id="wt-title">Why Tijuana?</h2>
+                    <p class="why-subtitle dynamic-content" id="wt-subtitle">A unique cross-border investment opportunity</p>
+                    <p class="why-body dynamic-content" id="wt-body">Tijuana sits on the world's busiest land border crossing, with direct access to the $9 trillion US economy and a rapidly growing local middle class. The city's real estate market is driven by surging demand from both sides of the border — making it one of Latin America's most compelling development opportunities for accredited investors.</p>
+                    <div class="why-chips dynamic-content">
                         <div class="why-chip">
                             <span class="chip-val" id="wt-chip-1-val">2M+</span>
                             <span class="chip-lbl" id="wt-chip-1-lbl">Population</span>
@@ -830,7 +831,7 @@
                     <div>
                         <h3 class="team-name">Fernando Zuniga</h3>
                         <div class="team-role">Managing Partner</div>
-                        <p class="team-bio">Serial entrepreneur and founder of Entremares. Has successfully raised and deployed over $1M USD in real estate development capital across two completed projects. Operates between Panama City and Tijuana.</p>
+                        <p class="team-bio dynamic-content">Investment manager and founder of Entremares. Has successfully raised and deployed over $1M USD in real estate development capital across two completed projects. Operates between Panama City and Tijuana.</p>
                     </div>
                 </div>
 
@@ -940,14 +941,14 @@
         kabil: {
             hero_title:    'Kabil',
             hero_subtitle: 'Tijuana, Mexico · 4 Apartments',
-            description:   'Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 30 months — 3 months from first listing to sold out.',
+            description:   'Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 26 months — 3 months from first listing to sold out.',
             highlight_1:   'Four luxury apartments with premium finishes',
             highlight_2:   'Sold out in 3 months from first listing',
-            highlight_3:   'Built and delivered in under 30 months',
+            highlight_3:   'Built and delivered in under 26 months',
             highlight_4:   '31.71% net return on total investment',
             capex:         '$227,345',
             return:        '31.71%',
-            timeline:      '30 mo.',
+            timeline:      '26 mo.',
             units:         '4 Apartments',
             featured_photo: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80&auto=format&fit=crop',
         },
@@ -1050,14 +1051,8 @@
         const { data, error } = lpResult;
 
         function revealHeroAndStats() {
-            ['hero-title', 'hero-subtitle'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.opacity = '1';
-            });
-            ['stat-capital', 'stat-capital-lbl', 'stat-return', 'stat-return-lbl',
-             'stat-investors', 'stat-investors-lbl'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.opacity = '1';
+            document.querySelectorAll('.dynamic-content').forEach(el => {
+                el.style.opacity = '1';
             });
         }
 
