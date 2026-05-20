@@ -2033,6 +2033,7 @@
 
       const investorTotal = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
       const totalRaised = investorTotal;
+      currentRdmRaised = totalRaised;
       const pct = Math.min(totalRaised / GOAL * 100, 100);
       const goalK = '~$' + Math.round(GOAL / 1000) + 'K';
 
@@ -2062,6 +2063,7 @@
   let currentNetDistribution = 0;
   let pendingWithdrawalAmount = 0;
   let pendingWithdrawalRequests = [];
+  let currentRdmRaised = 0;
 
   async function loadCommitmentStatus(email) {
     if (!email) return;
@@ -2695,6 +2697,28 @@
     setFade('wallet-balance', fmt(remaining));
   }
 
+  function recalculateAllBalances(amount) {
+    rdmCommittedAmount += amount;
+
+    const newWallet = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
+    setFade('wallet-balance', fmt(newWallet));
+
+    if (currentNetDistribution > 0) updateNetDistributionDisplay();
+
+    currentRdmRaised += amount;
+    const pct = Math.min(currentRdmRaised / GOAL * 100, 100);
+    const goalK = '~$' + Math.round(GOAL / 1000) + 'K';
+    document.getElementById('prog-fill').style.width = pct.toFixed(2) + '%';
+    document.getElementById('prog-hdr-pct').textContent = Math.round(pct) + '%';
+    document.getElementById('prog-raised').textContent = '$' + currentRdmRaised.toLocaleString('en-US') + ' raised of ' + goalK + ' target';
+    const rdmRemaining = Math.max(0, GOAL - currentRdmRaised);
+    document.getElementById('prog-remaining').textContent = '$' + rdmRemaining.toLocaleString('en-US');
+    if (currentRdmRaised >= GOAL) document.getElementById('funded-banner').style.display = 'block';
+
+    document.getElementById('active-investments-section').style.display = '';
+    document.getElementById('rdm-committed-amount').textContent = fmt(rdmCommittedAmount);
+  }
+
   function validateAmount(amount) {
     const inp     = document.getElementById('modal-amount-input');
     const notice  = document.getElementById('modal-min-notice');
@@ -2790,12 +2814,18 @@
     showStep(3);
 
     await saveCommitmentToSupabase();
+
+    recalculateAllBalances(modalAmount);
+
+    setTimeout(() => {
+      updateFundingProgress();
+      loadCommitmentStatus(currentInvestorEmail);
+      fetchAndUpdateBalance();
+      loadActivityTimeline(currentInvestorEmail);
+    }, 2000);
+
     sendNewCommitmentAlert(projectName);
-    await checkFullyFunded(projectName);
-    updateFundingProgress();
-    await loadCommitmentStatus(currentInvestorEmail);
-    await fetchAndUpdateBalance();
-    loadActivityTimeline(currentInvestorEmail);
+    checkFullyFunded(projectName);
   }
 
   /* ── Event listeners ── */
