@@ -12,7 +12,7 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { -webkit-font-smoothing: antialiased; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: #F5F5F3; color: #0D0D0D; min-height: 100vh; display: none; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #F5F5F3; color: #0D0D0D; min-height: 100vh; }
 
     /* ══ HEADER ══ */
     .hdr { position: sticky; top: 0; z-index: 50; height: 62px; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid #E8E8E4; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; }
@@ -1108,29 +1108,28 @@
     window.location.href = 'dashboard.html';
   });
 
-  (async function init() {
+  async function checkAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) { window.location.href = 'dashboard.html'; return; }
-    const email = session.user.email.toLowerCase();
-    const inv = INVESTORS[email];
+    if (!session) {
+      window.location.href = 'dashboard.html';
+      return null;
+    }
+    return session.user.email;
+  }
+
+  (async function init() {
+    const email = await checkAuth();
+    if (!email) return;
+    const normalEmail = email.toLowerCase();
+    const inv = INVESTORS[normalEmail];
     if (!inv) { await supabaseClient.auth.signOut(); sessionStorage.clear(); window.location.href = 'dashboard.html'; return; }
-    document.body.style.display = '';
-    currentInvestorEmail = email;
+    currentInvestorEmail = normalEmail;
     currentInvestorName  = inv.name;
     renderPage(inv);
-    loadRDMData(email);
+    loadRDMData(normalEmail);
     loadGallery();
-
-    // Build Q&A on all tabs after DOM is ready
     ['qa-overview', 'qa-financials', 'qa-returns', 'qa-updates'].forEach(id => buildQASection(id));
   })();
-
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (!session) {
-      sessionStorage.clear();
-      window.location.href = 'dashboard.html';
-    }
-  });
 
   /* ══════════════════════════════════════════
      MODIFY COMMITMENT FORM
