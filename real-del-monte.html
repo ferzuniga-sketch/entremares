@@ -230,6 +230,84 @@
     .modify-status.success { color: #1A7F4A; }
     .modify-status.error { color: #C0392B; }
 
+    /* ══ INVEST BUTTONS ══ */
+    .btn-hero-invest { display: inline-flex; align-items: center; padding: 13px 28px; font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #FFFFFF; background: #0D0D0D; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.15s; margin-bottom: 24px; }
+    .btn-hero-invest:hover { opacity: 0.82; }
+    .btn-sidebar-invest { display: block; width: 100%; padding: 14px; font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: #FFFFFF; background: #0D0D0D; border: none; border-radius: 10px; cursor: pointer; text-align: center; transition: opacity 0.15s; }
+    .btn-sidebar-invest:hover { opacity: 0.82; }
+
+    /* ══ INVEST MODAL ══ */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(13,13,13,0.50); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeOverlay 0.2s ease; }
+    @keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
+    .modal-card { background: #FFFFFF; border-radius: 20px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 4px 20px rgba(0,0,0,0.08); animation: slideModal 0.28s cubic-bezier(0.34, 1.3, 0.64, 1); scrollbar-width: none; }
+    .modal-card::-webkit-scrollbar { display: none; }
+    @keyframes slideModal { from { transform: translateY(22px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-inner { padding: 36px 36px 32px; }
+    .modal-step-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 26px; }
+    .modal-step-dot { width: 7px; height: 7px; border-radius: 50%; background: #E0E0DC; transition: background 0.2s, transform 0.2s; }
+    .modal-step-dot.active { background: #0D0D0D; transform: scale(1.2); }
+    .modal-step-dot.done { background: #1A7F4A; }
+    .modal-step-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; margin-left: 6px; }
+    .modal-title { font-size: 22px; font-weight: 700; letter-spacing: -0.04em; color: #0D0D0D; margin-bottom: 6px; line-height: 1.2; }
+    .modal-project-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; border-radius: 100px; padding: 4px 11px; margin: 10px 0 22px; }
+    .modal-balance { background: #F5F5F3; border-radius: 12px; padding: 15px 20px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-balance-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9B9B9B; }
+    .modal-balance-val { font-size: 17px; font-weight: 700; letter-spacing: -0.03em; color: #0D0D0D; }
+    .modal-field-lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6B6B; margin-bottom: 9px; }
+    .modal-amount-wrap { position: relative; margin-bottom: 7px; }
+    .modal-amount-prefix { position: absolute; left: 17px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 600; color: #9B9B9B; pointer-events: none; }
+    .modal-amount-input { width: 100%; padding: 14px 16px 14px 34px; font-family: inherit; font-size: 22px; font-weight: 700; letter-spacing: -0.03em; color: #0D0D0D; background: #F5F5F3; border: 1.5px solid #E8E8E4; border-radius: 10px; outline: none; transition: border-color 0.15s, background 0.15s; }
+    .modal-amount-input:focus { border-color: #0D0D0D; background: #FFFFFF; }
+    .modal-amount-input::-webkit-outer-spin-button, .modal-amount-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .modal-amount-input[type=number] { -moz-appearance: textfield; }
+    .modal-amount-input.error { border-color: #C0392B; background: #FEF8F8; }
+    .modal-min-notice { font-size: 12px; color: #9B9B9B; margin-bottom: 16px; }
+    .modal-min-notice.error { color: #C0392B; }
+    .modal-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+    .modal-preset-btn { padding: 10px 0; font-family: inherit; font-size: 13px; font-weight: 600; color: #6B6B6B; background: #F5F5F3; border: 1.5px solid #E8E8E4; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .modal-preset-btn:hover { border-color: #0D0D0D; color: #0D0D0D; background: #FFFFFF; }
+    .modal-preset-btn.selected { border-color: #0D0D0D; background: #0D0D0D; color: #FFFFFF; }
+    .modal-ownership { background: #F0FBF5; border: 1px solid #C3E8D2; border-radius: 10px; padding: 13px 18px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s, border-color 0.2s; }
+    .modal-ownership.dim { background: #F5F5F3; border-color: #E8E8E4; }
+    .modal-ownership-lbl { font-size: 12px; color: #1A7F4A; font-weight: 500; transition: color 0.2s; }
+    .modal-ownership.dim .modal-ownership-lbl { color: #B0B0AA; }
+    .modal-ownership-val { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: #1A7F4A; transition: color 0.2s; }
+    .modal-ownership.dim .modal-ownership-val { color: #C0C0BC; }
+    .modal-summary-card { background: #F5F5F3; border-radius: 12px; padding: 4px 20px; margin: 18px 0; }
+    .modal-summary-row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #EAEAE6; font-size: 14px; }
+    .modal-summary-row:last-child { border-bottom: none; }
+    .modal-summary-lbl { color: #9B9B9B; }
+    .modal-summary-val { font-weight: 600; color: #0D0D0D; }
+    .modal-returns-box { background: #0D0D0D; border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; }
+    .modal-returns-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 7px; }
+    .modal-returns-val { font-size: 21px; font-weight: 700; letter-spacing: -0.03em; color: #FFFFFF; margin-bottom: 4px; }
+    .modal-returns-note { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .modal-check-wrap { margin-bottom: 13px; }
+    .modal-check-label { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+    .modal-check-label input[type="checkbox"] { width: 17px; height: 17px; flex-shrink: 0; margin-top: 2px; accent-color: #0D0D0D; cursor: pointer; }
+    .modal-check-text { font-size: 13px; line-height: 1.55; color: #4A4A4A; }
+    .modal-divider { height: 1px; background: #F0F0EE; margin: 18px 0; }
+    .btn-modal-primary { width: 100%; padding: 15px; font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #FFFFFF; background: #0D0D0D; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.15s; margin-bottom: 10px; }
+    .btn-modal-primary:hover { opacity: 0.82; }
+    .btn-modal-primary:active { opacity: 0.68; }
+    .btn-modal-primary:disabled { opacity: 0.28; cursor: not-allowed; }
+    .btn-modal-back { display: block; width: 100%; text-align: center; font-family: inherit; font-size: 14px; font-weight: 500; color: #9B9B9B; background: none; border: none; cursor: pointer; padding: 8px; transition: color 0.15s; }
+    .btn-modal-back:hover { color: #0D0D0D; }
+    .modal-success-icon { width: 62px; height: 62px; border-radius: 50%; background: #F0FBF5; border: 2px solid #B8E2C8; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
+    .modal-success-title { font-size: 24px; font-weight: 700; letter-spacing: -0.04em; text-align: center; margin-bottom: 12px; }
+    .modal-success-msg { font-size: 14px; color: #6B6B6B; text-align: center; line-height: 1.65; margin-bottom: 24px; }
+    .modal-success-card { background: #F5F5F3; border-radius: 12px; padding: 4px 20px; margin-bottom: 22px; }
+    .modal-success-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; font-size: 13px; border-bottom: 1px solid #EAEAE6; }
+    .modal-success-row:last-child { border-bottom: none; }
+    .modal-success-lbl { color: #9B9B9B; }
+    .modal-success-val { font-weight: 600; }
+    @media (max-width: 560px) {
+      .modal-inner { padding: 28px 22px 24px; }
+      .modal-title { font-size: 20px; }
+      .modal-presets { grid-template-columns: repeat(2, 1fr); }
+      .modal-amount-input { font-size: 18px; }
+    }
+
     /* ══ RESPONSIVE ══ */
     @media (max-width: 960px) {
       .project-layout { grid-template-columns: 1fr; }
@@ -278,6 +356,7 @@
       <span class="kchip kchip-green">20–30% Target Return</span>
       <span class="kchip kchip-blue">Active</span>
     </div>
+    <button class="btn-hero-invest" onclick="openInvestModal()">Invest Now &rarr;</button>
     <div class="hero-cover" id="hero-cover">
       <div class="hero-cover-placeholder" id="hero-placeholder">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -586,8 +665,8 @@
 
             <!-- Shown when investor has no commitment -->
             <div id="no-commitment" class="no-commitment" style="display:none">
-              <div class="no-commitment-msg">You have not yet committed to Real del Monte.<br>Contact us or use your dashboard to invest.</div>
-              <a href="dashboard.html" class="btn-invest-now">Go to Dashboard &rarr;</a>
+              <div class="no-commitment-msg">You have not yet committed to Real del Monte.</div>
+              <button class="btn-invest-now" onclick="openInvestModal()">Invest Now &rarr;</button>
             </div>
 
           </div>
@@ -658,11 +737,147 @@
         <a class="mini-details-link" onclick="switchTab('returns');return false;">View Details &rarr;</a>
       </div>
 
+      <button class="btn-sidebar-invest" onclick="openInvestModal()">Invest Now &rarr;</button>
+
     </div><!-- /project-sidebar -->
 
   </div><!-- /project-layout -->
 
 </main>
+
+
+<!-- ══ INVEST NOW MODAL ══ -->
+<div id="rdm-invest-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeInvestModal()">
+  <div class="modal-card">
+
+    <!-- Step 1: Amount -->
+    <div id="rdm-modal-s1" class="modal-inner">
+      <div class="modal-step-bar">
+        <div class="modal-step-dot active"></div>
+        <div class="modal-step-dot"></div>
+        <div class="modal-step-dot"></div>
+        <span class="modal-step-label">Step 1 of 3</span>
+      </div>
+      <div class="modal-title">Invest Now</div>
+      <div class="modal-project-badge">
+        <span class="badge-dot"></span> Real del Monte
+      </div>
+      <div class="modal-balance">
+        <span class="modal-balance-lbl">Available Balance</span>
+        <span class="modal-balance-val" id="rdm-balance-display">—</span>
+      </div>
+      <div class="modal-field-lbl">How much would you like to invest?</div>
+      <div class="modal-amount-wrap">
+        <span class="modal-amount-prefix">$</span>
+        <input type="number" step="0.01" min="0" class="modal-amount-input" id="rdm-amount-input" placeholder="25000" autocomplete="off">
+      </div>
+      <div class="modal-min-notice" id="rdm-min-notice">$25,000 minimum investment</div>
+      <div class="modal-presets">
+        <button class="modal-preset-btn rdm-preset-btn" data-pct="0.25" onclick="rdmSetPreset(0.25)">25%</button>
+        <button class="modal-preset-btn rdm-preset-btn" data-pct="0.50" onclick="rdmSetPreset(0.50)">50%</button>
+        <button class="modal-preset-btn rdm-preset-btn" data-pct="0.75" onclick="rdmSetPreset(0.75)">75%</button>
+        <button class="modal-preset-btn rdm-preset-btn" data-pct="1.00" onclick="rdmSetPreset(1.00)">100%</button>
+      </div>
+      <div class="modal-ownership dim" id="rdm-ownership">
+        <span class="modal-ownership-lbl">Your EntreOcéanos Stake</span>
+        <span class="modal-ownership-val" id="rdm-ownership-val">Enter an amount</span>
+      </div>
+      <button class="btn-modal-primary" onclick="rdmGoToStep2()">Continue</button>
+    </div>
+
+    <!-- Step 2: Review -->
+    <div id="rdm-modal-s2" class="modal-inner" style="display:none;">
+      <div class="modal-step-bar">
+        <div class="modal-step-dot done"></div>
+        <div class="modal-step-dot active"></div>
+        <div class="modal-step-dot"></div>
+        <span class="modal-step-label">Step 2 of 3</span>
+      </div>
+      <div class="modal-title">Review your commitment</div>
+      <div class="modal-summary-card">
+        <div class="modal-summary-row">
+          <span class="modal-summary-lbl">Investor</span>
+          <span class="modal-summary-val" id="rdm-s2-investor">—</span>
+        </div>
+        <div class="modal-summary-row">
+          <span class="modal-summary-lbl">Project</span>
+          <span class="modal-summary-val">Real del Monte</span>
+        </div>
+        <div class="modal-summary-row">
+          <span class="modal-summary-lbl">Amount committing</span>
+          <span class="modal-summary-val" id="rdm-s2-amount">—</span>
+        </div>
+        <div class="modal-summary-row">
+          <span class="modal-summary-lbl">Date</span>
+          <span class="modal-summary-val" id="rdm-s2-date">—</span>
+        </div>
+        <div class="modal-summary-row">
+          <span class="modal-summary-lbl">Remaining after commitment</span>
+          <span class="modal-summary-val" id="rdm-s2-remaining">—</span>
+        </div>
+      </div>
+      <div class="modal-returns-box">
+        <div class="modal-returns-lbl">Target return &middot; 20–30% over 24 months</div>
+        <div class="modal-returns-val" id="rdm-s2-returns">—</div>
+        <div class="modal-returns-note">Estimated profit on your investment</div>
+      </div>
+      <div class="modal-check-wrap">
+        <label class="modal-check-label">
+          <input type="checkbox" id="rdm-chk-binding" onchange="rdmSyncConfirm()">
+          <span class="modal-check-text">I understand this is a binding commitment subject to a shareholders loan agreement</span>
+        </label>
+      </div>
+      <div class="modal-check-wrap">
+        <label class="modal-check-label">
+          <input type="checkbox" id="rdm-chk-funds" onchange="rdmSyncConfirm()">
+          <span class="modal-check-text">I confirm the funds are available in my wallet</span>
+        </label>
+      </div>
+      <div class="modal-divider"></div>
+      <button class="btn-modal-primary" id="rdm-btn-confirm" onclick="rdmGoToStep3()" disabled>Confirm Commitment</button>
+      <button class="btn-modal-back" onclick="rdmModalShowStep(1)">&larr; Go back</button>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div id="rdm-modal-s3" class="modal-inner" style="display:none;">
+      <div class="modal-success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A7F4A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="modal-success-title">Commitment received!</div>
+      <div class="modal-success-msg">
+        Fernando Zuniga will review your commitment and send your<br>
+        Shareholders Loan Agreement to <strong id="rdm-s3-email">—</strong><br>
+        within 24 hours.
+      </div>
+      <div class="modal-success-card">
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Investor</span>
+          <span class="modal-success-val" id="rdm-s3-name">—</span>
+        </div>
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Project</span>
+          <span class="modal-success-val">Real del Monte</span>
+        </div>
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Amount</span>
+          <span class="modal-success-val" id="rdm-s3-amount">—</span>
+        </div>
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Date</span>
+          <span class="modal-success-val" id="rdm-s3-date">—</span>
+        </div>
+        <div class="modal-success-row">
+          <span class="modal-success-lbl">Reference</span>
+          <span class="modal-success-val" id="rdm-s3-ref">—</span>
+        </div>
+      </div>
+      <button class="btn-modal-primary" onclick="closeInvestModal()">Close</button>
+    </div>
+
+  </div>
+</div>
 
 
 <!-- ── Lightbox ── -->
@@ -1156,6 +1371,222 @@
     const text = 'Hi Fernando, I would like to modify my commitment in Real del Monte from ' + current + ' to ' + newFmt + '. Reason: ' + (reason || '[reason]');
     document.getElementById('modify-btn-wa').href = 'https://wa.me/50769824455?text=' + encodeURIComponent(text);
   }
+
+  /* ══════════════════════════════════════════
+     INVEST NOW MODAL
+  ══════════════════════════════════════════ */
+  const ALLURE_GROSS_MULTIPLIER = 1.3431;
+  const ALLURE_NET_MULTIPLIER   = 1.3088;
+
+  let rdmInvestorWallet   = 0;
+  let rdmPendingWithdraws = 0;
+  let rdmExistingCommit   = 0;
+  let rdmModalAmt         = 0;
+  let rdmModalRef         = '';
+
+  function getRDMAvailableBalance() {
+    return Math.max(0, rdmInvestorWallet - rdmExistingCommit - rdmPendingWithdraws);
+  }
+
+  async function loadInvestorWalletData() {
+    try {
+      const [posRes, wdRes, commitRes] = await Promise.all([
+        supabaseClient.from('investor_positions').select('amount_invested, distribution_amount').eq('project_name', 'Allure').ilike('investor_email', currentInvestorEmail).maybeSingle(),
+        supabaseClient.from('withdrawal_requests').select('amount').ilike('investor_email', currentInvestorEmail).in('status', ['pending', 'approved']),
+        supabaseClient.from('commitments').select('amount').ilike('investor_email', currentInvestorEmail).eq('project_name', PROJECT_NAME)
+      ]);
+
+      if (!posRes.error && posRes.data) {
+        const d = posRes.data;
+        if (d.distribution_amount != null) {
+          rdmInvestorWallet = Number(d.distribution_amount) * (ALLURE_GROSS_MULTIPLIER / ALLURE_NET_MULTIPLIER);
+        } else if (d.amount_invested != null) {
+          rdmInvestorWallet = Number(d.amount_invested) * ALLURE_GROSS_MULTIPLIER;
+        }
+      }
+
+      if (!wdRes.error && wdRes.data) {
+        rdmPendingWithdraws = wdRes.data.reduce((s, r) => s + Number(r.amount), 0);
+      }
+
+      if (!commitRes.error && commitRes.data) {
+        rdmExistingCommit = commitRes.data.reduce((s, r) => s + Number(r.amount), 0);
+      }
+    } catch (err) {
+      console.error('Failed to load wallet data:', err);
+    }
+  }
+
+  function rdmModalShowStep(n) {
+    document.querySelector('#rdm-invest-modal .modal-card').scrollTop = 0;
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('rdm-modal-s' + i).style.display = (i === n) ? '' : 'none';
+    }
+  }
+
+  function updateRDMOwnership(amount) {
+    const el  = document.getElementById('rdm-ownership');
+    const val = document.getElementById('rdm-ownership-val');
+    if (amount >= 25000) {
+      el.classList.remove('dim');
+      val.textContent = (amount / GOAL * 100).toFixed(2) + '% of EntreOcéanos';
+    } else {
+      el.classList.add('dim');
+      val.textContent = 'Enter an amount';
+    }
+  }
+
+  function rdmValidateAmount(amount) {
+    const inp    = document.getElementById('rdm-amount-input');
+    const notice = document.getElementById('rdm-min-notice');
+    const bal    = getRDMAvailableBalance();
+    if (!amount || amount <= 0) {
+      inp.classList.remove('error');
+      notice.className   = 'modal-min-notice';
+      notice.textContent = '$25,000 minimum investment';
+      return false;
+    }
+    if (amount < 25000) {
+      inp.classList.add('error');
+      notice.className   = 'modal-min-notice error';
+      notice.textContent = 'Minimum investment is $25,000';
+      return false;
+    }
+    if (amount > bal) {
+      inp.classList.add('error');
+      notice.className   = 'modal-min-notice error';
+      notice.textContent = 'Amount exceeds your available balance (' + fmt(bal) + ')';
+      return false;
+    }
+    inp.classList.remove('error');
+    notice.className   = 'modal-min-notice';
+    notice.textContent = '$25,000 minimum investment';
+    return true;
+  }
+
+  function rdmSetPreset(fraction) {
+    const bal = getRDMAvailableBalance();
+    const amt = fraction === 1.0 ? bal : Math.max(25000, parseFloat((bal * fraction).toFixed(2)));
+    document.getElementById('rdm-amount-input').value = amt;
+    document.querySelectorAll('.rdm-preset-btn').forEach(b => {
+      b.classList.toggle('selected', parseFloat(b.dataset.pct) === fraction);
+    });
+    rdmValidateAmount(amt);
+    updateRDMOwnership(amt <= bal ? amt : 0);
+  }
+
+  async function openInvestModal() {
+    await loadInvestorWalletData();
+    const bal = getRDMAvailableBalance();
+    document.getElementById('rdm-balance-display').textContent = fmt(bal);
+    document.getElementById('rdm-amount-input').value = '';
+    document.getElementById('rdm-amount-input').classList.remove('error');
+    document.getElementById('rdm-min-notice').className   = 'modal-min-notice';
+    document.getElementById('rdm-min-notice').textContent = '$25,000 minimum investment';
+    document.querySelectorAll('.rdm-preset-btn').forEach(b => b.classList.remove('selected'));
+    updateRDMOwnership(0);
+    document.getElementById('rdm-chk-binding').checked  = false;
+    document.getElementById('rdm-chk-funds').checked    = false;
+    document.getElementById('rdm-btn-confirm').disabled = true;
+    rdmModalShowStep(1);
+    document.getElementById('rdm-invest-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('rdm-amount-input').focus(), 60);
+  }
+
+  function closeInvestModal() {
+    document.getElementById('rdm-invest-modal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function rdmSyncConfirm() {
+    document.getElementById('rdm-btn-confirm').disabled =
+      !(document.getElementById('rdm-chk-binding').checked && document.getElementById('rdm-chk-funds').checked);
+  }
+
+  function rdmGoToStep2() {
+    const raw = parseFloat(document.getElementById('rdm-amount-input').value.replace(/,/g, '')) || 0;
+    if (!rdmValidateAmount(raw)) {
+      document.getElementById('rdm-amount-input').focus();
+      return;
+    }
+    rdmModalAmt = raw;
+    const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('rdm-s2-investor').textContent  = currentInvestorName;
+    document.getElementById('rdm-s2-amount').textContent    = fmt(rdmModalAmt);
+    document.getElementById('rdm-s2-date').textContent      = today;
+    document.getElementById('rdm-s2-remaining').textContent = fmt(Math.max(0, getRDMAvailableBalance() - rdmModalAmt));
+    document.getElementById('rdm-s2-returns').textContent   = fmt(rdmModalAmt * 0.20) + ' – ' + fmt(rdmModalAmt * 0.30);
+    rdmModalShowStep(2);
+  }
+
+  async function rdmGoToStep3() {
+    if (!document.getElementById('rdm-chk-binding').checked || !document.getElementById('rdm-chk-funds').checked) return;
+
+    rdmModalRef = String(Math.floor(100000 + Math.random() * 900000));
+    const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+    document.getElementById('rdm-s3-email').textContent  = currentInvestorEmail;
+    document.getElementById('rdm-s3-name').textContent   = currentInvestorName;
+    document.getElementById('rdm-s3-amount').textContent = fmt(rdmModalAmt);
+    document.getElementById('rdm-s3-date').textContent   = today;
+    document.getElementById('rdm-s3-ref').textContent    = '#' + rdmModalRef;
+
+    rdmModalShowStep(3);
+
+    try {
+      await supabaseClient.from('commitments').insert({
+        investor_email: currentInvestorEmail,
+        investor_name:  currentInvestorName,
+        amount:         rdmModalAmt,
+        project_name:   PROJECT_NAME,
+        status:         'pending'
+      });
+
+      await supabaseClient.from('investor_activity').insert({
+        investor_email: currentInvestorEmail,
+        activity_type:  'Commitment',
+        description:    'Capital committed to ' + PROJECT_NAME + ' — pending confirmation',
+        amount:         rdmModalAmt,
+        project_name:   PROJECT_NAME,
+        activity_date:  new Date().toISOString().slice(0, 10)
+      });
+    } catch (err) {
+      console.error('Failed to save commitment:', err);
+    }
+
+    rdmExistingCommit += rdmModalAmt;
+    await loadFundingProgress();
+    await loadInvestorCommitment(currentInvestorEmail);
+
+    try {
+      emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+        to_email:    'ferzuniga@gmail.com',
+        subject:     'New Commitment — Real del Monte — ' + currentInvestorName,
+        from_name:   currentInvestorName,
+        from_email:  currentInvestorEmail,
+        message:     'New commitment: ' + currentInvestorName + ' committed ' + fmt(rdmModalAmt) + ' to Real del Monte. Reference: #' + rdmModalRef
+      }).catch(err => console.error('EmailJS alert failed:', err));
+    } catch (err) {
+      console.error('Email alert failed:', err);
+    }
+  }
+
+  document.getElementById('rdm-amount-input').addEventListener('input', function() {
+    const amount = parseFloat(this.value.replace(/,/g, '')) || 0;
+    const bal    = getRDMAvailableBalance();
+    document.querySelectorAll('.rdm-preset-btn').forEach(b => b.classList.remove('selected'));
+    this.classList.remove('error');
+    document.getElementById('rdm-min-notice').className   = 'modal-min-notice';
+    document.getElementById('rdm-min-notice').textContent = '$25,000 minimum investment';
+    updateRDMOwnership(amount >= 25000 && amount <= bal ? amount : 0);
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('rdm-invest-modal').style.display !== 'none') {
+      closeInvestModal();
+    }
+  });
 
   (function initModifyForm() {
     const newAmtInput = document.getElementById('modify-new-amount');

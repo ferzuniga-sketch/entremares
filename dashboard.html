@@ -486,6 +486,23 @@
       color: #FFFFFF;
     }
 
+    .btn-opp-primary {
+      display: inline-block;
+      margin-top: 22px;
+      padding: 11px 22px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFFFFF;
+      background: #0D0D0D;
+      border: 1.5px solid #0D0D0D;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      letter-spacing: -0.01em;
+    }
+    .btn-opp-primary:hover { opacity: 0.82; }
+
     /* ── Past investments ── */
     .inv-grid {
       display: grid;
@@ -1470,7 +1487,10 @@
         </div>
         <div style="margin-top:5px;font-size:11px;color:#B0B0AA">Remaining: <span id="prog-remaining">—</span></div>
 
-        <button class="btn-opp" onclick="window.location.href='real-del-monte.html'">View Details &rarr;</button>
+        <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
+          <button class="btn-opp" style="margin-top:0" onclick="window.location.href='real-del-monte.html'">View Details &rarr;</button>
+          <button class="btn-opp-primary" style="margin-top:0" onclick="openModalForRDM()">Invest Now &rarr;</button>
+        </div>
       </div>
 
     </div>
@@ -2611,6 +2631,14 @@
   function closeModal() {
     document.getElementById('invest-modal').style.display = 'none';
     document.body.style.overflow = '';
+  }
+
+  function openModalForRDM() {
+    if (activeProjects.length > 0) {
+      const rdm = activeProjects.find(p => p.project_name === 'Real del Monte');
+      if (rdm) selectedProject = rdm;
+    }
+    openModal();
   }
 
   function showStep(n) {
