@@ -414,13 +414,13 @@
             <div class="container">
                 <div class="hero-eyebrow fade-up">Private Investment Club · Est. 2020</div>
 
-                <h1 class="hero-title fade-up" style="transition-delay: 0.08s" id="hero-title">
+                <h1 class="hero-title" style="opacity:0;transition:opacity 0.4s ease;transition-delay:0.08s" id="hero-title">
                     Where trusted capital<br>
                     meets premium<br>
                     <em>real estate.</em>
                 </h1>
 
-                <p class="hero-subtitle fade-up" style="transition-delay: 0.16s" id="hero-subtitle">
+                <p class="hero-subtitle" style="opacity:0;transition:opacity 0.4s ease;transition-delay:0.16s" id="hero-subtitle">
                     Entremares is a private club connecting accredited investors with exceptional residential development opportunities across Mexico and Latin America.
                 </p>
 
@@ -542,21 +542,21 @@
             <div class="stats-grid" data-stagger style="--stats-cols: 3">
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span id="stat-capital">$1.1M+</span>
+                        <span id="stat-capital" style="opacity:0;transition:opacity 0.4s ease">$1.1M+</span>
                     </div>
-                    <div class="stat-label" id="stat-capital-lbl">Total Capital Deployed</div>
+                    <div class="stat-label" id="stat-capital-lbl" style="opacity:0;transition:opacity 0.4s ease">Total Capital Deployed</div>
                 </div>
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span id="stat-return">30.0%</span>
+                        <span id="stat-return" style="opacity:0;transition:opacity 0.4s ease">30.0%</span>
                     </div>
-                    <div class="stat-label" id="stat-return-lbl">Average Investor Return</div>
+                    <div class="stat-label" id="stat-return-lbl" style="opacity:0;transition:opacity 0.4s ease">Average Investor Return</div>
                 </div>
                 <div class="stat-item fade-up">
                     <div class="stat-value">
-                        <span id="stat-investors">10+</span>
+                        <span id="stat-investors" style="opacity:0;transition:opacity 0.4s ease">10+</span>
                     </div>
-                    <div class="stat-label" id="stat-investors-lbl">Active Investors</div>
+                    <div class="stat-label" id="stat-investors-lbl" style="opacity:0;transition:opacity 0.4s ease">Active Investors</div>
                 </div>
             </div>
         </div>
@@ -1048,7 +1048,20 @@
         ]);
 
         const { data, error } = lpResult;
-        if (error || !data) return;
+
+        function revealHeroAndStats() {
+            ['hero-title', 'hero-subtitle'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.opacity = '1';
+            });
+            ['stat-capital', 'stat-capital-lbl', 'stat-return', 'stat-return-lbl',
+             'stat-investors', 'stat-investors-lbl'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.opacity = '1';
+            });
+        }
+
+        if (error || !data) { revealHeroAndStats(); return; }
 
         /* Build nested lookup: lp[section][key] = value */
         const lp = {};
@@ -1155,6 +1168,8 @@
             if (v) document.getElementById('wt-chip-' + i + '-val').textContent = v;
             if (l) document.getElementById('wt-chip-' + i + '-lbl').textContent = l;
         }
+
+        revealHeroAndStats();
     })();
     </script>
 </body>
