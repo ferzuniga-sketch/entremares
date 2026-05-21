@@ -1386,6 +1386,119 @@
       margin-bottom: 16px;
       display: none;
     }
+
+    /* ══════════════════════════════════════════
+       RESET PASSWORD MODAL
+    ══════════════════════════════════════════ */
+    #reset-password-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(13,13,13,0.60);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .reset-pw-card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.20), 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    .reset-pw-heading {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #0D0D0D;
+      margin-bottom: 6px;
+    }
+
+    .reset-pw-sub {
+      font-size: 14px;
+      color: #6B6B6B;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .reset-pw-field {
+      margin-bottom: 16px;
+    }
+
+    .reset-pw-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6B6B6B;
+      margin-bottom: 8px;
+    }
+
+    .reset-pw-field input {
+      width: 100%;
+      padding: 13px 16px;
+      font-family: inherit;
+      font-size: 15px;
+      color: #0D0D0D;
+      background: #F5F5F3;
+      border: 1.5px solid #E8E8E4;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .reset-pw-field input:focus {
+      border-color: #0D0D0D;
+      background: #FFFFFF;
+    }
+
+    .btn-reset-pw-save {
+      width: 100%;
+      padding: 15px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: #FFFFFF;
+      background: #1A7F4A;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-reset-pw-save:hover { opacity: 0.85; }
+    .btn-reset-pw-save:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .reset-pw-success {
+      font-size: 13px;
+      color: #1A6B3A;
+      background: #EBF6EF;
+      border: 1px solid #B8DFC6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 14px;
+      display: none;
+    }
+
+    #reset-modal-error {
+      font-size: 13px;
+      color: #C0392B;
+      background: #FEF0EE;
+      border: 1px solid #F5C6C1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 14px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -1952,6 +2065,32 @@
       <button class="btn-modal-primary" onclick="closeWithdrawModal()">Return to Dashboard</button>
     </div>
 
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     RESET PASSWORD MODAL
+══════════════════════════════════════════ -->
+<div id="reset-password-modal">
+  <div class="reset-pw-card">
+    <div class="reset-pw-heading">Set New Password</div>
+    <div class="reset-pw-sub">Choose a strong password for your account.</div>
+
+    <div class="reset-pw-field">
+      <label for="reset-new-password">New Password</label>
+      <input type="password" id="reset-new-password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+
+    <div class="reset-pw-field">
+      <label for="reset-confirm-password">Confirm Password</label>
+      <input type="password" id="reset-confirm-password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+
+    <button class="btn-reset-pw-save" id="btn-reset-pw-save">Save Password</button>
+
+    <div class="reset-pw-success" id="reset-pw-success">Password updated! Redirecting...</div>
+    <div id="reset-modal-error"></div>
   </div>
 </div>
 
@@ -3385,6 +3524,55 @@
       noteEl.innerHTML = '⏳ ' + fmt(amount) + ' withdrawal pending &nbsp;<span style="color:#2563EB;font-size:11px;font-weight:600">Cancellation requested. We\'ll process it shortly.</span>';
     }
   }
+
+  /* ── Password reset detection ── */
+  document.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery')) {
+      document.getElementById('reset-password-modal').style.display = 'flex';
+    }
+  });
+
+  document.getElementById('btn-reset-pw-save').addEventListener('click', async function() {
+    const newPw  = document.getElementById('reset-new-password').value;
+    const confPw = document.getElementById('reset-confirm-password').value;
+    const errEl  = document.getElementById('reset-modal-error');
+    const okEl   = document.getElementById('reset-pw-success');
+    const btn    = document.getElementById('btn-reset-pw-save');
+
+    errEl.style.display = 'none';
+    okEl.style.display  = 'none';
+
+    if (newPw !== confPw) {
+      errEl.textContent    = 'Passwords do not match.';
+      errEl.style.display  = 'block';
+      return;
+    }
+    if (newPw.length < 8) {
+      errEl.textContent    = 'Password must be at least 8 characters.';
+      errEl.style.display  = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const { error } = await supabaseClient.auth.updateUser({ password: newPw });
+
+    if (error) {
+      errEl.textContent   = error.message || 'Failed to update password. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled        = false;
+      btn.textContent     = 'Save Password';
+      return;
+    }
+
+    okEl.style.display = 'block';
+    setTimeout(function() {
+      document.getElementById('reset-password-modal').style.display = 'none';
+      window.history.replaceState(null, '', window.location.pathname);
+    }, 2000);
+  });
 </script>
 
 </body>
