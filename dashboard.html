@@ -1610,8 +1610,6 @@
       <div class="stat">
         <div class="stat-lbl">Total Returns</div>
         <div class="stat-val green" id="stat-total-returns">—</div>
-        <div class="stat-note">31.30% avg return</div>
-        <div class="stat-note" style="font-size:0.75rem;color:#9ca3af;margin-top:2px;">~10.2% annualized</div>
       </div>
       <div class="stat">
         <div class="stat-lbl">Net Distribution</div>
@@ -1626,8 +1624,8 @@
       </div>
       <div class="stat">
         <div class="stat-lbl">Member Since</div>
-        <div class="stat-val">June 2020</div>
-        <div class="stat-note">5+ years</div>
+        <div class="stat-val" id="stat-member-since">—</div>
+        <div class="stat-note" id="stat-member-years"></div>
       </div>
     </div>
 
@@ -1863,7 +1861,7 @@
       </div>
 
       <div class="modal-ownership dim" id="modal-ownership">
-        <span class="modal-ownership-lbl">Your EntreOcéanos Stake</span>
+        <span class="modal-ownership-lbl">Your Ownership Stake</span>
         <span class="modal-ownership-val" id="modal-ownership-val">Enter an amount</span>
       </div>
 
@@ -1896,7 +1894,7 @@
         </div>
         <div class="modal-summary-row">
           <span class="modal-summary-lbl">Date</span>
-          <span class="modal-summary-val">May 2, 2026</span>
+          <span class="modal-summary-val" id="modal-commit-date">—</span>
         </div>
         <div class="modal-summary-row">
           <span class="modal-summary-lbl">Remaining after commitment</span>
@@ -1964,7 +1962,7 @@
         </div>
         <div class="modal-success-row">
           <span class="modal-success-lbl">Date</span>
-          <span class="modal-success-val">May 2, 2026</span>
+          <span class="modal-success-val" id="modal-success-date">—</span>
         </div>
         <div class="modal-success-row">
           <span class="modal-success-lbl">Reference</span>
@@ -2789,6 +2787,20 @@
     set('stat-kabil-investment', fmt(inv.kabil.invested));
     set('stat-total-returns',   '+' + fmt(totalReturns));
 
+    const memberDates = {
+      'fredbusher@gmail.com':          { date: 'Jun 2020', years: '5+ years' },
+      'gilito.iii@gmail.com':          { date: 'Jun 2020', years: '5+ years' },
+      'alvaroilanes@gmail.com':        { date: 'Jun 2020', years: '5+ years' },
+      'cuellarolmos@gmail.com':        { date: 'Jun 2020', years: '5+ years' },
+      'sergio.gmd@gmail.com':          { date: 'Jun 2020', years: '5+ years' },
+      'nacho.lucas@gmail.com':         { date: 'Jun 2020', years: '5+ years' },
+      'ferzuniga@gmail.com':           { date: 'Jun 2020', years: '5+ years' },
+      'madelcarmen.galindo@zuksa.net': { date: 'Apr 2023', years: '3 years' }
+    };
+    const m = memberDates[email] || { date: '—', years: '' };
+    set('stat-member-since', m.date);
+    set('stat-member-years', m.years);
+
     /* Kabil card */
     const kabilPct = Math.round(inv.kabil.profit / inv.kabil.invested * 100);
     set('inv-kabil-invested', fmt(inv.kabil.invested));
@@ -2997,6 +3009,7 @@
     document.getElementById('s2-returns-lbl').textContent = 'Target return · ' + targetReturn + '% over ' + duration + ' months';
     document.getElementById('s2-returns').textContent  = fmt(amount * targetReturn * 0.8 / 100) + ' – ' + fmt(amount * targetReturn * 1.2 / 100);
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('modal-commit-date').textContent = today;
     document.querySelectorAll('[id^="s2-"] + .modal-summary-val, .modal-summary-val').forEach(() => {});
     // Update date fields
     document.querySelectorAll('.modal-summary-row').forEach(row => {
@@ -3017,6 +3030,7 @@
     modalRefNum = String(Math.floor(100000 + Math.random() * 900000));
 
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('modal-success-date').textContent = today;
     document.getElementById('s3-email').textContent   = currentInvestorEmail;
     document.getElementById('s3-name').textContent    = currentInvestor.name;
     document.getElementById('s3-amount').textContent  = fmt(modalAmount);
