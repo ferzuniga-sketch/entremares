@@ -3090,6 +3090,20 @@
     btn.disabled    = true;
     btn.textContent = 'Sending…';
 
+    const { data, error: lookupError } = await supabaseClient
+      .from('investors')
+      .select('email')
+      .ilike('email', email)
+      .single();
+
+    if (!data) {
+      errorEl.textContent   = 'This email is not registered with Entremares. Please contact us to get access.';
+      errorEl.style.display = 'block';
+      btn.disabled          = false;
+      btn.textContent       = 'Send Reset Link';
+      return;
+    }
+
     const { error } = await supabaseClient.auth.resetPasswordForEmail(
       email,
       { redirectTo: 'https://entremares-nine.vercel.app/dashboard.html' }
@@ -3101,6 +3115,7 @@
       btn.disabled          = false;
       btn.textContent       = 'Send Reset Link';
     } else {
+      successEl.textContent                                            = 'Check your email for the reset link.';
       successEl.style.display                                          = 'block';
       document.getElementById('reset-field-wrap').style.display       = 'none';
       btn.style.display                                                = 'none';
