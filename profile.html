@@ -219,6 +219,24 @@
     .btn-save:active { opacity: 0.68; }
     .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    .btn-green {
+      padding: 13px 28px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #FFFFFF;
+      background: #1A7F4A;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-green:hover  { opacity: 0.82; }
+    .btn-green:active { opacity: 0.68; }
+    .btn-green:disabled { opacity: 0.4; cursor: not-allowed; }
+
     .save-status {
       font-size: 13px;
       font-weight: 500;
@@ -341,6 +359,31 @@
       <div class="card-footer">
         <div class="save-status" id="bank-status"></div>
         <button class="btn-save" id="btn-save-bank" onclick="saveBankDetails()">Save Bank Details</button>
+      </div>
+    </div>
+
+    <!-- ── Security ── -->
+    <div class="profile-card">
+      <div class="card-section-title">Security</div>
+      <h2 style="font-size:17px;font-weight:700;letter-spacing:-0.03em;margin-bottom:6px;">Change Password</h2>
+      <p class="card-note">Choose a strong password you haven't used before.</p>
+      <div class="form-grid" style="grid-template-columns:1fr;max-width:440px;">
+        <div class="form-field">
+          <label for="current-password">Current Password</label>
+          <input type="password" id="current-password" placeholder="Enter current password" autocomplete="current-password">
+        </div>
+        <div class="form-field">
+          <label for="new-password">New Password</label>
+          <input type="password" id="new-password" placeholder="Enter new password" autocomplete="new-password">
+        </div>
+        <div class="form-field">
+          <label for="confirm-password">Confirm New Password</label>
+          <input type="password" id="confirm-password" placeholder="Repeat new password" autocomplete="new-password">
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="save-status" id="password-status"></div>
+        <button class="btn-green" id="btn-update-password" onclick="updatePassword()">Update Password</button>
       </div>
     </div>
 
@@ -536,6 +579,56 @@
 
     btn.disabled    = false;
     btn.textContent = 'Save Bank Details';
+  }
+
+  async function updatePassword() {
+    const btn     = document.getElementById('btn-update-password');
+    const current = document.getElementById('current-password').value;
+    const next    = document.getElementById('new-password').value;
+    const confirm = document.getElementById('confirm-password').value;
+
+    if (!current || !next || !confirm) {
+      showStatus('password-status', 'error', 'Please fill in all three fields.');
+      return;
+    }
+    if (next !== confirm) {
+      showStatus('password-status', 'error', 'New passwords do not match.');
+      return;
+    }
+    if (next.length < 8) {
+      showStatus('password-status', 'error', 'Password must be at least 8 characters.');
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = 'Updating…';
+
+    try {
+      const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+        email: currentEmail,
+        password: current
+      });
+      if (signInError) {
+        showStatus('password-status', 'error', 'Current password is incorrect.');
+        btn.disabled    = false;
+        btn.textContent = 'Update Password';
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.updateUser({ password: next });
+      if (error) throw error;
+
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value     = '';
+      document.getElementById('confirm-password').value = '';
+      showStatus('password-status', 'success', '✓ Password updated successfully.');
+    } catch (err) {
+      console.error('Failed to update password:', err);
+      showStatus('password-status', 'error', 'Failed to update password. Please try again.');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = 'Update Password';
   }
 </script>
 
