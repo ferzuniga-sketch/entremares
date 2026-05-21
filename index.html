@@ -379,22 +379,40 @@
                 <a href="apply.html" class="nav-cta" role="menuitem">Apply Now</a>
             </div>
 
-            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
+            <button id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <rect x="0" y="4" width="24" height="2" rx="1"/>
+                    <rect x="0" y="11" width="24" height="2" rx="1"/>
+                    <rect x="0" y="18" width="24" height="2" rx="1"/>
+                </svg>
             </button>
         </div>
     </nav>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu" role="menu" aria-hidden="true">
-        <a href="#projects" class="mobile-link">Projects</a>
-        <a href="#tijuana" class="mobile-link">Tijuana</a>
-        <a href="#how-it-works" class="mobile-link">How it works</a>
-        <a href="#team" class="mobile-link">Team</a>
-        <a href="dashboard.html" class="mobile-link">Sign In</a>
-        <a href="apply.html" class="mobile-cta">Apply Now →</a>
+    <!-- Mobile Menu Panel -->
+    <div id="mobile-menu-panel" aria-hidden="true">
+        <div class="mobile-panel-header">
+            <a href="index.html" class="nav-logo" aria-label="Entremares home">
+                <div class="logo-mark" aria-hidden="true">E</div>
+                Entremares
+            </a>
+            <button id="mobile-menu-close" aria-label="Close menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <nav class="mobile-panel-nav">
+            <a href="#projects" class="mobile-link">Projects</a>
+            <a href="#tijuana" class="mobile-link">Tijuana</a>
+            <a href="#how-it-works" class="mobile-link">How it works</a>
+            <a href="#team" class="mobile-link">Team</a>
+            <a href="dashboard.html" class="mobile-link">Sign In</a>
+        </nav>
+        <div class="mobile-panel-footer">
+            <a href="apply.html" class="mobile-cta">Apply Now →</a>
+        </div>
     </div>
 
     <!-- ===== Hero ===== -->
