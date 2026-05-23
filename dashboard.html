@@ -2459,65 +2459,6 @@
       .subscribe();
   }
 
-  /* ── Investor database ── */
-  const INVESTORS = {
-    'fredbusher@gmail.com': {
-      name: 'Groupe Reaction',
-      initials: 'GR',
-      wallet: 33982.96,
-      kabil:  { invested: 19845.75, profit: 6294.99 },
-      allure: { invested: 26140.74, profit: 7842.22 }
-    },
-    'gilito.iii@gmail.com': {
-      name: 'Gilberto Padilla',
-      initials: 'GP',
-      wallet: 42808.86,
-      kabil:  { invested: 25000,    profit: 7929.89 },
-      allure: { invested: 32929.89, profit: 9878.97 }
-    },
-    'alvaroilanes@gmail.com': {
-      name: 'Alvaro Villasante',
-      initials: 'AV',
-      wallet: 32500,
-      kabil:  { invested: 25000, profit: 7929.89 },
-      allure: { invested: 25000, profit: 7500 }
-    },
-    'cuellarolmos@gmail.com': {
-      name: 'Alberto Cuellar',
-      initials: 'AC',
-      wallet: 34247.10,
-      kabil:  { invested: 20000,    profit: 6343.92 },
-      allure: { invested: 26343.92, profit: 7903.18 }
-    },
-    'sergio.gmd@gmail.com': {
-      name: 'Sergio Gomez',
-      initials: 'SG',
-      wallet: 85617.73,
-      kabil:  { invested: 50000,    profit: 15859.79 },
-      allure: { invested: 65859.79, profit: 19757.94 }
-    },
-    'nacho.lucas@gmail.com': {
-      name: 'Nacho Lucas',
-      initials: 'NL',
-      wallet: 59932.41,
-      kabil:  { invested: 35000,    profit: 11101.85 },
-      allure: { invested: 46101.85, profit: 13830.56 }
-    },
-    'ferzuniga@gmail.com': {
-      name: 'Fernando Zuniga',
-      initials: 'FZ',
-      wallet: 247504.60,
-      kabil:  { invested: 39370,      profit: 151018.15 },
-      allure: { invested: 190388.15,  profit: 57116.45 }
-    },
-    'madelcarmen.galindo@zuksa.net': {
-      name: 'Ma del Carmen Galindo',
-      initials: 'MG',
-      wallet: 25733.21,
-      kabil:  { invested: 13130,    profit: 6664.78 },
-      allure: { invested: 19794.78, profit: 5938.43 }
-    }
-  };
 
   /* ── Helpers ── */
   function fmt(n) {
@@ -2680,15 +2621,22 @@
     }
 
     const userEmail = data.user.email.toLowerCase();
-    const inv = INVESTORS[userEmail];
-    if (!inv) {
+
+    // Check investor exists in investors table
+    const { data: invData, error: invError } = await supabaseClient
+      .from('investors')
+      .select('email, name, member_since')
+      .ilike('email', userEmail)
+      .maybeSingle();
+
+    if (invError || !invData) {
       errEl.style.display = 'block';
       await supabaseClient.auth.signOut();
       return;
     }
 
     errEl.style.display = 'none';
-    await initDashboard(inv, userEmail);
+    await initDashboard(userEmail);
   }
 
   async function sendMagicLink() {
@@ -2739,21 +2687,86 @@
     document.getElementById('login-error').style.display = 'none';
   }
 
-  /* ── Load profile overrides then render ── */
-  async function initDashboard(inv, email) {
+  /* ── Load all investor data from Supabase then render ── */
+  async function initDashboard(email) {
+    // Load investor profile
     const { data: profile } = await supabaseClient
       .from('investor_profiles')
-      .select('first_name, last_name')
+      .select('first_name, last_name, member_since')
       .ilike('investor_email', email)
       .maybeSingle();
 
+    // Load investor base info
+    const { data: invBase } = await supabaseClient
+      .from('investors')
+      .select('name, member_since')
+      .ilike('email', email)
+      .maybeSingle();
+
+    // Build name and initials
+    let name, initials, memberSince;
     if (profile && (profile.first_name || profile.last_name)) {
-      const first    = profile.first_name || '';
-      const last     = profile.last_name  || '';
-      const fullName = [first, last].filter(Boolean).join(' ');
-      const initials = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase() || inv.initials;
-      inv = { ...inv, name: fullName, initials };
+      const first = profile.first_name || '';
+      const last  = profile.last_name  || '';
+      name     = [first, last].filter(Boolean).join(' ');
+      initials = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase();
+      memberSince = profile.member_since || invBase?.member_since || null;
+    } else if (invBase?.name) {
+      name     = invBase.name;
+      const parts = name.split(' ');
+      initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+      memberSince = invBase.member_since || null;
+    } else {
+      name     = email.split('@')[0];
+      initials = name.slice(0, 2).toUpperCase();
+      memberSince = null;
     }
+
+    // Load positions for Kabil and Allure
+    const { data: positions } = await supabaseClient
+      .from('investor_positions')
+      .select('project_name, amount_invested, distribution_amount')
+      .ilike('investor_email', email)
+      .in('project_name', ['Kabil', 'Allure']);
+
+    const kabilPos  = positions?.find(p => p.project_name === 'Kabil')  || null;
+    const allurePos = positions?.find(p => p.project_name === 'Allure') || null;
+
+    // Calculate profits
+    // Kabil: net return 31.71%, so distribution = invested * 1.3171
+    const kabilInvested  = kabilPos  ? Number(kabilPos.amount_invested)  : 0;
+    const kabilDist      = kabilPos  ? Number(kabilPos.distribution_amount || kabilInvested * 1.3171) : 0;
+    const kabilProfit    = kabilDist - kabilInvested;
+
+    // Allure: use distribution_amount if available
+    const ALLURE_GROSS_MULT = 1.3431;
+    const ALLURE_NET_MULT   = 1.3088;
+    const allureInvested = allurePos ? Number(allurePos.amount_invested) : 0;
+    let allureGross, allureNet;
+    if (allurePos?.distribution_amount != null) {
+      allureNet   = Number(allurePos.distribution_amount);
+      allureGross = allureNet * (ALLURE_GROSS_MULT / ALLURE_NET_MULT);
+    } else {
+      allureGross = allureInvested * ALLURE_GROSS_MULT;
+      allureNet   = allureInvested * ALLURE_NET_MULT;
+    }
+    const allureProfit = allureNet - allureInvested;
+
+    // Build investor object
+    const inv = {
+      name,
+      initials,
+      memberSince,
+      wallet:  allureGross,
+      kabil:   { invested: kabilInvested,  profit: kabilProfit  },
+      allure:  { invested: allureInvested, profit: allureProfit }
+    };
+
+    currentInvestor      = inv;
+    currentInvestorEmail = email;
+    currentGrossDistribution = allureGross;
+    currentNetDistribution   = allureNet;
+
     renderDashboard(inv, email);
   }
 
@@ -2782,36 +2795,39 @@
     }));
 
     /* Stats */
-    const totalReturns = inv.kabil.profit + inv.allure.profit;
+    // Stats from Supabase positions
+    const totalReturns = (inv.kabil.profit || 0) + (inv.allure.profit || 0);
+    set('stat-kabil-investment', inv.kabil.invested > 0 ? fmt(inv.kabil.invested) : '—');
+    set('stat-total-returns', totalReturns > 0 ? '+' + fmt(totalReturns) : '—');
 
-    set('stat-kabil-investment', fmt(inv.kabil.invested));
-    set('stat-total-returns',   '+' + fmt(totalReturns));
+    // Member since — from inv.memberSince set in initDashboard
+    if (inv.memberSince) {
+      const d = new Date(inv.memberSince + 'T12:00:00');
+      const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const sinceStr = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+      const years = new Date().getFullYear() - d.getFullYear();
+      set('stat-member-since', sinceStr);
+      set('stat-member-years', years >= 1 ? years + '+ years' : 'New member');
+    } else {
+      set('stat-member-since', '—');
+      set('stat-member-years', '');
+    }
 
-    const memberDates = {
-      'fredbusher@gmail.com':          { date: 'Jun 2020', years: '5+ years' },
-      'gilito.iii@gmail.com':          { date: 'Jun 2020', years: '5+ years' },
-      'alvaroilanes@gmail.com':        { date: 'Jun 2020', years: '5+ years' },
-      'cuellarolmos@gmail.com':        { date: 'Jun 2020', years: '5+ years' },
-      'sergio.gmd@gmail.com':          { date: 'Jun 2020', years: '5+ years' },
-      'nacho.lucas@gmail.com':         { date: 'Jun 2020', years: '5+ years' },
-      'ferzuniga@gmail.com':           { date: 'Jun 2020', years: '5+ years' },
-      'madelcarmen.galindo@zuksa.net': { date: 'Apr 2023', years: '3 years' }
-    };
-    const m = memberDates[email] || { date: '—', years: '' };
-    set('stat-member-since', m.date);
-    set('stat-member-years', m.years);
+    // Kabil card
+    if (inv.kabil.invested > 0) {
+      const kabilPct = ((inv.kabil.profit / inv.kabil.invested) * 100).toFixed(2);
+      set('inv-kabil-invested', fmt(inv.kabil.invested));
+      set('inv-kabil-pct',      '+' + kabilPct + '%');
+      set('inv-kabil-profit',   '+' + fmt(inv.kabil.profit));
+    }
 
-    /* Kabil card */
-    const kabilPct = Math.round(inv.kabil.profit / inv.kabil.invested * 100);
-    set('inv-kabil-invested', fmt(inv.kabil.invested));
-    set('inv-kabil-pct',      '+' + kabilPct + '%');
-    set('inv-kabil-profit',   '+' + fmt(inv.kabil.profit));
-
-    /* Allure card */
-    const allurePct = Math.round(inv.allure.profit / inv.allure.invested * 100);
-    set('inv-allure-invested', fmt(inv.allure.invested));
-    set('inv-allure-pct',      '+' + allurePct + '%');
-    set('inv-allure-profit',   '+' + fmt(inv.allure.profit));
+    // Allure card
+    if (inv.allure.invested > 0) {
+      const allurePct = ((inv.allure.profit / inv.allure.invested) * 100).toFixed(2);
+      set('inv-allure-invested', fmt(inv.allure.invested));
+      set('inv-allure-pct',      '+' + allurePct + '%');
+      set('inv-allure-profit',   '+' + fmt(inv.allure.profit));
+    }
 
     /* Admin link — only for Fernando */
     const existingAdmin = document.getElementById('admin-link');
@@ -3173,9 +3189,15 @@
       return;
     }
     const email = session.user.email.toLowerCase();
-    const inv = INVESTORS[email];
-    if (inv) {
-      await initDashboard(inv, email);
+
+    const { data: invData } = await supabaseClient
+      .from('investors')
+      .select('email')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (invData) {
+      await initDashboard(email);
     } else {
       await supabaseClient.auth.signOut();
       document.getElementById('login-screen').style.display = 'flex';
