@@ -706,17 +706,6 @@
   const KABIL_TARGET_RETURN     = 18;
   const KABIL_GROSS_RETURN_PCT  = 31.71; // same as net for Kabil (no WHT shown)
 
-  const INVESTORS = {
-    'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
-    'gilito.iii@gmail.com':          { name: 'Gilberto Padilla',       initials: 'GP' },
-    'alvaroilanes@gmail.com':        { name: 'Alvaro Villasante',      initials: 'AV' },
-    'cuellarolmos@gmail.com':        { name: 'Alberto Cuellar',        initials: 'AC' },
-    'sergio.gmd@gmail.com':          { name: 'Sergio Gomez',           initials: 'SG' },
-    'nacho.lucas@gmail.com':         { name: 'Nacho Lucas',            initials: 'NL' },
-    'ferzuniga@gmail.com':           { name: 'Fernando Zuniga',        initials: 'FZ' },
-    'madelcarmen.galindo@zuksa.net': { name: 'Ma del Carmen Galindo',  initials: 'MG' }
-  };
-
   /* ── Helpers ── */
   function fmt(n) {
     return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1370,9 +1359,41 @@
     const email = await checkAuth();
     if (!email) return;
     const normalEmail = email.toLowerCase();
-    const inv = INVESTORS[normalEmail];
-    if (!inv) { await supabaseClient.auth.signOut(); sessionStorage.clear(); window.location.href = 'dashboard.html'; return; }
-    renderPage(inv);
+
+    // Load investor info from Supabase
+    const { data: invBase } = await supabaseClient
+      .from('investors')
+      .select('name, is_admin')
+      .ilike('email', normalEmail)
+      .maybeSingle();
+
+    if (!invBase) {
+      await supabaseClient.auth.signOut();
+      sessionStorage.clear();
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    // Load profile for first/last name
+    const { data: profile } = await supabaseClient
+      .from('investor_profiles')
+      .select('first_name, last_name')
+      .ilike('investor_email', normalEmail)
+      .maybeSingle();
+
+    let name, initials;
+    if (profile && (profile.first_name || profile.last_name)) {
+      const first = profile.first_name || '';
+      const last  = profile.last_name  || '';
+      name     = [first, last].filter(Boolean).join(' ');
+      initials = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase();
+    } else {
+      name     = invBase.name || normalEmail.split('@')[0];
+      const parts = name.split(' ');
+      initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+    }
+
+    renderPage({ name, initials });
     loadKabilData(normalEmail);
     loadGallery();
   })();
