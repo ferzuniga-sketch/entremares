@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kabil — Entremares Investor Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #F5F5F3; color: #0D0D0D; min-height: 100vh; }
+
+    /* ══ HEADER ══ */
+    .hdr { position: sticky; top: 0; z-index: 50; height: 62px; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid #E8E8E4; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; }
+    .hdr-logo { font-size: 17px; font-weight: 700; letter-spacing: -0.04em; color: #0D0D0D; text-decoration: none; }
+    .hdr-right { display: flex; align-items: center; gap: 18px; }
+    .hdr-user { display: flex; align-items: center; gap: 10px; }
+    .hdr-avatar { width: 34px; height: 34px; border-radius: 50%; background: #0D0D0D; color: #FFFFFF; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .hdr-name { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
+    .btn-signout { font-family: inherit; font-size: 13px; font-weight: 500; color: #6B6B6B; background: none; border: 1px solid #E0E0DC; border-radius: 7px; padding: 7px 14px; cursor: pointer; transition: all 0.15s; }
+    .btn-signout:hover { color: #0D0D0D; border-color: #0D0D0D; }
+
+    /* ══ PAGE ══ */
+    .page { max-width: 1160px; margin: 0 auto; padding: 40px 32px 80px; }
+
+    /* ══ HERO ══ */
+    .hero { margin-bottom: 36px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #9B9B9B; text-decoration: none; margin-bottom: 20px; transition: color 0.15s; letter-spacing: -0.01em; }
+    .back-btn:hover { color: #0D0D0D; }
+    .hero-title-row { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; flex-wrap: wrap; }
+    .hero-title { font-size: 38px; font-weight: 700; letter-spacing: -0.05em; color: #0D0D0D; line-height: 1; }
+    .badge-done { flex-shrink: 0; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; border-radius: 100px; padding: 5px 12px; }
+    .hero-subtitle { font-size: 14px; color: #9B9B9B; margin-bottom: 18px; letter-spacing: -0.01em; }
+    .hero-key-results { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .kchip { font-size: 12px; font-weight: 600; border-radius: 100px; padding: 6px 14px; letter-spacing: -0.01em; }
+    .kchip-gray  { color: #4A4A4A; background: #FFFFFF; border: 1px solid #E0E0DC; }
+    .kchip-green { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
+    .kchip-blue  { color: #1A5FA8; background: #EEF4FD; border: 1px solid #BDD3F5; }
+    .hero-cover { width: 100%; height: 280px; border-radius: 14px; border: 1px solid #E0E0DC; overflow: hidden; background: #EEEEE9; display: flex; align-items: center; justify-content: center; }
+    .hero-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-cover-placeholder { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #B0B0AA; font-size: 12px; font-weight: 500; }
+
+    /* ══ LAYOUT ══ */
+    .project-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+    .project-layout.layout-single { grid-template-columns: 1fr; }
+    .project-layout.layout-single .project-sidebar { display: none; }
+    .project-sidebar { position: sticky; top: 78px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* ══ TABS ══ */
+    .tab-bar { display: flex; border-bottom: 1px solid #E8E8E4; margin-bottom: 28px; }
+    .tab-btn { font-family: inherit; font-size: 14px; font-weight: 500; color: #9B9B9B; background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 18px 10px 0; margin-right: 6px; margin-bottom: -1px; cursor: pointer; transition: all 0.15s; letter-spacing: -0.01em; }
+    .tab-btn:hover { color: #0D0D0D; }
+    .tab-btn.active { color: #0D0D0D; font-weight: 600; border-bottom-color: #0D0D0D; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ══ SHARED ══ */
+    .sec-title { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #9B9B9B; margin-bottom: 14px; }
+    .card { background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 14px; padding: 24px 28px; }
+    .section { margin-bottom: 34px; }
+    .section:last-child { margin-bottom: 0; }
+    .content-text { font-size: 14px; color: #4A4A4A; line-height: 1.7; }
+
+    /* ══ TAB 1: OVERVIEW ══ */
+    .specs-row { display: flex; background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 14px; overflow: hidden; margin-bottom: 34px; }
+    .spec-item { flex: 1; padding: 18px 20px; border-right: 1px solid #F0F0EE; }
+    .spec-item:last-child { border-right: none; }
+    .spec-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; margin-bottom: 6px; }
+    .spec-val { font-size: 14px; font-weight: 600; color: #0D0D0D; letter-spacing: -0.01em; }
+    .contractor-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .contractor-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #B0B0AA; flex-shrink: 0; }
+    .contractor-name { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: #0D0D0D; text-decoration: none; }
+    .contractor-name:hover { text-decoration: underline; }
+    .contractor-desc { font-size: 13px; color: #6B6B6B; line-height: 1.65; }
+    .map-addr { font-size: 13px; color: #6B6B6B; margin-bottom: 14px; }
+    .map-wrap { border-radius: 10px; overflow: hidden; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .gallery-placeholder { aspect-ratio: 4/3; background: #EEEEE9; border: 1px solid #E0E0DC; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #C0C0BC; font-size: 11px; font-weight: 500; }
+
+    /* ── Gallery real items ── */
+    .gallery-item { position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; }
+    .gallery-item-media { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; transition: transform 0.2s; }
+    .gallery-item:hover .gallery-item-media { transform: scale(1.03); }
+    .gallery-item-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .gallery-item-caption { font-size: 11px; color: #6B6B6B; margin-top: 6px; line-height: 1.4; }
+    @media (max-width: 680px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) { .gallery-grid { grid-template-columns: 1fr; } }
+
+    /* ── Lightbox ── */
+    #gallery-lightbox { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; flex-direction: column; }
+    #gallery-lightbox.open { display: flex; }
+    #gallery-lightbox-media { max-width: 90vw; max-height: 82vh; border-radius: 8px; object-fit: contain; display: block; }
+    #gallery-lightbox-caption { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 14px; text-align: center; max-width: 600px; }
+    #gallery-lightbox-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; line-height: 1; opacity: 0.7; }
+    #gallery-lightbox-close:hover { opacity: 1; }
+    #gallery-lightbox-prev, #gallery-lightbox-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.12); border: none; color: #fff; font-size: 22px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    #gallery-lightbox-prev { left: 20px; }
+    #gallery-lightbox-next { right: 20px; }
+    #gallery-lightbox-prev:hover, #gallery-lightbox-next:hover { background: rgba(255,255,255,0.28); }
+
+    /* ══ TAB 2: FINANCIALS ══ */
+    .fin-subtitle { font-size: 13px; color: #6B6B6B; margin-bottom: 14px; line-height: 1.5; }
+    .fin-note { font-size: 12px; color: #9B9B9B; margin-top: 12px; line-height: 1.65; font-style: italic; }
+    .budget-table .row-net td { font-weight: 700; background: #EAEAE5; border-top: 2px solid #E0E0DA; padding-top: 14px; padding-bottom: 14px; }
+    .budget-table { width: 100%; border-collapse: collapse; }
+    .budget-table th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; padding: 16px 0 12px; text-align: left; border-bottom: 1px solid #EEEEE9; }
+    .budget-table th:first-child { padding-left: 28px; }
+    .budget-table th + th { padding-left: 16px; }
+    .budget-table th:last-child { padding-right: 28px; }
+    .budget-table td { font-size: 13px; color: #0D0D0D; padding: 11px 0; border-bottom: 1px solid #F5F5F2; vertical-align: middle; }
+    .budget-table td:first-child { padding-left: 28px; }
+    .budget-table td + td { padding-left: 16px; }
+    .budget-table td:last-child { padding-right: 28px; }
+    .budget-table tr:last-child td { border-bottom: none; }
+    .budget-table .row-total td { font-weight: 700; border-top: 2px solid #EEEEE9; border-bottom: none; padding-top: 14px; padding-bottom: 16px; }
+    .bar-track { width: 72px; height: 5px; background: #EEEEE9; border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #1A7F4A; border-radius: 3px; }
+    .var-pos { color: #1A7F4A; }
+    .var-neg { color: #C0392B; }
+    .scenarios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+    .scenario-card { background: #F5F5F3; border: 1px solid #EEEEE9; border-radius: 12px; padding: 20px 20px 18px; text-align: center; }
+    .scenario-card.pessimistic { background: #FFF5F5; border-color: #FFCCCC; }
+    .scenario-card.base        { background: #FFFBEA; border-color: #F5E090; }
+    .scenario-card.optimistic  { background: #F0FBF5; border-color: #C3E8D2; }
+    .scenario-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #B0B0AA; margin-bottom: 10px; }
+    .scenario-card.pessimistic .scenario-lbl { color: #C0392B; }
+    .scenario-card.base        .scenario-lbl { color: #B8860B; }
+    .scenario-card.optimistic  .scenario-lbl { color: #1A7F4A; }
+    .scenario-pct { font-size: 30px; font-weight: 700; letter-spacing: -0.04em; color: #0D0D0D; margin-bottom: 8px; line-height: 1; }
+    .scenario-card.pessimistic .scenario-pct { color: #C0392B; }
+    .scenario-card.base        .scenario-pct { color: #B8860B; }
+    .scenario-card.optimistic  .scenario-pct { color: #1A7F4A; }
+    .scenario-desc { font-size: 11px; color: #9B9B9B; line-height: 1.55; }
+    .actual-banner { background: #0D1F15; border-radius: 12px; padding: 26px 28px 22px; text-align: center; }
+    .actual-banner-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #4DE89A; margin-bottom: 10px; }
+    .actual-banner-pct { font-size: 48px; font-weight: 700; letter-spacing: -0.04em; color: #FFFFFF; margin-bottom: 6px; line-height: 1; }
+    .actual-banner-ann { font-size: 13px; color: #5E9B78; margin-bottom: 4px; }
+    .actual-banner-sub { font-size: 11px; color: #4D7A61; }
+
+    /* ══ TAB 3: MY INVESTMENT ══ */
+    .investment-wrap { max-width: 560px; margin: 0 auto; }
+    .investment-card { background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 16px; overflow: hidden; }
+    .investment-card-header { padding: 22px 28px 18px; border-bottom: 1px solid #EEEEE9; }
+    .investment-card-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; margin-bottom: 4px; }
+    .investment-card-project { font-size: 18px; font-weight: 700; letter-spacing: -0.03em; color: #0D0D0D; }
+    .inv-section { padding: 4px 28px; border-bottom: 1px solid #EEEEE9; }
+    .inv-section:last-of-type { border-bottom: none; }
+    .inv-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid #F9F9F8; }
+    .inv-row:last-child { border-bottom: none; }
+    .inv-lbl { font-size: 13px; color: #9B9B9B; }
+    .inv-val { font-size: 14px; font-weight: 600; color: #0D0D0D; text-align: right; }
+    .inv-val.green { color: #1A7F4A; }
+    .inv-val.large { font-size: 20px; font-weight: 700; }
+    .inv-val.muted { color: #B0B0AA; font-weight: 400; font-size: 12px; }
+    .above-target-badge { display: inline-block; font-size: 11px; font-weight: 600; color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; border-radius: 100px; padding: 3px 10px; margin-top: 4px; }
+    .btn-statement { display: block; margin: 20px 28px 24px; padding: 14px; font-family: inherit; font-size: 14px; font-weight: 600; color: #FFFFFF; background: #0D0D0D; border: none; border-radius: 10px; cursor: pointer; text-align: center; text-decoration: none; transition: opacity 0.15s; letter-spacing: -0.01em; }
+    .btn-statement:hover { opacity: 0.82; }
+
+    /* Timeline */
+    .timeline-section { margin-top: 36px; }
+    .timeline-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #B0B0AA; margin-bottom: 24px; }
+    .timeline-wrap { display: flex; align-items: flex-start; }
+    .tl-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 100px; }
+    .tl-connector { flex: 1; margin-top: 7px; min-width: 20px; }
+    .tl-line { width: 100%; height: 1px; background: #1A7F4A; }
+    .tl-line.pending { background: #E0E0DC; }
+    .tl-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .tl-dot.done { background: #1A7F4A; }
+    .tl-dot.hollow { background: #FFFFFF; border: 2px solid #D0D0CC; }
+    .tl-lbl { font-size: 11px; font-weight: 600; color: #9B9B9B; text-align: center; }
+    .tl-date-val { font-size: 13px; font-weight: 500; color: #0D0D0D; text-align: center; }
+    .tl-date-val.muted { color: #B0B0AA; font-size: 12px; font-weight: 400; }
+
+    /* ══ TAB 4: UPDATES ══ */
+    .update-card-v2 { padding: 24px 0; border-bottom: 1px solid #F0F0EE; }
+    .update-card-v2:last-child { border-bottom: none; }
+    .upd-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .upd-date { font-size: 12px; color: #9B9B9B; font-weight: 500; }
+    .update-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 100px; padding: 3px 9px; }
+    .badge-permitting   { color: #1A5FA8; background: #EEF4FD; border: 1px solid #BDD3F5; }
+    .badge-construction { color: #8B5E0F; background: #FFF8E7; border: 1px solid #F0D890; }
+    .badge-sales        { color: #1A7F4A; background: #F0FBF5; border: 1px solid #C3E8D2; }
+    .badge-finance      { color: #6B24A8; background: #F5EEFF; border: 1px solid #D9C0F5; }
+    .badge-general      { color: #6B6B6B; background: #F5F5F3; border: 1px solid #E0E0DC; }
+    .upd-title { font-size: 18px; font-weight: 700; letter-spacing: -0.03em; color: #0D0D0D; margin-bottom: 10px; line-height: 1.3; }
+    .upd-body { font-size: 14px; color: #4B4B4B; line-height: 1.7; }
+    .upd-photo { margin-top: 16px; width: 100%; border-radius: 12px; overflow: hidden; }
+    .upd-photo img { width: 100%; display: block; border-radius: 12px; }
+    .updates-empty { padding: 60px 0; text-align: center; font-size: 14px; color: #B0B0AA; }
+    .updates-footer { margin-top: 32px; font-size: 12px; color: #B0B0AA; text-align: center; line-height: 1.6; }
+
+    /* ══ SIDEBAR ══ */
+    .mini-card { background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 14px; padding: 20px 22px; }
+    .mini-card-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; margin-bottom: 14px; }
+    .mini-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid #F5F5F2; font-size: 13px; }
+    .mini-row:last-of-type { border-bottom: none; }
+    .mini-lbl { color: #9B9B9B; }
+    .mini-val { font-weight: 600; color: #0D0D0D; }
+    .mini-val.green { color: #1A7F4A; }
+    .mini-divider { height: 1px; background: #EEEEE9; margin: 2px 0; }
+    .mini-details-link { display: block; margin-top: 14px; font-size: 13px; font-weight: 500; color: #1A7F4A; text-decoration: none; }
+    .mini-details-link:hover { text-decoration: underline; }
+    .docs-card { background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 14px; padding: 20px 22px; }
+    .docs-card-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; margin-bottom: 14px; }
+    .doc-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #F5F5F2; gap: 10px; }
+    .doc-row:first-of-type { padding-top: 0; }
+    .doc-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name { font-size: 13px; font-weight: 500; color: #0D0D0D; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-type { font-size: 10px; color: #B0B0AA; margin-top: 1px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+    .doc-dl { flex-shrink: 0; width: 30px; height: 30px; border-radius: 7px; background: #F5F5F3; border: 1px solid #E8E8E4; display: flex; align-items: center; justify-content: center; color: #6B6B6B; text-decoration: none; transition: all 0.15s; }
+    .doc-dl:hover { background: #0D0D0D; color: #FFFFFF; border-color: #0D0D0D; }
+
+    /* ══ PERFORMANCE VS TARGET ══ */
+    .perf-table-wrap { background: #FFFFFF; border: 1px solid #EEEEE9; border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
+    .perf-table { width: 100%; border-collapse: collapse; }
+    .perf-table thead tr { border-bottom: 1px solid #EEEEE9; }
+    .perf-table thead th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B0B0AA; padding: 14px 20px 10px; text-align: left; }
+    .perf-table thead th:first-child { padding-left: 28px; width: 40%; }
+    .perf-table thead th:not(:first-child) { text-align: right; }
+    .perf-table tbody td { font-size: 13px; padding: 11px 20px; border-bottom: 1px solid #F5F5F2; color: #0D0D0D; }
+    .perf-table tbody td:first-child { padding-left: 28px; font-weight: 500; color: #4A4A4A; }
+    .perf-table tbody td:not(:first-child) { text-align: right; font-weight: 500; }
+    .perf-table tbody tr:last-child td { border-bottom: none; }
+    .perf-green { color: #1A7F4A !important; font-weight: 700 !important; }
+    .perf-amber { color: #B8860B !important; font-weight: 700 !important; }
+    .perf-red   { color: #C0392B !important; font-weight: 700 !important; }
+    .perf-note  { font-size: 12px; font-style: italic; color: #9B9B9B; line-height: 1.6; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 960px) {
+      .project-layout { grid-template-columns: 1fr; }
+      .project-sidebar { position: static; order: -1; }
+    }
+    @media (max-width: 680px) {
+      .hdr { padding: 0 18px; }
+      .hdr-name { display: none; }
+      .page { padding: 26px 18px 60px; }
+      .hero-title { font-size: 30px; }
+      .specs-row { flex-direction: column; }
+      .spec-item { border-right: none; border-bottom: 1px solid #F0F0EE; }
+      .spec-item:last-child { border-bottom: none; }
+      .scenarios-grid { grid-template-columns: 1fr; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .tab-btn { font-size: 13px; padding: 8px 12px 8px 0; }
+      .tl-item { min-width: 70px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <a href="index.html" class="hdr-logo">Entremares</a>
+  <div class="hdr-right">
+    <div class="hdr-user">
+      <div class="hdr-avatar" id="hdr-initials">--</div>
+      <span class="hdr-name" id="hdr-name"></span>
+    </div>
+    <button class="btn-signout" id="btn-signout">Sign Out</button>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- ══ HERO ══ -->
+  <div class="hero">
+    <a href="dashboard.html" class="back-btn">&#8592; Dashboard</a>
+    <div class="hero-title-row">
+      <h1 class="hero-title">Kabil</h1>
+      <span class="badge-done" id="hero-badge">Completed</span>
+    </div>
+    <div class="hero-subtitle" id="hero-subtitle">Tijuana, Mexico &nbsp;&middot;&nbsp; Jun 2020 &ndash; Aug 2022</div>
+    <div class="hero-key-results">
+      <span class="kchip kchip-gray"  id="kr-duration">26 months</span>
+      <span class="kchip kchip-green" id="kr-return">31.71% Net Return</span>
+      <span class="kchip kchip-green">Both Units Sold</span>
+      <span class="kchip kchip-blue"  id="kr-status">Completed</span>
+    </div>
+    <div class="hero-cover" id="hero-cover">
+      <div class="hero-cover-placeholder" id="hero-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Cover photo
+      </div>
+      <img id="hero-img" src="" alt="Kabil" style="display:none;width:100%;height:100%;object-fit:cover">
+    </div>
+  </div>
+
+
+  <!-- ══ TWO-COLUMN LAYOUT ══ -->
+  <div class="project-layout" id="project-layout">
+
+    <!-- LEFT: TABS -->
+    <div class="project-main">
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="overview"       onclick="switchTab('overview')">Overview</button>
+        <button class="tab-btn"        data-tab="financials"     onclick="switchTab('financials')">Financials</button>
+        <button class="tab-btn"        data-tab="returns"  onclick="switchTab('returns')">Returns</button>
+        <button class="tab-btn"        data-tab="updates"        onclick="switchTab('updates')">Updates</button>
+      </div>
+
+
+      <!-- ══ TAB 1: OVERVIEW ══ -->
+      <div id="tab-overview" class="tab-content active">
+
+        <div class="specs-row">
+          <div class="spec-item">
+            <div class="spec-lbl">Location</div>
+            <div class="spec-val" id="spec-location">Tijuana, Mexico</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-lbl">Type</div>
+            <div class="spec-val" id="spec-type">Residential</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-lbl">Units</div>
+            <div class="spec-val" id="spec-units">2 Townhouses</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-lbl">Size</div>
+            <div class="spec-val" id="spec-size">—</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-lbl">Status</div>
+            <div class="spec-val" id="spec-status">Completed</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">About this Project</div>
+          <div class="card">
+            <p class="content-text" id="about-description">Kabil is a residential real estate project developed by Entremares in Tijuana, Mexico. The project consists of 4 apartments designed for the mid-to-high end market.</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">About the Developer</div>
+          <div class="card">
+            <p class="content-text">Entremares is a real estate development company based in Panama with projects in Tijuana, Mexico. With a track record of 2 completed projects delivering above-target returns, Entremares focuses on premium residential developments.</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Construction Company</div>
+          <div class="card">
+            <div class="contractor-row">
+              <span class="contractor-lbl">General Contractor</span>
+              <a href="#" class="contractor-name" id="contractor-name-link">AEDIFIKA</a>
+            </div>
+            <p class="contractor-desc">AEDIFIKA is the licensed construction company responsible for the design and build of the Kabil project.</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Location</div>
+          <div class="card">
+            <p class="map-addr" id="map-address-text">Tijuana, Baja California, Mexico</p>
+            <div class="map-wrap">
+              <iframe id="map-iframe"
+                src="https://maps.google.com/maps?q=Tijuana,Baja+California,Mexico&output=embed"
+                width="100%" height="300"
+                style="border:none;display:block;"
+                allowfullscreen loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Project Photos</div>
+          <div class="gallery-grid" id="overview-gallery-grid">
+            <!-- filled by loadGallery() -->
+            <div class="gallery-placeholder">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Photo 1
+            </div>
+            <div class="gallery-placeholder">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Photo 2
+            </div>
+            <div class="gallery-placeholder">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Photo 3
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-overview -->
+
+
+      <!-- ══ TAB 2: FINANCIALS ══ -->
+      <div id="tab-financials" class="tab-content">
+
+        <!-- 1: Capital Structure -->
+        <div class="section">
+          <div class="sec-title">Capital Structure</div>
+
+          <!-- Card 1: Entremares SPV -->
+          <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+            <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
+              <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREMARES — Mexican SPV</div>
+              <div style="font-size:12px;color:#9B9B9B;margin-top:2px">Capital contributions to the project entity</div>
+            </div>
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Partner</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                  <th>Stake</th>
+                </tr>
+              </thead>
+              <tbody id="capital-spv-tbody">
+                <tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Card 2: EntreOceanos Holding -->
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
+              <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREOCÉANOS — Panama Holding</div>
+              <div style="font-size:12px;color:#9B9B9B;margin-top:2px">Total capital raised from investors</div>
+            </div>
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                </tr>
+              </thead>
+              <tbody id="capital-eo-tbody">
+                <tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="fin-note" style="font-style:normal">EntreOceanos holds 80% of Entremares. AEDIFIKA holds the remaining 20% as construction equity partner.</p>
+        </div>
+
+        <!-- 2: Project Budget (Entremares Level) -->
+        <div class="section">
+          <div class="sec-title">Project Budget (Entremares Level)</div>
+          <p class="fin-subtitle">Total construction and development costs at the Mexican SPV level</p>
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                  <th>Variance</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="budget-tbody">
+                <tr><td colspan="5" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3: Return Scenarios -->
+        <div class="section">
+          <div class="sec-title">Return Scenarios</div>
+          <div class="scenarios-grid">
+            <div class="scenario-card pessimistic">
+              <div class="scenario-lbl">Pessimistic</div>
+              <div class="scenario-pct" id="sc-pess-pct">—%</div>
+              <div class="scenario-desc" id="sc-pess-desc">Conservative estimate</div>
+            </div>
+            <div class="scenario-card base">
+              <div class="scenario-lbl">Base Case</div>
+              <div class="scenario-pct" id="sc-base-pct">—%</div>
+              <div class="scenario-desc" id="sc-base-desc">Expected outcome</div>
+            </div>
+            <div class="scenario-card optimistic">
+              <div class="scenario-lbl">Optimistic</div>
+              <div class="scenario-pct" id="sc-opt-pct">—%</div>
+              <div class="scenario-desc" id="sc-opt-desc">Upside scenario</div>
+            </div>
+          </div>
+          <div class="actual-banner">
+            <div class="actual-banner-label">Actual Net Return</div>
+            <div class="actual-banner-pct" id="actual-banner-pct">—%</div>
+            <div class="actual-banner-ann" id="actual-banner-ann" style="display:none"></div>
+            <div class="actual-banner-sub">Final result delivered to investors</div>
+          </div>
+        </div>
+
+      </div><!-- /tab-financials -->
+
+
+      <!-- ══ TAB 3: RETURNS ══ -->
+      <div id="tab-returns" class="tab-content">
+
+        <!-- Section 1: Proceeds & Sales -->
+        <div class="section">
+          <div class="sec-title">Proceeds &amp; Sales</div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                  <th>Variance</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="proceeds-tbody">
+                <tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: My Distribution -->
+        <div class="section">
+          <div class="sec-title">My Distribution</div>
+          <div class="investment-card">
+            <div class="investment-card-header">
+              <div class="investment-card-eyebrow">My Investment</div>
+              <div class="investment-card-project">Kabil &mdash; Tijuana, Mexico</div>
+            </div>
+
+            <div class="inv-section">
+              <div class="inv-row">
+                <span class="inv-lbl">Invested</span>
+                <span class="inv-val" id="tab-invested">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Gross Distribution</span>
+                <span class="inv-val" id="tab-gross-distribution">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">WHT (10%)</span>
+                <span class="inv-val" id="tab-wht" style="color:#C0392B">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Net Distribution</span>
+                <span class="inv-val large green" id="tab-distribution">—</span>
+              </div>
+            </div>
+
+            <div class="inv-section">
+              <div class="inv-row">
+                <span class="inv-lbl">Net Profit</span>
+                <span class="inv-val large green" id="tab-net-profit">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Gross Return</span>
+                <span class="inv-val" id="tab-gross-return">—%</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Net Return (after WHT)</span>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                  <span class="inv-val green" style="font-weight:700" id="tab-return">—%</span>
+                  <span id="tab-above-target" class="above-target-badge" style="display:none"></span>
+                </div>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Annualized Return</span>
+                <span class="inv-val muted" id="tab-annualized">—</span>
+              </div>
+            </div>
+
+            <div class="inv-section">
+              <div class="inv-row">
+                <span class="inv-lbl">EntreOceanos Stake</span>
+                <span class="inv-val" id="tab-ownership">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Joined</span>
+                <span class="inv-val" id="tab-join-date">—</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-lbl">Exit</span>
+                <span class="inv-val" id="tab-exit-date">—</span>
+              </div>
+            </div>
+
+            <a href="#" class="btn-statement">&#8595;&nbsp; Download My Statement</a>
+          </div>
+        </div>
+
+        <!-- Section 2.5: Performance vs Target -->
+        <div class="section" id="perf-vs-target-section" style="display:none">
+          <div class="sec-title">Performance vs Target</div>
+          <div class="perf-table-wrap">
+            <table class="perf-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Target</th>
+                  <th>Actual</th>
+                </tr>
+              </thead>
+              <tbody id="perf-tbody"></tbody>
+            </table>
+          </div>
+          <p class="perf-note">While the project took longer than projected, the additional time allowed for better sales pricing, resulting in a higher total return for investors.</p>
+        </div>
+
+        <!-- Section 3: Timeline -->
+        <div class="section">
+          <div class="timeline-eyebrow">Investment Timeline</div>
+          <div class="timeline-wrap">
+            <div class="tl-item">
+              <div class="tl-dot done"></div>
+              <div class="tl-lbl">Joined</div>
+              <div class="tl-date-val" id="tl-joined">—</div>
+            </div>
+            <div class="tl-connector"><div class="tl-line"></div></div>
+            <div class="tl-item">
+              <div class="tl-dot done"></div>
+              <div class="tl-lbl">Construction Complete</div>
+              <div class="tl-date-val" id="tl-completed">—</div>
+            </div>
+            <div class="tl-connector"><div class="tl-line pending" id="tl-dist-line"></div></div>
+            <div class="tl-item">
+              <div class="tl-dot hollow" id="tl-dist-dot"></div>
+              <div class="tl-lbl">Distribution</div>
+              <div class="tl-date-val muted" id="tl-dist-status">Pending</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-returns -->
+
+
+      <!-- ══ TAB 4: UPDATES ══ -->
+      <div id="tab-updates" class="tab-content">
+        <div id="updates-feed"><p class="updates-empty">Loading…</p></div>
+        <p class="updates-footer">Updates are posted by the Entremares team.</p>
+      </div><!-- /tab-updates -->
+
+    </div><!-- /project-main -->
+
+
+    <!-- RIGHT: SIDEBAR -->
+    <div class="project-sidebar">
+
+      <div class="mini-card">
+        <div class="mini-card-title">My Position</div>
+        <div class="mini-row">
+          <span class="mini-lbl">Invested</span>
+          <span class="mini-val" id="mini-invested">—</span>
+        </div>
+        <div class="mini-row">
+          <span class="mini-lbl">Net Profit</span>
+          <span class="mini-val green" id="mini-profit">—</span>
+        </div>
+        <div class="mini-row">
+          <span class="mini-lbl">Target Return</span>
+          <span class="mini-val" id="mini-target-return">—</span>
+        </div>
+        <div class="mini-row" style="align-items:flex-start">
+          <span class="mini-lbl" style="padding-top:2px">Actual Return</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+            <span class="mini-val green" id="mini-actual-return" style="font-weight:700">—</span>
+            <span id="mini-above-target" class="above-target-badge" style="display:none;font-size:10px"></span>
+          </div>
+        </div>
+        <a href="#" class="mini-details-link" onclick="switchTab('returns');return false;">View Returns &rarr;</a>
+      </div>
+
+      <div class="docs-card">
+        <div class="docs-card-title">Documents</div>
+        <div class="doc-row">
+          <div class="doc-info">
+            <div class="doc-name">Term Sheet</div>
+            <div class="doc-type">PDF</div>
+          </div>
+          <a href="#" class="doc-dl" title="Download">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>
+        </div>
+        <div class="doc-row">
+          <div class="doc-info">
+            <div class="doc-name">Subscription Form</div>
+            <div class="doc-type">PDF</div>
+          </div>
+          <a href="#" class="doc-dl" title="Download">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /project-sidebar -->
+
+  </div><!-- /project-layout -->
+
+</main>
+
+
+<!-- ── Lightbox ── -->
+<div id="gallery-lightbox" role="dialog" aria-modal="true">
+  <button id="gallery-lightbox-close" aria-label="Close">&times;</button>
+  <button id="gallery-lightbox-prev" aria-label="Previous">&#8249;</button>
+  <!-- media injected here -->
+  <button id="gallery-lightbox-next" aria-label="Next">&#8250;</button>
+  <div id="gallery-lightbox-caption"></div>
+</div>
+
+<script>
+  const { createClient } = window.supabase;
+  const supabaseClient = createClient(
+    'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+    'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+  );
+
+  // Return multipliers — kept from original Allure project (used for gross/net distribution math)
+  const ALLURE_GROSS_MULTIPLIER = 1.3431;
+  const ALLURE_NET_MULTIPLIER   = 1.3088;
+  const KABIL_NET_RETURN_PCT    = 31.71;
+  const KABIL_TARGET_RETURN     = 18;
+  const KABIL_GROSS_RETURN_PCT  = 31.71; // same as net for Kabil (no WHT shown)
+
+  const INVESTORS = {
+    'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
+    'gilito.iii@gmail.com':          { name: 'Gilberto Padilla',       initials: 'GP' },
+    'alvaroilanes@gmail.com':        { name: 'Alvaro Villasante',      initials: 'AV' },
+    'cuellarolmos@gmail.com':        { name: 'Alberto Cuellar',        initials: 'AC' },
+    'sergio.gmd@gmail.com':          { name: 'Sergio Gomez',           initials: 'SG' },
+    'nacho.lucas@gmail.com':         { name: 'Nacho Lucas',            initials: 'NL' },
+    'ferzuniga@gmail.com':           { name: 'Fernando Zuniga',        initials: 'FZ' },
+    'madelcarmen.galindo@zuksa.net': { name: 'Ma del Carmen Galindo',  initials: 'MG' }
+  };
+
+  /* ── Helpers ── */
+  function fmt(n) {
+    return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function fmtPct(n) { return Number(n).toFixed(2) + '%'; }
+  function fmtMonthYear(s) {
+    if (!s) return '—';
+    const d = new Date(s + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+  function fmtLongDate(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return months[parseInt(m,10)-1] + ' ' + parseInt(d,10) + ', ' + y;
+  }
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function set(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+  /* ── Tab switching ── */
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id === 'tab-' + name));
+    document.getElementById('project-layout').classList.toggle('layout-single', name === 'returns');
+  }
+
+  /* ══════════════════════════════════════════
+     RENDER FUNCTIONS
+  ══════════════════════════════════════════ */
+
+  function renderProjectDetails(pd) {
+    if (!pd) return;
+
+    if (pd.status) set('hero-badge', pd.status);
+
+    const subtitleParts = [];
+    if (pd.location) subtitleParts.push(pd.location);
+    const start = pd.start_date ? fmtMonthYear(pd.start_date) : null;
+    const end   = pd.end_date   ? fmtMonthYear(pd.end_date)   : null;
+    if (start || end) subtitleParts.push([start, end].filter(Boolean).join(' – '));
+    if (subtitleParts.length) set('hero-subtitle', subtitleParts.join(' · '));
+
+    if (pd.duration_months != null) set('kr-duration', pd.duration_months + ' months');
+    set('kr-return', KABIL_NET_RETURN_PCT + '% Net Return');
+    if (pd.status) set('kr-status', pd.status);
+
+    if (pd.cover_photo_url) {
+      document.getElementById('hero-placeholder').style.display = 'none';
+      const img = document.getElementById('hero-img');
+      img.src = pd.cover_photo_url;
+      img.style.display = 'block';
+    }
+
+    if (pd.location)  set('spec-location', pd.location);
+    if (pd.type)      set('spec-type',     pd.type);
+    if (pd.units)     set('spec-units',    pd.units);
+    set('spec-size', pd.size_sqm || '—');
+    if (pd.status)    set('spec-status',   pd.status);
+
+    if (pd.description) set('about-description', pd.description);
+
+    if (pd.contractor_name) {
+      const link = document.getElementById('contractor-name-link');
+      if (link) { link.textContent = pd.contractor_name; if (pd.contractor_url) link.href = pd.contractor_url; }
+    }
+
+    if (pd.address) {
+      set('map-address-text', pd.address);
+      const iframe = document.getElementById('map-iframe');
+      if (iframe) iframe.src = 'https://maps.google.com/maps?q=' + encodeURIComponent(pd.address) + '&output=embed';
+    }
+
+    set('actual-banner-pct', KABIL_NET_RETURN_PCT + '%');
+
+    if (pd.duration_months != null) {
+      const ann = ((Math.pow(1 + KABIL_NET_RETURN_PCT / 100, 12 / pd.duration_months) - 1) * 100).toFixed(1);
+      const el = document.getElementById('actual-banner-ann');
+      if (el) { el.textContent = '~' + ann + '% annualized over ' + pd.duration_months + ' months'; el.style.display = ''; }
+    }
+
+    if (pd.status)   set('tab-status', pd.status);
+    if (pd.end_date) set('tl-completed', fmtMonthYear(pd.end_date));
+  }
+
+  function renderBudget(rows) {
+    const tbody = document.getElementById('budget-tbody');
+    if (!tbody) return;
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">No budget data available yet</td></tr>';
+      return;
+    }
+    const maxAbsVar = Math.max(...rows.map(r => Math.abs((r.forecasted || 0) - (r.actual || 0))), 1);
+    let totalFore = 0, totalAct = 0;
+    const html = rows.map(r => {
+      const fore = r.forecasted || 0, act = r.actual || 0;
+      const variance = fore - act;
+      totalFore += fore; totalAct += act;
+      const varColor  = variance >= 0 ? '#1A7F4A' : '#C0392B';
+      const barW      = Math.round(Math.abs(variance) / maxAbsVar * 80);
+      const varPct    = fore !== 0 ? ((fore - act) / fore * 100) : 0;
+      const varPctStr = (varPct >= 0 ? '+' : '') + varPct.toFixed(1) + '%';
+      const barHtml   = variance >= 0
+        ? `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`
+        : `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`;
+      return `<tr>
+        <td>${escHtml(r.item)}</td>
+        <td>${fmt(fore)}</td>
+        <td>${fmt(act)}</td>
+        <td style="vertical-align:top;color:${varColor}">
+          <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
+          <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
+        </td>
+        <td style="vertical-align:middle">${barHtml}</td>
+      </tr>`;
+    });
+    const totalVar       = totalFore - totalAct;
+    const totalVarColor  = totalVar >= 0 ? '#1A7F4A' : '#C0392B';
+    const totalVarPct    = totalFore !== 0 ? ((totalFore - totalAct) / totalFore * 100) : 0;
+    const totalVarPctStr = (totalVarPct >= 0 ? '+' : '') + totalVarPct.toFixed(1) + '%';
+    html.push(`<tr class="row-total">
+      <td>TOTAL</td>
+      <td>${fmt(totalFore)}</td>
+      <td>${fmt(totalAct)}</td>
+      <td style="vertical-align:top;color:${totalVarColor}">
+        <div>${totalVar >= 0 ? '+' : ''}${fmt(Math.abs(totalVar))}</div>
+        <div style="font-size:11px;margin-top:2px;opacity:0.8">${totalVarPctStr}</div>
+      </td>
+      <td></td>
+    </tr>`);
+    tbody.innerHTML = html.join('');
+    const capexEl = document.getElementById('capex-total');
+    if (capexEl) capexEl.textContent = fmt(totalAct);
+  }
+
+  function renderScenarios(rows) {
+    if (!rows || rows.length === 0) return;
+    const pfxMap = { pessimistic: 'pess', base: 'base', optimistic: 'opt' };
+    rows.forEach(sc => {
+      const pfx = pfxMap[sc.scenario_name]; if (!pfx) return;
+      if (sc.return_percentage != null) set('sc-' + pfx + '-pct', sc.return_percentage + '%');
+      if (sc.description) set('sc-' + pfx + '-desc', sc.description);
+    });
+  }
+
+  function renderUpdates(rows) {
+    const feed = document.getElementById('updates-feed');
+    if (!feed) return;
+    if (!rows || rows.length === 0) {
+      feed.innerHTML = '<p class="updates-empty">No updates yet. Check back soon.</p>';
+      return;
+    }
+    const badgeMap = { Permitting:'badge-permitting', Construction:'badge-construction', Sales:'badge-sales', Finance:'badge-finance', General:'badge-general' };
+    feed.innerHTML = rows.map(u => {
+      const bc = badgeMap[u.category] || 'badge-general';
+      const photo = u.photo_url ? `<div class="upd-photo"><img src="${escHtml(u.photo_url)}" alt=""></div>` : '';
+      return `<div class="update-card-v2">
+        <div class="upd-meta">
+          <span class="upd-date">${escHtml(fmtLongDate(u.published_at))}</span>
+          <span class="update-badge ${bc}">${escHtml(u.category)}</span>
+        </div>
+        <div class="upd-title">${escHtml(u.title)}</div>
+        <div class="upd-body">${escHtml(u.body || '')}</div>
+        ${photo}
+      </div>`;
+    }).join('');
+  }
+
+  function renderInvestorPosition(pos, pd) {
+    const invested       = pos?.amount_invested;
+    const distrib        = pos?.distribution_amount;
+    const ownership      = pos?.ownership_percentage;
+    const joinDate       = pos?.join_date;
+    const exitDate       = pos?.exit_date;
+    const durationMonths = pd?.duration_months;
+    const PLANNED_MONTHS = 24;
+
+    /* ── Distribution amounts: use stored distribution_amount if available ── */
+    if (invested != null || distrib != null) {
+      let grossDist, netDist;
+      if (distrib != null) {
+        netDist   = Number(distrib);
+        grossDist = netDist * (ALLURE_GROSS_MULTIPLIER / ALLURE_NET_MULTIPLIER);
+      } else {
+        grossDist = Number(invested) * ALLURE_GROSS_MULTIPLIER;
+        netDist   = Number(invested) * ALLURE_NET_MULTIPLIER;
+      }
+      const wht       = grossDist - netDist;
+      const base      = invested != null ? Number(invested) : netDist / ALLURE_NET_MULTIPLIER;
+      const netProfit = netDist - base;
+
+      if (invested != null) {
+        set('mini-invested', fmt(invested));
+        set('tab-invested',  fmt(invested));
+      }
+
+      set('tab-gross-distribution', fmt(grossDist));
+      set('tab-wht', '-' + fmt(wht));
+      set('tab-distribution', fmt(netDist));
+
+      const profitStr = (netProfit >= 0 ? '+' : '') + fmt(netProfit);
+      set('mini-profit',    profitStr);
+      set('tab-net-profit', profitStr);
+    }
+
+    /* ── Return percentages — always use Kabil constants ── */
+    set('mini-target-return', KABIL_TARGET_RETURN + '%');
+    set('mini-actual-return', KABIL_NET_RETURN_PCT + '%');
+    set('tab-gross-return',   KABIL_GROSS_RETURN_PCT + '%');
+    set('tab-return',         KABIL_NET_RETURN_PCT + '%');
+
+    /* ── Annualized (net return over actual duration) ── */
+    if (durationMonths != null) {
+      const ann = ((Math.pow(1 + KABIL_NET_RETURN_PCT / 100, 12 / durationMonths) - 1) * 100).toFixed(1);
+      set('tab-annualized', '~' + ann + '% annualized');
+    }
+
+    /* ── Above-target badge: 31.71% - 18% = 13.71 pts ── */
+    const diff = KABIL_NET_RETURN_PCT - KABIL_TARGET_RETURN;
+    if (diff > 0) {
+      const label = '+' + diff.toFixed(2).replace(/\.?0+$/, '') + ' pts above target';
+      const tabBadge  = document.getElementById('tab-above-target');
+      const miniBadge = document.getElementById('mini-above-target');
+      if (tabBadge)  { tabBadge.textContent  = label; tabBadge.style.display  = 'inline-block'; }
+      if (miniBadge) { miniBadge.textContent = label; miniBadge.style.display = 'inline-block'; }
+    }
+
+    if (ownership != null) set('tab-ownership', fmtPct(ownership));
+
+    if (joinDate) { set('tab-join-date', fmtMonthYear(joinDate)); set('tl-joined', fmtMonthYear(joinDate)); }
+    if (exitDate)   set('tab-exit-date', fmtMonthYear(exitDate));
+
+    if (distrib != null || invested != null) {
+      const dot    = document.getElementById('tl-dist-dot');
+      const line   = document.getElementById('tl-dist-line');
+      const status = document.getElementById('tl-dist-status');
+      if (dot)    { dot.className = 'tl-dot done'; }
+      if (line)   { line.className = 'tl-line'; }
+      if (status) { status.textContent = 'Distributed'; status.className = 'tl-date-val'; }
+    }
+
+    /* ── Performance vs Target table ── */
+    const section = document.getElementById('perf-vs-target-section');
+    if (section) section.style.display = '';
+
+    function perfCls(actual, target, lowerIsBetter) {
+      if (lowerIsBetter) {
+        if (actual <= target)        return 'perf-green';
+        if (actual <= target * 1.25) return 'perf-amber';
+        return 'perf-red';
+      }
+      if (actual >= target)      return 'perf-green';
+      if (actual >= target - 5)  return 'perf-amber';
+      return 'perf-red';
+    }
+
+    const targetAnn = '13.7'; // Kabil annualized benchmark (31.71% over 26 months)
+    const actualAnn = durationMonths != null
+      ? ((Math.pow(1 + KABIL_NET_RETURN_PCT / 100, 12 / durationMonths) - 1) * 100).toFixed(1)
+      : null;
+
+    const retCls  = perfCls(KABIL_NET_RETURN_PCT, KABIL_TARGET_RETURN, false);
+    const timeCls = durationMonths != null ? perfCls(Number(durationMonths), PLANNED_MONTHS, true) : '';
+    const annCls  = actualAnn ? perfCls(Number(actualAnn), Number(targetAnn), false) : '';
+
+    const tbody = document.getElementById('perf-tbody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td>Total Return</td>
+          <td>${KABIL_TARGET_RETURN}%</td>
+          <td class="${retCls}">${KABIL_NET_RETURN_PCT}%</td>
+        </tr>
+        <tr>
+          <td>Timeline</td>
+          <td>${PLANNED_MONTHS} months</td>
+          <td class="${timeCls}">${durationMonths != null ? durationMonths + ' months' : '—'}</td>
+        </tr>
+        ${actualAnn ? `<tr>
+          <td>Annualized</td>
+          <td>~${targetAnn}%</td>
+          <td class="${annCls}">~${actualAnn}%</td>
+        </tr>` : ''}`;
+    }
+  }
+
+  function renderProceeds(rows) {
+    const tbody = document.getElementById('proceeds-tbody');
+    if (!tbody) return;
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">—</td></tr>';
+      return;
+    }
+
+    const isNetRow = item => item === 'NET AVAILABLE FOR DISTRIBUTION' || item.toUpperCase().includes('NET TO INVESTORS');
+
+    /* max absolute variance across non-net rows, for bar scaling */
+    const maxAbsVar = Math.max(
+      ...rows.filter(r => !isNetRow(r.item)).map(r => Math.abs((r.actual || 0) - (r.forecasted || 0))),
+      1
+    );
+
+    tbody.innerHTML = rows.map(r => {
+      const fore      = r.forecasted || 0;
+      const act       = r.actual     || 0;
+      const variance  = act - fore;
+      const isNet     = isNetRow(r.item);
+      const varColor  = variance > 0 ? '#1A7F4A' : (variance < 0 ? '#C0392B' : '#9B9B9B');
+      const cls       = isNet ? 'row-total' : '';
+
+      if (isNet) {
+        return `<tr class="${cls}">
+          <td>${escHtml(r.item)}</td>
+          <td>${fmt(fore)}</td>
+          <td>${fmt(act)}</td>
+          <td style="color:${varColor}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
+          <td></td>
+        </tr>`;
+      }
+
+      /* variance % using absolute forecasted as denominator so sign is unambiguous */
+      const varPct    = fore !== 0 ? (Math.abs(variance) / Math.abs(fore) * 100) : 0;
+      const varPctStr = (variance >= 0 ? '+' : '-') + varPct.toFixed(1) + '%';
+      const barW      = Math.round(Math.abs(variance) / maxAbsVar * 80);
+      const barHtml   = variance >= 0
+        ? `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`
+        : `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end">
+             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
+           </div>`;
+
+      return `<tr class="${cls}">
+        <td>${escHtml(r.item)}</td>
+        <td>${fmt(fore)}</td>
+        <td>${fmt(act)}</td>
+        <td style="vertical-align:top;color:${varColor}">
+          <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
+          <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
+        </td>
+        <td style="vertical-align:middle">${barHtml}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderCapitalStructure(rows) {
+    const spvTbody = document.getElementById('capital-spv-tbody');
+    const eoTbody  = document.getElementById('capital-eo-tbody');
+    if (!spvTbody || !eoTbody) return;
+
+    const empty4 = '<tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+    const empty3 = '<tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+
+    if (!rows || rows.length === 0) {
+      spvTbody.innerHTML = empty4;
+      eoTbody.innerHTML  = empty3;
+      return;
+    }
+
+    const byItem = {};
+    rows.forEach(r => { byItem[r.item] = r; });
+
+    /* ── Card 1: Entremares SPV ── */
+    const spvRows = [
+      { key: 'EntreOceanos (80%)', stake: '80%',  total: false },
+      { key: 'AEDIFIKA (20%)',     stake: '20%',  total: false },
+      { key: 'Total Entremares',   stake: '100%', total: true  }
+    ];
+    spvTbody.innerHTML = spvRows.map(({ key, stake, total }) => {
+      const r    = byItem[key];
+      const fore = r ? fmt(r.forecasted || 0) : '—';
+      const act  = r ? fmt(r.actual     || 0) : '—';
+      if (total) {
+        return `<tr style="background:#F2F2EF">
+          <td style="font-weight:700">${escHtml(key)}</td>
+          <td style="font-weight:700">${fore}</td>
+          <td style="font-weight:700">${act}</td>
+          <td style="font-weight:700">${stake}</td>
+        </tr>`;
+      }
+      return `<tr>
+        <td>${escHtml(key)}</td>
+        <td>${fore}</td>
+        <td>${act}</td>
+        <td style="color:#6B6B6B">${stake}</td>
+      </tr>`;
+    }).join('');
+
+    /* ── Card 2: EntreOceanos Holding ── */
+    const eoRows = [
+      { key: 'EntreOceanos (80%)',    label: 'Entremares (80%)', total: false },
+      { key: 'EntreOceanos Ops CAPEX', label: 'Ops CAPEX',       total: false },
+      { key: 'TOTAL RAISED',           label: 'TOTAL RAISED',    total: true  }
+    ];
+    eoTbody.innerHTML = eoRows.map(({ key, label, total }) => {
+      const r    = byItem[key];
+      const fore = r ? fmt(r.forecasted || 0) : '—';
+      const act  = r ? fmt(r.actual     || 0) : '—';
+      if (total) {
+        return `<tr style="background:#F2F2EF">
+          <td style="font-weight:700">${escHtml(label)}</td>
+          <td style="font-weight:700">${fore}</td>
+          <td style="font-weight:700">${act}</td>
+        </tr>`;
+      }
+      return `<tr>
+        <td>${escHtml(label)}</td>
+        <td>${fore}</td>
+        <td>${act}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderSalesFinancials(rows) {
+    const tbody = document.getElementById('sales-tbody');
+    if (!tbody) return;
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const fore     = r.forecasted || 0;
+      const act      = r.actual     || 0;
+      const variance = act - fore;
+      const itemStr  = r.item || '';
+      const isNet    = itemStr.toUpperCase().includes('NET TO INVESTORS') || itemStr.toUpperCase().includes('NET AVAILABLE FOR DISTRIBUTION');
+      const vc       = variance > 0 ? 'var-pos' : (variance < 0 ? 'var-neg' : '');
+      const rowCls   = isNet ? 'row-net' : '';
+      return `<tr class="${rowCls}">
+        <td>${escHtml(itemStr)}</td>
+        <td>${fmt(fore)}</td>
+        <td>${fmt(act)}</td>
+        <td class="${vc}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ══════════════════════════════════════════
+     GALLERY
+  ══════════════════════════════════════════ */
+  let galleryItems = [];
+  let lightboxIdx  = 0;
+
+  async function loadGallery() {
+    const { data, error } = await supabaseClient
+      .from('project_gallery')
+      .select('*')
+      .eq('project_name', 'Kabil')
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('id', { ascending: true });
+
+    if (error || !data || data.length === 0) return; // keep placeholders on error/empty
+
+    galleryItems = data;
+    const grid = document.getElementById('overview-gallery-grid');
+    if (!grid) return;
+
+    grid.innerHTML = data.map((item, idx) => {
+      const isVideo = item.file_type === 'video';
+      const caption = item.caption ? `<div class="gallery-item-caption">${escHtml(item.caption)}</div>` : '';
+      if (isVideo) {
+        return `<div>
+          <div class="gallery-item" data-idx="${idx}">
+            <video class="gallery-item-media" src="${escHtml(item.url)}" muted preload="metadata"></video>
+            <div class="gallery-item-play">
+              <svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="22" fill="rgba(0,0,0,0.45)"/><polygon points="17,13 35,22 17,31" fill="white"/></svg>
+            </div>
+          </div>
+          ${caption}
+        </div>`;
+      }
+      return `<div>
+        <div class="gallery-item" data-idx="${idx}">
+          <img class="gallery-item-media" src="${escHtml(item.url)}" alt="${escHtml(item.caption || '')}" loading="lazy">
+        </div>
+        ${caption}
+      </div>`;
+    }).join('');
+
+    grid.querySelectorAll('.gallery-item').forEach(el => {
+      el.addEventListener('click', () => openLightbox(parseInt(el.dataset.idx, 10)));
+    });
+  }
+
+  function openLightbox(idx) {
+    if (!galleryItems.length) return;
+    lightboxIdx = idx;
+    const lb = document.getElementById('gallery-lightbox');
+    if (!lb) return;
+    lb.classList.add('open');
+    renderLightboxMedia();
+    document.addEventListener('keydown', lightboxKeyHandler);
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById('gallery-lightbox');
+    if (!lb) return;
+    lb.classList.remove('open');
+    const existing = document.getElementById('gallery-lightbox-media');
+    if (existing) { existing.pause && existing.pause(); existing.remove(); }
+    document.removeEventListener('keydown', lightboxKeyHandler);
+  }
+
+  function renderLightboxMedia() {
+    const lb      = document.getElementById('gallery-lightbox');
+    const capEl   = document.getElementById('gallery-lightbox-caption');
+    const existing = document.getElementById('gallery-lightbox-media');
+    if (existing) { existing.pause && existing.pause(); existing.remove(); }
+
+    const item    = galleryItems[lightboxIdx];
+    const isVideo = item.file_type === 'video';
+    const prev    = document.getElementById('gallery-lightbox-prev');
+    const next    = document.getElementById('gallery-lightbox-next');
+
+    let mediaEl;
+    if (isVideo) {
+      mediaEl = document.createElement('video');
+      mediaEl.id       = 'gallery-lightbox-media';
+      mediaEl.src      = item.url;
+      mediaEl.controls = true;
+      mediaEl.autoplay = true;
+      mediaEl.style.maxWidth  = '90vw';
+      mediaEl.style.maxHeight = '82vh';
+      mediaEl.style.borderRadius = '8px';
+    } else {
+      mediaEl = document.createElement('img');
+      mediaEl.id  = 'gallery-lightbox-media';
+      mediaEl.src = item.url;
+      mediaEl.alt = item.caption || '';
+    }
+
+    lb.insertBefore(mediaEl, document.getElementById('gallery-lightbox-caption'));
+    if (capEl) capEl.textContent = item.caption || '';
+    if (prev) prev.style.display = lightboxIdx > 0 ? '' : 'none';
+    if (next) next.style.display = lightboxIdx < galleryItems.length - 1 ? '' : 'none';
+  }
+
+  function lightboxKeyHandler(e) {
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowLeft'  && lightboxIdx > 0)                    { lightboxIdx--; renderLightboxMedia(); }
+    if (e.key === 'ArrowRight' && lightboxIdx < galleryItems.length - 1) { lightboxIdx++; renderLightboxMedia(); }
+  }
+
+  (function initLightboxButtons() {
+    const lb   = document.getElementById('gallery-lightbox');
+    const prev = document.getElementById('gallery-lightbox-prev');
+    const next = document.getElementById('gallery-lightbox-next');
+    const cls  = document.getElementById('gallery-lightbox-close');
+    if (lb)   lb.addEventListener('click',  e => { if (e.target === lb) closeLightbox(); });
+    if (cls)  cls.addEventListener('click', () => closeLightbox());
+    if (prev) prev.addEventListener('click', () => { if (lightboxIdx > 0) { lightboxIdx--; renderLightboxMedia(); } });
+    if (next) next.addEventListener('click', () => { if (lightboxIdx < galleryItems.length - 1) { lightboxIdx++; renderLightboxMedia(); } });
+  })();
+
+  /* ══════════════════════════════════════════
+     LOAD ALL DATA
+  ══════════════════════════════════════════ */
+  async function loadKabilData(email) {
+    const [
+      { data: pd,      error: e1 },
+      { data: pos,     error: e2 },
+      { data: budget,  error: e3 },
+      { data: scen,    error: e4 },
+      { data: upd,     error: e5 },
+      { data: sales,   error: e6 },
+      { data: capital, error: e7 }
+    ] = await Promise.all([
+      supabaseClient.from('project_details')           .select('*').eq('project_name','Kabil').maybeSingle(),
+      supabaseClient.from('investor_positions')         .select('*').eq('project_name','Kabil').ilike('investor_email', email.toLowerCase()).maybeSingle(),
+      supabaseClient.from('project_budget')             .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
+      supabaseClient.from('project_scenarios')          .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }),
+      supabaseClient.from('project_updates')            .select('*').eq('project_name','Kabil').order('published_at', { ascending: false }),
+      supabaseClient.from('project_sales')              .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
+      supabaseClient.from('project_capital_structure')  .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true })
+    ]);
+
+    if (e1) console.error('project_details:', e1);
+    if (e2) console.error('investor_positions:', e2);
+    if (e3) console.error('project_budget:', e3);
+    if (e4) console.error('project_scenarios:', e4);
+    if (e5) console.error('project_updates:', e5);
+    if (e6) console.error('project_sales:', e6);
+    if (e7) console.error('project_capital_structure:', e7);
+
+    renderProjectDetails(pd);
+    renderBudget(budget);
+    renderScenarios(scen);
+    renderUpdates(upd);
+    renderInvestorPosition(pos, pd);
+    renderProceeds(sales);
+    renderSalesFinancials(sales);
+    renderCapitalStructure(capital);
+  }
+
+  function renderPage(inv) {
+    document.getElementById('hdr-initials').textContent = inv.initials;
+    document.getElementById('hdr-name').textContent     = inv.name;
+  }
+
+  document.getElementById('btn-signout').addEventListener('click', async function() {
+    await supabaseClient.auth.signOut();
+    sessionStorage.clear();
+    window.location.href = 'dashboard.html';
+  });
+
+  async function checkAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      window.location.href = 'dashboard.html';
+      return null;
+    }
+    return session.user.email;
+  }
+
+  (async function init() {
+    const email = await checkAuth();
+    if (!email) return;
+    const normalEmail = email.toLowerCase();
+    const inv = INVESTORS[normalEmail];
+    if (!inv) { await supabaseClient.auth.signOut(); sessionStorage.clear(); window.location.href = 'dashboard.html'; return; }
+    renderPage(inv);
+    loadKabilData(normalEmail);
+    loadGallery();
+  })();
+</script>
+
+</body>
+</html>
