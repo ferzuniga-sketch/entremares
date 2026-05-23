@@ -2947,6 +2947,40 @@
     }
   }
 
+  async function loadProjectsFromSupabase() {
+    if (!supabaseClient) {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(
+        'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+        'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+      );
+    }
+    try {
+      const { data, error } = await supabaseClient
+        .from('project_details')
+        .select('project_name, location, status, total_capex, target_return, duration_months')
+        .order('project_name', { ascending: true });
+
+      if (error || !data) return;
+
+      PROJECTS_DATA = data.map((p, idx) => ({
+        id: idx + 1,
+        name: p.project_name,
+        location: p.location || '—',
+        status: p.status || '—',
+        raised: 0,
+        capex: p.total_capex || 0,
+        targetReturn: p.target_return ? p.target_return + '%' : '—',
+        timeline: p.duration_months ? p.duration_months + ' months' : '—'
+      }));
+
+      nextProjId = PROJECTS_DATA.length + 1;
+      renderProjects();
+    } catch (err) {
+      console.error('Failed to load projects:', err);
+    }
+  }
+
   /* ═══════════════════════════════════════════
      RENDER TABLES
   ═══════════════════════════════════════════ */
@@ -3748,7 +3782,7 @@
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-panel').style.display  = 'block';
     loadInvestorsFromSupabase();
-    renderProjects();
+    loadProjectsFromSupabase();
     setTimeout(() => { loadCommitmentsFromSupabase(); loadFundingSummary(); }, 1000);
   }
 
