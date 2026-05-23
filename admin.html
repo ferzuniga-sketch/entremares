@@ -314,7 +314,7 @@
       font-size: 12px;
       font-weight: 600;
       color: #C0392B;
-      background: none;
+      background: #FEF0EE;
       border: 1px solid #F5C6C1;
       border-radius: 6px;
       padding: 5px 12px;
@@ -2998,6 +2998,7 @@
           <td class="td-mono td-green">+${fmt(totalReturns)}</td>
           <td class="td-actions">
             <button class="btn-edit" onclick="openEditInvestor(${inv.id})">Edit</button>
+            <button class="btn-delete" onclick="deleteInvestor('${inv.email}', '${inv.name}')">Delete</button>
           </td>
         </tr>
       `;
@@ -3669,6 +3670,42 @@
     await loadInvestorsFromSupabase();
 
     setTimeout(closeInvestorModal, 3000);
+  }
+
+  async function deleteInvestor(email, name) {
+    if (!confirm('Are you sure you want to delete ' + name + '? This cannot be undone.')) return;
+
+    try {
+      // Delete from investors table
+      const { error: dbError } = await supabaseClient
+        .from('investors')
+        .delete()
+        .ilike('email', email);
+
+      if (dbError) {
+        alert('Failed to delete investor: ' + dbError.message);
+        return;
+      }
+
+      // Delete from investor_profiles table
+      await supabaseClient
+        .from('investor_profiles')
+        .delete()
+        .ilike('investor_email', email);
+
+      // Delete from investor_positions table
+      await supabaseClient
+        .from('investor_positions')
+        .delete()
+        .ilike('investor_email', email);
+
+      // Reload the investors list
+      await loadInvestorsFromSupabase();
+      showToast(name + ' deleted from platform. Remove from Supabase Auth manually if needed.');
+
+    } catch (err) {
+      alert('Failed to delete investor: ' + err.message);
+    }
   }
 
   document.getElementById('btn-add-investor').addEventListener('click', openAddInvestor);
