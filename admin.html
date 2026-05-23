@@ -2394,7 +2394,7 @@
           <label>Email</label>
           <input type="email" id="f-email" placeholder="email@example.com">
         </div>
-        <div class="field">
+        <div class="field" style="display:none">
           <label>Temporary Password</label>
           <input type="text" id="f-password" placeholder="Entremares2024!">
         </div>
@@ -2858,129 +2858,9 @@
   /* ═══════════════════════════════════════════
      DATA
   ═══════════════════════════════════════════ */
-  let INVESTORS_DATA = [
-    {
-      id: 1,
-      name: 'Groupe Reaction',
-      email: 'fredbusher@gmail.com',
-      password: 'entremares2024',
-      country: 'Canada',
-      phone: '',
-      wallet: 33982.96,
-      kabil:  { invested: 19845.75, profit: 6294.99 },
-      allure: { invested: 26140.74, profit: 7842.22 }
-    },
-    {
-      id: 2,
-      name: 'Gilberto Padilla',
-      email: 'gilito.iii@gmail.com',
-      password: 'entremares2024',
-      country: 'Mexico',
-      phone: '',
-      wallet: 42808.86,
-      kabil:  { invested: 25000,    profit: 7929.89 },
-      allure: { invested: 32929.89, profit: 9878.97 }
-    },
-    {
-      id: 3,
-      name: 'Alvaro Villasante',
-      email: 'alvaroilanes@gmail.com',
-      password: 'entremares2024',
-      country: 'Mexico',
-      phone: '',
-      wallet: 32500,
-      kabil:  { invested: 25000, profit: 7929.89 },
-      allure: { invested: 25000, profit: 7500 }
-    },
-    {
-      id: 4,
-      name: 'Alberto Cuellar',
-      email: 'cuellarolmos@gmail.com',
-      password: 'entremares2024',
-      country: 'Mexico',
-      phone: '',
-      wallet: 34247.10,
-      kabil:  { invested: 20000,    profit: 6343.92 },
-      allure: { invested: 26343.92, profit: 7903.18 }
-    },
-    {
-      id: 5,
-      name: 'Sergio Gomez',
-      email: 'sergio.gmd@gmail.com',
-      password: 'entremares2024',
-      country: 'Mexico',
-      phone: '',
-      wallet: 85617.73,
-      kabil:  { invested: 50000,    profit: 15859.79 },
-      allure: { invested: 65859.79, profit: 19757.94 }
-    },
-    {
-      id: 6,
-      name: 'Nacho Lucas',
-      email: 'nacho.lucas@gmail.com',
-      password: 'entremares2024',
-      country: 'Spain',
-      phone: '',
-      wallet: 59932.41,
-      kabil:  { invested: 35000,    profit: 11101.85 },
-      allure: { invested: 46101.85, profit: 13830.56 }
-    },
-    {
-      id: 7,
-      name: 'Fernando Zuniga',
-      email: 'ferzuniga@gmail.com',
-      password: 'entremares2024',
-      country: 'Mexico',
-      phone: '',
-      wallet: 247504.60,
-      kabil:  { invested: 39370,      profit: 151018.15 },
-      allure: { invested: 190388.15,  profit: 57116.45 }
-    },
-    {
-      id: 8,
-      name: 'Ma del Carmen Galindo',
-      email: 'madelcarmen.galindo@zuksa.net',
-      password: 'entremares2024',
-      country: 'Mexico',
-      phone: '',
-      wallet: 25733.21,
-      kabil:  { invested: 13130,    profit: 6664.78 },
-      allure: { invested: 19794.78, profit: 5938.43 }
-    }
-  ];
+  let INVESTORS_DATA = [];
 
-  let PROJECTS_DATA = [
-    {
-      id: 1,
-      name: 'Kabil',
-      location: 'Tijuana, Mexico',
-      status: 'Completed',
-      raised: 227345.75,
-      capex: 227345.75,
-      targetReturn: '18%',
-      timeline: '30 months'
-    },
-    {
-      id: 2,
-      name: 'Allure',
-      location: 'Tijuana, Mexico',
-      status: 'Completed',
-      raised: 432559.12,
-      capex: 432559.12,
-      targetReturn: '24.11%',
-      timeline: '24 months'
-    },
-    {
-      id: 3,
-      name: 'Real del Monte',
-      location: 'Tijuana, Mexico',
-      status: 'Funding',
-      raised: 250000,
-      capex: 800000,
-      targetReturn: '20–25%',
-      timeline: '24 months'
-    }
-  ];
+  let PROJECTS_DATA = [];
 
   let nextInvId  = 9;
   let nextProjId = 4;
@@ -3008,6 +2888,56 @@
       'Planned':   ''
     }[status] || '';
     return `<span class="badge ${cls}">${status}</span>`;
+  }
+
+  /* ═══════════════════════════════════════════
+     LOAD FROM SUPABASE
+  ═══════════════════════════════════════════ */
+  async function loadInvestorsFromSupabase() {
+    try {
+      const { data: investors, error: invError } = await supabaseClient
+        .from('investors')
+        .select('email, name, member_since, is_admin')
+        .order('name', { ascending: true });
+
+      if (invError || !investors) return;
+
+      const { data: positions } = await supabaseClient
+        .from('investor_positions')
+        .select('investor_email, project_name, amount_invested, distribution_amount')
+        .in('project_name', ['Kabil', 'Allure']);
+
+      INVESTORS_DATA = investors.map((inv, idx) => {
+        const kabilPos  = positions?.find(p => p.investor_email.toLowerCase() === inv.email.toLowerCase() && p.project_name === 'Kabil');
+        const allurePos = positions?.find(p => p.investor_email.toLowerCase() === inv.email.toLowerCase() && p.project_name === 'Allure');
+
+        const kabilInvested = kabilPos ? Number(kabilPos.amount_invested) : 0;
+        const kabilDist     = kabilPos ? Number(kabilPos.distribution_amount || kabilInvested * 1.3171) : 0;
+        const kabilProfit   = kabilDist - kabilInvested;
+
+        const allureInvested = allurePos ? Number(allurePos.amount_invested) : 0;
+        const allureDist     = allurePos ? Number(allurePos.distribution_amount || allureInvested * 1.3088) : 0;
+        const allureProfit   = allureDist - allureInvested;
+
+        return {
+          id: idx + 1,
+          name: inv.name || inv.email,
+          email: inv.email,
+          password: '',
+          country: '',
+          phone: '',
+          memberSince: inv.member_since,
+          wallet: allureDist,
+          kabil:  { invested: kabilInvested,  profit: kabilProfit  },
+          allure: { invested: allureInvested, profit: allureProfit }
+        };
+      });
+
+      nextInvId = INVESTORS_DATA.length + 1;
+      renderInvestors();
+    } catch (err) {
+      console.error('Failed to load investors:', err);
+    }
   }
 
   /* ═══════════════════════════════════════════
@@ -3580,7 +3510,7 @@
     document.getElementById('f-first-name').value  = parts[0] || '';
     document.getElementById('f-last-name').value   = parts.slice(1).join(' ') || '';
     document.getElementById('f-email').value        = inv.email;
-    document.getElementById('f-password').value     = inv.password || '';
+    document.getElementById('f-password').value     = '';
     document.getElementById('f-phone').value        = inv.phone || '';
     document.getElementById('f-member-since').value = inv.memberSince || new Date().toISOString().slice(0, 10);
     const msg = document.getElementById('investor-form-msg');
@@ -3695,14 +3625,7 @@
         updated_at: new Date().toISOString()
       }, { onConflict: 'investor_email' });
 
-    INVESTORS_DATA.push({
-      id: nextInvId++, name, email, password, phone, memberSince,
-      country: '',
-      wallet: 0,
-      kabil:  { invested: 0, profit: 0 },
-      allure: { invested: 0, profit: 0 }
-    });
-    renderInvestors();
+    await loadInvestorsFromSupabase();
 
     setTimeout(closeInvestorModal, 3000);
   }
@@ -3817,7 +3740,7 @@
   function showPanel() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-panel').style.display  = 'block';
-    renderInvestors();
+    loadInvestorsFromSupabase();
     renderProjects();
     setTimeout(() => { loadCommitmentsFromSupabase(); loadFundingSummary(); }, 1000);
   }
