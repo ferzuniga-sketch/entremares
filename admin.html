@@ -4485,23 +4485,52 @@
   /* ═══════════════════════════════════════════
      AUTH
   ═══════════════════════════════════════════ */
-  function attemptLogin() {
+  async function attemptLogin() {
     const email    = document.getElementById('inp-email').value.trim().toLowerCase();
     const password = document.getElementById('inp-password').value;
     const errEl    = document.getElementById('login-error');
+    const btn      = document.getElementById('btn-login');
 
-    if (email === 'admin@entremares.com' && password === 'entremares2024') {
-      errEl.style.display = 'none';
-      sessionStorage.setItem('em_admin', '1');
-      showPanel();
-    } else {
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    errEl.style.display = 'none';
+
+    // Sign in via Supabase Auth
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+
+    if (error || !data.user) {
       errEl.style.display = 'block';
       document.getElementById('inp-password').value = '';
       document.getElementById('inp-password').focus();
+      return;
     }
+
+    // Check is_admin flag in investors table
+    const { data: invData, error: invError } = await supabaseClient
+      .from('investors')
+      .select('is_admin, name')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (invError || !invData || !invData.is_admin) {
+      errEl.style.display = 'block';
+      await supabaseClient.auth.signOut();
+      document.getElementById('inp-password').value = '';
+      document.getElementById('inp-password').focus();
+      return;
+    }
+
+    errEl.style.display = 'none';
+    document.getElementById('hdr-admin-name').textContent = invData.name || email;
+    sessionStorage.setItem('em_admin', '1');
+    showPanel();
   }
 
   function signOut() {
+    supabaseClient.auth.signOut();
     sessionStorage.removeItem('em_admin');
     document.getElementById('admin-panel').style.display  = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -4527,7 +4556,22 @@
   });
 
   /* Restore admin session within the same browser tab session */
-  if (sessionStorage.getItem('em_admin')) showPanel();
+  (async function restoreAdminSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && sessionStorage.getItem('em_admin')) {
+      const { data: invData } = await supabaseClient
+        .from('investors')
+        .select('is_admin, name')
+        .ilike('email', session.user.email)
+        .maybeSingle();
+      if (invData?.is_admin) {
+        document.getElementById('hdr-admin-name').textContent = invData.name || session.user.email;
+        showPanel();
+      } else {
+        sessionStorage.removeItem('em_admin');
+      }
+    }
+  })();
 
   /* ═══════════════════════════════════════════
      ALLURE PROJECT MANAGEMENT
