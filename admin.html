@@ -2899,8 +2899,31 @@
 
       <div id="investor-form-msg" style="display:none;margin-top:16px;font-size:13px;padding:10px 14px;border-radius:8px;line-height:1.5;"></div>
 
-      <div class="divider" style="margin-top:20px;"></div>
-      <p style="font-size:12px;color:#9B9B9B;line-height:1.6;">After creating the investor, remember to add their investment positions in the relevant project sections (Allure, Real del Monte, etc.)</p>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #EEEEE9">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9B9B9B;margin-bottom:16px">Investment Positions</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="field">
+            <label>Kabil — Amount Invested ($)</label>
+            <input type="number" id="f-kabil-invested" placeholder="0.00" step="0.01" min="0">
+          </div>
+          <div class="field">
+            <label>Kabil — Distribution Amount ($)</label>
+            <input type="number" id="f-kabil-distribution" placeholder="0.00" step="0.01" min="0">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <label>Allure — Amount Invested ($)</label>
+            <input type="number" id="f-allure-invested" placeholder="0.00" step="0.01" min="0">
+          </div>
+          <div class="field">
+            <label>Allure — Distribution Amount ($)</label>
+            <input type="number" id="f-allure-distribution" placeholder="0.00" step="0.01" min="0">
+          </div>
+        </div>
+      </div>
 
     </div>
     <div class="modal-footer">
@@ -4152,13 +4175,17 @@
     ['f-first-name','f-last-name','f-email','f-phone'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-password').value     = 'Entremares2024!';
     document.getElementById('f-member-since').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('f-kabil-invested').value      = '';
+    document.getElementById('f-kabil-distribution').value  = '';
+    document.getElementById('f-allure-invested').value     = '';
+    document.getElementById('f-allure-distribution').value = '';
     const msg = document.getElementById('investor-form-msg');
     msg.style.display = 'none';
     msg.textContent   = '';
     document.getElementById('modal-investor').classList.add('open');
   }
 
-  function openEditInvestor(id) {
+  async function openEditInvestor(id) {
     const inv = INVESTORS_DATA.find(i => i.id === id);
     if (!inv) return;
     editingInvId = id;
@@ -4175,6 +4202,22 @@
     const msg = document.getElementById('investor-form-msg');
     msg.style.display = 'none';
     msg.textContent   = '';
+
+    // Load existing positions
+    const { data: positions } = await supabaseClient
+      .from('investor_positions')
+      .select('project_name, amount_invested, distribution_amount')
+      .ilike('investor_email', inv.email)
+      .in('project_name', ['Kabil', 'Allure']);
+
+    const kabilPos  = positions?.find(p => p.project_name === 'Kabil');
+    const allurePos = positions?.find(p => p.project_name === 'Allure');
+
+    document.getElementById('f-kabil-invested').value      = kabilPos?.amount_invested      || '';
+    document.getElementById('f-kabil-distribution').value  = kabilPos?.distribution_amount  || '';
+    document.getElementById('f-allure-invested').value     = allurePos?.amount_invested     || '';
+    document.getElementById('f-allure-distribution').value = allurePos?.distribution_amount || '';
+
     document.getElementById('modal-investor').classList.add('open');
   }
 
@@ -4283,6 +4326,41 @@
         phone: phone,
         updated_at: new Date().toISOString()
       }, { onConflict: 'investor_email' });
+
+    const kabilInvested      = parseFloat(document.getElementById('f-kabil-invested').value)      || null;
+    const kabilDistribution  = parseFloat(document.getElementById('f-kabil-distribution').value)  || null;
+    const allureInvested     = parseFloat(document.getElementById('f-allure-invested').value)     || null;
+    const allureDistribution = parseFloat(document.getElementById('f-allure-distribution').value) || null;
+
+    // Upsert Kabil position if amounts provided
+    if (kabilInvested !== null || kabilDistribution !== null) {
+      await supabaseClient
+        .from('investor_positions')
+        .upsert({
+          investor_email:      email,
+          investor_name:       name,
+          project_name:        'Kabil',
+          amount_invested:     kabilInvested,
+          distribution_amount: kabilDistribution,
+          join_date:           '2020-06-01',
+          exit_date:           '2022-08-01'
+        }, { onConflict: 'investor_email,project_name' });
+    }
+
+    // Upsert Allure position if amounts provided
+    if (allureInvested !== null || allureDistribution !== null) {
+      await supabaseClient
+        .from('investor_positions')
+        .upsert({
+          investor_email:      email,
+          investor_name:       name,
+          project_name:        'Allure',
+          amount_invested:     allureInvested,
+          distribution_amount: allureDistribution,
+          join_date:           '2023-04-01',
+          exit_date:           '2026-04-01'
+        }, { onConflict: 'investor_email,project_name' });
+    }
 
     await loadInvestorsFromSupabase();
 
