@@ -671,23 +671,8 @@
 
       <div class="docs-card">
         <div class="docs-card-title">Documents</div>
-        <div class="doc-row">
-          <div class="doc-info">
-            <div class="doc-name">Term Sheet</div>
-            <div class="doc-type">PDF</div>
-          </div>
-          <a href="#" class="doc-dl" title="Download">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </a>
-        </div>
-        <div class="doc-row">
-          <div class="doc-info">
-            <div class="doc-name">Subscription Form</div>
-            <div class="doc-type">PDF</div>
-          </div>
-          <a href="#" class="doc-dl" title="Download">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </a>
+        <div id="kabil-docs-list">
+          <div style="font-size:13px;color:#B0B0AA;padding:8px 0">Loading…</div>
         </div>
       </div>
 
@@ -1291,6 +1276,32 @@
     if (next) next.addEventListener('click', () => { if (lightboxIdx < galleryItems.length - 1) { lightboxIdx++; renderLightboxMedia(); } });
   })();
 
+  async function loadDocuments() {
+    const { data, error } = await supabaseClient
+      .from('project_documents')
+      .select('*')
+      .eq('project_name', 'Kabil')
+      .order('sort_order', { ascending: true });
+
+    const container = document.getElementById('kabil-docs-list');
+    if (error || !data || data.length === 0) {
+      container.innerHTML = '<div style="font-size:13px;color:#B0B0AA;padding:8px 0">No documents available yet.</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(doc => `
+      <div class="doc-row">
+        <div class="doc-info">
+          <div class="doc-name">${escHtml(doc.document_name)}</div>
+          <div class="doc-type">${escHtml(doc.document_type)}</div>
+        </div>
+        <a href="${escHtml(doc.document_url)}" class="doc-dl" target="_blank" title="Download">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+      </div>
+    `).join('');
+  }
+
   /* ══════════════════════════════════════════
      LOAD ALL DATA
   ══════════════════════════════════════════ */
@@ -1310,7 +1321,8 @@
       supabaseClient.from('project_scenarios')          .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }),
       supabaseClient.from('project_updates')            .select('*').eq('project_name','Kabil').order('published_at', { ascending: false }),
       supabaseClient.from('project_sales')              .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
-      supabaseClient.from('project_capital_structure')  .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true })
+      supabaseClient.from('project_capital_structure')  .select('*').eq('project_name','Kabil').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
+      loadDocuments()
     ]);
 
     if (e1) console.error('project_details:', e1);

@@ -1137,6 +1137,7 @@
           <button class="subnav-btn" data-subtab="sales">Proceeds &amp; Sales</button>
           <button class="subnav-btn" data-subtab="positions">Investor Positions</button>
           <button class="subnav-btn" data-subtab="updates">Updates</button>
+          <button class="subnav-btn" data-subtab="documents">Documents</button>
           <button class="subnav-btn" data-subtab="capital">Capital Structure</button>
           <button class="subnav-btn" data-subtab="gallery">Gallery</button>
         </div>
@@ -1442,6 +1443,58 @@
         <div id="updates-admin-list"></div>
       </div>
 
+      <!-- ── DOCUMENTS ── -->
+      <div class="subtab-content" id="subtab-documents">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Documents</div>
+            <div class="sec-count" id="allure-docs-count">Investor documents</div>
+          </div>
+        </div>
+
+        <!-- Existing documents table -->
+        <div class="form-card" style="padding:0;overflow:hidden;margin-bottom:20px">
+          <table class="budget-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>URL</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="allure-docs-tbody">
+              <tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add document form -->
+        <div style="background:#FAFAF8;border:1px solid #EEEEE9;border-radius:14px;padding:24px;margin-bottom:20px">
+          <div class="sec-heading" style="margin-bottom:18px;font-size:15px">Add Document</div>
+          <div class="form-grid-2" style="margin-bottom:14px">
+            <div class="field">
+              <label>Document Name</label>
+              <input type="text" id="allure-doc-name" placeholder="e.g. Term Sheet">
+            </div>
+            <div class="field">
+              <label>Document Type</label>
+              <select id="allure-doc-type">
+                <option value="Financial Report">Financial Report</option>
+                <option value="Legal">Legal</option>
+                <option value="Update">Update</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:18px">
+            <label>Document URL</label>
+            <input type="text" id="allure-doc-url" placeholder="https://drive.google.com/…">
+          </div>
+          <button class="btn-save" onclick="addAllureDocument()">Add Document</button>
+        </div>
+      </div>
+
       <!-- ── CAPITAL STRUCTURE ── -->
       <div class="subtab-content" id="subtab-capital">
         <div class="sec-top">
@@ -1517,6 +1570,7 @@
           <button class="subnav-btn" data-kabilsubtab="sales">Proceeds &amp; Sales</button>
           <button class="subnav-btn" data-kabilsubtab="positions">Investor Positions</button>
           <button class="subnav-btn" data-kabilsubtab="updates">Updates</button>
+          <button class="subnav-btn" data-kabilsubtab="documents">Documents</button>
           <button class="subnav-btn" data-kabilsubtab="gallery">Gallery</button>
         </div>
       </div>
@@ -1820,6 +1874,58 @@
 
         <!-- Updates list -->
         <div id="kabil-updates-admin-list"></div>
+      </div>
+
+      <!-- ── DOCUMENTS ── -->
+      <div class="subtab-content" id="kabilsubtab-documents">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Documents</div>
+            <div class="sec-count" id="kabil-docs-count">Investor documents</div>
+          </div>
+        </div>
+
+        <!-- Existing documents table -->
+        <div class="form-card" style="padding:0;overflow:hidden;margin-bottom:20px">
+          <table class="budget-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>URL</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="kabil-docs-tbody">
+              <tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add document form -->
+        <div style="background:#FAFAF8;border:1px solid #EEEEE9;border-radius:14px;padding:24px;margin-bottom:20px">
+          <div class="sec-heading" style="margin-bottom:18px;font-size:15px">Add Document</div>
+          <div class="form-grid-2" style="margin-bottom:14px">
+            <div class="field">
+              <label>Document Name</label>
+              <input type="text" id="kabil-doc-name" placeholder="e.g. Term Sheet">
+            </div>
+            <div class="field">
+              <label>Document Type</label>
+              <select id="kabil-doc-type">
+                <option value="Financial Report">Financial Report</option>
+                <option value="Legal">Legal</option>
+                <option value="Update">Update</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:18px">
+            <label>Document URL</label>
+            <input type="text" id="kabil-doc-url" placeholder="https://drive.google.com/…">
+          </div>
+          <button class="btn-save" onclick="addKabilDocument()">Add Document</button>
+        </div>
       </div>
 
       <!-- ── GALLERY ── -->
@@ -4333,6 +4439,7 @@
         sales:      loadAllureSales,
         positions:  loadAllurePositions,
         updates:    loadAllureUpdates,
+        documents:  loadAllureDocuments,
         capital:    loadAllureCapital,
         gallery:    loadAllureGallery
       };
@@ -6703,6 +6810,7 @@
         sales:     kabilLoadSales,
         positions: kabilLoadPositions,
         updates:   kabilLoadUpdates,
+        documents: loadKabilDocuments,
         gallery:   kabilLoadGallery
       };
       if (loaders[btn.dataset.kabilsubtab]) loaders[btn.dataset.kabilsubtab]();
@@ -8489,6 +8597,117 @@
       deleteWithdrawal(id);
     }
   });
+
+  /* ══════════════════════════════════════════
+     DOCUMENTS — ALLURE
+  ══════════════════════════════════════════ */
+
+  async function loadAllureDocuments() {
+    const { data } = await supabaseClient
+      .from('project_documents')
+      .select('*')
+      .eq('project_name', 'Allure')
+      .order('sort_order', { ascending: true });
+
+    const tbody = document.getElementById('allure-docs-tbody');
+    if (!tbody) return;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
+      const count = document.getElementById('allure-docs-count');
+      if (count) count.textContent = '0 documents';
+      return;
+    }
+    const count = document.getElementById('allure-docs-count');
+    if (count) count.textContent = data.length + ' document' + (data.length !== 1 ? 's' : '');
+    tbody.innerHTML = data.map(doc => `
+      <tr>
+        <td>${escHtml(doc.document_name)}</td>
+        <td>${escHtml(doc.document_type)}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+        </td>
+        <td>
+          <button class="btn-delete" onclick="deleteDocument('${doc.id}', 'allure')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function addAllureDocument() {
+    const name = document.getElementById('allure-doc-name').value.trim();
+    const type = document.getElementById('allure-doc-type').value;
+    const url  = document.getElementById('allure-doc-url').value.trim();
+    if (!name || !url) { alert('Name and URL are required.'); return; }
+
+    const { error } = await supabaseClient.from('project_documents').insert({
+      project_name: 'Allure', document_name: name, document_type: type, document_url: url
+    });
+    if (error) { alert('Failed to add document: ' + error.message); return; }
+    document.getElementById('allure-doc-name').value = '';
+    document.getElementById('allure-doc-url').value  = '';
+    showToast('Document added.');
+    loadAllureDocuments();
+  }
+
+  async function deleteDocument(id, project) {
+    if (!confirm('Delete this document?')) return;
+    const { error } = await supabaseClient.from('project_documents').delete().eq('id', id);
+    if (error) { alert('Failed to delete: ' + error.message); return; }
+    showToast('Document deleted.');
+    if (project === 'allure') loadAllureDocuments();
+    if (project === 'kabil')  loadKabilDocuments();
+  }
+
+  /* ══════════════════════════════════════════
+     DOCUMENTS — KABIL
+  ══════════════════════════════════════════ */
+
+  async function loadKabilDocuments() {
+    const { data } = await supabaseClient
+      .from('project_documents')
+      .select('*')
+      .eq('project_name', 'Kabil')
+      .order('sort_order', { ascending: true });
+
+    const tbody = document.getElementById('kabil-docs-tbody');
+    if (!tbody) return;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
+      const count = document.getElementById('kabil-docs-count');
+      if (count) count.textContent = '0 documents';
+      return;
+    }
+    const count = document.getElementById('kabil-docs-count');
+    if (count) count.textContent = data.length + ' document' + (data.length !== 1 ? 's' : '');
+    tbody.innerHTML = data.map(doc => `
+      <tr>
+        <td>${escHtml(doc.document_name)}</td>
+        <td>${escHtml(doc.document_type)}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+        </td>
+        <td>
+          <button class="btn-delete" onclick="deleteDocument('${doc.id}', 'kabil')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function addKabilDocument() {
+    const name = document.getElementById('kabil-doc-name').value.trim();
+    const type = document.getElementById('kabil-doc-type').value;
+    const url  = document.getElementById('kabil-doc-url').value.trim();
+    if (!name || !url) { alert('Name and URL are required.'); return; }
+
+    const { error } = await supabaseClient.from('project_documents').insert({
+      project_name: 'Kabil', document_name: name, document_type: type, document_url: url
+    });
+    if (error) { alert('Failed to add document: ' + error.message); return; }
+    document.getElementById('kabil-doc-name').value = '';
+    document.getElementById('kabil-doc-url').value  = '';
+    showToast('Document added.');
+    loadKabilDocuments();
+  }
 </script>
 
 <style>
