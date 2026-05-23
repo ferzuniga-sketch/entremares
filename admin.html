@@ -2894,6 +2894,13 @@
      LOAD FROM SUPABASE
   ═══════════════════════════════════════════ */
   async function loadInvestorsFromSupabase() {
+    if (!supabaseClient) {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(
+        'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+        'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+      );
+    }
     try {
       const { data: investors, error: invError } = await supabaseClient
         .from('investors')
