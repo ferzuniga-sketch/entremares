@@ -3124,9 +3124,9 @@
       .from('investors')
       .select('email')
       .ilike('email', email)
-      .single();
+      .maybeSingle();
 
-    if (!data) {
+    if (lookupError || !data) {
       errorEl.textContent   = 'This email is not registered with Entremares. Please contact us to get access.';
       errorEl.style.display = 'block';
       btn.disabled          = false;
