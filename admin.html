@@ -1460,11 +1460,12 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>URL</th>
+                <th>Visible To</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="allure-docs-tbody">
-              <tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>
+              <tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -1498,6 +1499,12 @@
               <input type="file" id="allure-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'allure-doc-url', 'allure-doc-upload-status')">
             </div>
             <div id="allure-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Visible To (leave blank for all investors)</label>
+            <select id="allure-doc-investor">
+              <option value="">All investors</option>
+            </select>
           </div>
           <button class="btn-save" onclick="addAllureDocument()">Add Document</button>
         </div>
@@ -1901,11 +1908,12 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>URL</th>
+                <th>Visible To</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="kabil-docs-tbody">
-              <tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>
+              <tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -1939,6 +1947,12 @@
               <input type="file" id="kabil-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'kabil-doc-url', 'kabil-doc-upload-status')">
             </div>
             <div id="kabil-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Visible To (leave blank for all investors)</label>
+            <select id="kabil-doc-investor">
+              <option value="">All investors</option>
+            </select>
           </div>
           <button class="btn-save" onclick="addKabilDocument()">Add Document</button>
         </div>
@@ -3528,9 +3542,25 @@
 
       nextInvId = INVESTORS_DATA.length + 1;
       renderInvestors();
+      populateInvestorDropdowns();
     } catch (err) {
       console.error('Failed to load investors:', err);
     }
+  }
+
+  function populateInvestorDropdowns() {
+    const selectors = ['allure-doc-investor', 'kabil-doc-investor'];
+    selectors.forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = '<option value="">All investors</option>';
+      INVESTORS_DATA.forEach(inv => {
+        const opt = document.createElement('option');
+        opt.value = inv.email;
+        opt.textContent = inv.name + ' (' + inv.email + ')';
+        sel.appendChild(opt);
+      });
+    });
   }
 
   async function loadProjectsFromSupabase() {
@@ -8661,7 +8691,7 @@
     const tbody = document.getElementById('allure-docs-tbody');
     if (!tbody) return;
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
       const count = document.getElementById('allure-docs-count');
       if (count) count.textContent = '0 documents';
       return;
@@ -8675,6 +8705,7 @@
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
           <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
         </td>
+        <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
         <td>
           <button class="btn-delete" onclick="deleteDocument('${doc.id}', 'allure')">Delete</button>
         </td>
@@ -8686,14 +8717,22 @@
     const name = document.getElementById('allure-doc-name').value.trim();
     const type = document.getElementById('allure-doc-type').value;
     const url  = document.getElementById('allure-doc-url').value.trim();
-    if (!name || !url) { alert('Name and URL are required.'); return; }
+    if (!name) { alert('Document name is required.'); return; }
+    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
+
+    const investorEmail = document.getElementById('allure-doc-investor').value || null;
 
     const { error } = await supabaseClient.from('project_documents').insert({
-      project_name: 'Allure', document_name: name, document_type: type, document_url: url
+      project_name: 'Allure',
+      document_name: name,
+      document_type: type,
+      document_url: url,
+      investor_email: investorEmail
     });
     if (error) { alert('Failed to add document: ' + error.message); return; }
     document.getElementById('allure-doc-name').value = '';
     document.getElementById('allure-doc-url').value  = '';
+    document.getElementById('allure-doc-investor').value = '';
     showToast('Document added.');
     loadAllureDocuments();
   }
@@ -8721,7 +8760,7 @@
     const tbody = document.getElementById('kabil-docs-tbody');
     if (!tbody) return;
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
       const count = document.getElementById('kabil-docs-count');
       if (count) count.textContent = '0 documents';
       return;
@@ -8735,6 +8774,7 @@
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
           <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
         </td>
+        <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
         <td>
           <button class="btn-delete" onclick="deleteDocument('${doc.id}', 'kabil')">Delete</button>
         </td>
@@ -8746,14 +8786,22 @@
     const name = document.getElementById('kabil-doc-name').value.trim();
     const type = document.getElementById('kabil-doc-type').value;
     const url  = document.getElementById('kabil-doc-url').value.trim();
-    if (!name || !url) { alert('Name and URL are required.'); return; }
+    if (!name) { alert('Document name is required.'); return; }
+    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
+
+    const investorEmail = document.getElementById('kabil-doc-investor').value || null;
 
     const { error } = await supabaseClient.from('project_documents').insert({
-      project_name: 'Kabil', document_name: name, document_type: type, document_url: url
+      project_name: 'Kabil',
+      document_name: name,
+      document_type: type,
+      document_url: url,
+      investor_email: investorEmail
     });
     if (error) { alert('Failed to add document: ' + error.message); return; }
     document.getElementById('kabil-doc-name').value = '';
     document.getElementById('kabil-doc-url').value  = '';
+    document.getElementById('kabil-doc-investor').value = '';
     showToast('Document added.');
     loadKabilDocuments();
   }
