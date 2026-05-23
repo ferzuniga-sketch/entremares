@@ -4524,7 +4524,8 @@
     }
 
     errEl.style.display = 'none';
-    document.getElementById('hdr-admin-name').textContent = invData.name || email;
+    const adminNameEl = document.getElementById('hdr-admin-name');
+    if (adminNameEl) adminNameEl.textContent = invData.name || email;
     sessionStorage.setItem('em_admin', '1');
     showPanel();
   }
@@ -4565,7 +4566,8 @@
         .ilike('email', session.user.email)
         .maybeSingle();
       if (invData?.is_admin) {
-        document.getElementById('hdr-admin-name').textContent = invData.name || session.user.email;
+        const adminNameEl = document.getElementById('hdr-admin-name');
+        if (adminNameEl) adminNameEl.textContent = invData.name || session.user.email;
         showPanel();
       } else {
         sessionStorage.removeItem('em_admin');
