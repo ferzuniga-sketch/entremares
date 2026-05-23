@@ -1564,19 +1564,19 @@
       <!-- Sub-navigation -->
       <div class="subnav-wrap">
         <div class="subnav" id="kabil-subnav">
-          <button class="subnav-btn active" data-kabilsubtab="details">Project Details</button>
-          <button class="subnav-btn" data-kabilsubtab="budget">Budget</button>
-          <button class="subnav-btn" data-kabilsubtab="scenarios">Return Scenarios</button>
-          <button class="subnav-btn" data-kabilsubtab="sales">Proceeds &amp; Sales</button>
-          <button class="subnav-btn" data-kabilsubtab="positions">Investor Positions</button>
-          <button class="subnav-btn" data-kabilsubtab="updates">Updates</button>
-          <button class="subnav-btn" data-kabilsubtab="documents">Documents</button>
-          <button class="subnav-btn" data-kabilsubtab="gallery">Gallery</button>
+          <button class="subnav-btn active" data-subtab="details">Project Details</button>
+          <button class="subnav-btn" data-subtab="budget">Budget</button>
+          <button class="subnav-btn" data-subtab="scenarios">Return Scenarios</button>
+          <button class="subnav-btn" data-subtab="sales">Proceeds &amp; Sales</button>
+          <button class="subnav-btn" data-subtab="positions">Investor Positions</button>
+          <button class="subnav-btn" data-subtab="updates">Updates</button>
+          <button class="subnav-btn" data-subtab="documents">Documents</button>
+          <button class="subnav-btn" data-subtab="gallery">Gallery</button>
         </div>
       </div>
 
       <!-- ── PROJECT DETAILS ── -->
-      <div class="subtab-content active" id="kabilsubtab-details">
+      <div class="subtab-content active" id="subtab-kabil-details">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Project Details — Kabil</div>
@@ -1678,7 +1678,7 @@
       </div>
 
       <!-- ── BUDGET ── -->
-      <div class="subtab-content" id="kabilsubtab-budget">
+      <div class="subtab-content" id="subtab-kabil-budget">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Budget</div>
@@ -1705,7 +1705,7 @@
       </div>
 
       <!-- ── RETURN SCENARIOS ── -->
-      <div class="subtab-content" id="kabilsubtab-scenarios">
+      <div class="subtab-content" id="subtab-kabil-scenarios">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Return Scenarios</div>
@@ -1771,7 +1771,7 @@
       </div>
 
       <!-- ── PROCEEDS & SALES ── -->
-      <div class="subtab-content" id="kabilsubtab-sales">
+      <div class="subtab-content" id="subtab-kabil-sales">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Proceeds &amp; Sales</div>
@@ -1797,7 +1797,7 @@
       </div>
 
       <!-- ── INVESTOR POSITIONS ── -->
-      <div class="subtab-content" id="kabilsubtab-positions">
+      <div class="subtab-content" id="subtab-kabil-positions">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Investor Positions</div>
@@ -1825,7 +1825,7 @@
       </div>
 
       <!-- ── UPDATES ── -->
-      <div class="subtab-content" id="kabilsubtab-updates">
+      <div class="subtab-content" id="subtab-kabil-updates">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Updates</div>
@@ -1877,7 +1877,7 @@
       </div>
 
       <!-- ── DOCUMENTS ── -->
-      <div class="subtab-content" id="kabilsubtab-documents">
+      <div class="subtab-content" id="subtab-kabil-documents">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Documents</div>
@@ -1929,7 +1929,7 @@
       </div>
 
       <!-- ── GALLERY ── -->
-      <div class="subtab-content" id="kabilsubtab-gallery">
+      <div class="subtab-content" id="subtab-kabil-gallery">
         <div class="sec-top">
           <div>
             <div class="sec-heading">Gallery</div>
@@ -6802,7 +6802,7 @@
       document.querySelectorAll('#kabil-subnav .subnav-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('#tab-kabil .subtab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('kabilsubtab-' + btn.dataset.kabilsubtab).classList.add('active');
+      document.getElementById('subtab-kabil-' + btn.dataset.subtab).classList.add('active');
       const loaders = {
         details:   kabilLoadDetails,
         budget:    kabilLoadBudget,
@@ -6813,7 +6813,7 @@
         documents: loadKabilDocuments,
         gallery:   kabilLoadGallery
       };
-      if (loaders[btn.dataset.kabilsubtab]) loaders[btn.dataset.kabilsubtab]();
+      if (loaders[btn.dataset.subtab]) loaders[btn.dataset.subtab]();
     });
   });
 
@@ -7406,7 +7406,7 @@
       warnEl = document.createElement('div');
       warnEl.id = 'kabil-positions-ownership-warning';
       warnEl.style.cssText = 'margin-bottom:16px;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;display:none;';
-      const wrap = document.querySelector('#kabilsubtab-positions .sec-top');
+      const wrap = document.querySelector('#subtab-kabil-positions .sec-top');
       if (wrap) wrap.after(warnEl);
     }
     const stakePct = Math.round(totalStake * 10000) / 10000;
