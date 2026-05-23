@@ -1489,7 +1489,15 @@
           </div>
           <div class="field" style="margin-bottom:18px">
             <label>Document URL</label>
-            <input type="text" id="allure-doc-url" placeholder="https://drive.google.com/…">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="allure-doc-url" placeholder="Paste URL or upload file below">
+              <button type="button" onclick="document.getElementById('allure-doc-file').click()"
+                style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
+                Upload PDF
+              </button>
+              <input type="file" id="allure-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'allure-doc-url', 'allure-doc-upload-status')">
+            </div>
+            <div id="allure-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
           </div>
           <button class="btn-save" onclick="addAllureDocument()">Add Document</button>
         </div>
@@ -1922,7 +1930,15 @@
           </div>
           <div class="field" style="margin-bottom:18px">
             <label>Document URL</label>
-            <input type="text" id="kabil-doc-url" placeholder="https://drive.google.com/…">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="kabil-doc-url" placeholder="Paste URL or upload file below">
+              <button type="button" onclick="document.getElementById('kabil-doc-file').click()"
+                style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
+                Upload PDF
+              </button>
+              <input type="file" id="kabil-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'kabil-doc-url', 'kabil-doc-upload-status')">
+            </div>
+            <div id="kabil-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
           </div>
           <button class="btn-save" onclick="addKabilDocument()">Add Document</button>
         </div>
@@ -8601,6 +8617,39 @@
   /* ══════════════════════════════════════════
      DOCUMENTS — ALLURE
   ══════════════════════════════════════════ */
+
+  async function uploadDocFile(input, urlFieldId, statusId) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById(statusId);
+    statusEl.style.display = 'block';
+    statusEl.style.color = '#9B9B9B';
+    statusEl.textContent = 'Uploading…';
+
+    const ext  = file.name.split('.').pop();
+    const path = 'documents/' + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+
+    const { error: upErr } = await supabaseClient.storage
+      .from('project-assets')
+      .upload(path, file, { cacheControl: '3600', upsert: true });
+
+    if (upErr) {
+      statusEl.style.color = '#C0392B';
+      statusEl.textContent = 'Upload failed: ' + upErr.message;
+      input.value = '';
+      return;
+    }
+
+    const { data: urlData } = supabaseClient.storage
+      .from('project-assets')
+      .getPublicUrl(path);
+
+    document.getElementById(urlFieldId).value = urlData.publicUrl;
+    statusEl.style.color = '#1A7F4A';
+    statusEl.textContent = '✓ Uploaded: ' + file.name;
+    input.value = '';
+  }
 
   async function loadAllureDocuments() {
     const { data } = await supabaseClient
