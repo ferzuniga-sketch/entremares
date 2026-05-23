@@ -3673,6 +3673,27 @@
 
     showInvestorMsg('Investor created successfully! They can now log in with their email and password or use Magic Link.', false);
 
+    // Insert into investors table
+    await supabaseClient
+      .from('investors')
+      .upsert({
+        email: email,
+        name: name,
+        member_since: memberSince || new Date().toISOString().slice(0, 10),
+        is_admin: false
+      }, { onConflict: 'email' });
+
+    // Insert into investor_profiles table
+    await supabaseClient
+      .from('investor_profiles')
+      .upsert({
+        investor_email: email,
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'investor_email' });
+
     INVESTORS_DATA.push({
       id: nextInvId++, name, email, password, phone, memberSince,
       country: '',
