@@ -4625,6 +4625,13 @@
 
   /* Restore admin session within the same browser tab session */
   (async function restoreAdminSession() {
+    if (!supabaseClient) {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(
+        'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+        'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+      );
+    }
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session && sessionStorage.getItem('em_admin')) {
       const { data: invData } = await supabaseClient
@@ -9004,7 +9011,13 @@
   ══════════════════════════════════════════ */
 
   async function loadRdmDocuments() {
-    if (!supabaseClient) return;
+    if (!supabaseClient) {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(
+        'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+        'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+      );
+    }
     const { data } = await supabaseClient
       .from('project_documents')
       .select('*')
