@@ -739,6 +739,13 @@
 
       <button class="btn-sidebar-invest" onclick="openInvestModal()">Invest Now &rarr;</button>
 
+      <div class="docs-card" style="background:#FFFFFF;border:1px solid #EEEEE9;border-radius:14px;padding:20px 22px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B0B0AA;margin-bottom:14px">Documents</div>
+        <div id="rdm-docs-list">
+          <div style="font-size:13px;color:#B0B0AA;padding:8px 0">Loading…</div>
+        </div>
+      </div>
+
     </div><!-- /project-sidebar -->
 
   </div><!-- /project-layout -->
@@ -900,17 +907,6 @@
   const PROJECT_NAME = 'Real del Monte';
   let GOAL = 800000;
   const AEDIFIKA_COMMITTED = 240000;
-
-  const INVESTORS = {
-    'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
-    'gilito.iii@gmail.com':          { name: 'Gilberto Padilla',       initials: 'GP' },
-    'alvaroilanes@gmail.com':        { name: 'Alvaro Villasante',      initials: 'AV' },
-    'cuellarolmos@gmail.com':        { name: 'Alberto Cuellar',        initials: 'AC' },
-    'sergio.gmd@gmail.com':          { name: 'Sergio Gomez',           initials: 'SG' },
-    'nacho.lucas@gmail.com':         { name: 'Nacho Lucas',            initials: 'NL' },
-    'ferzuniga@gmail.com':           { name: 'Fernando Zuniga',        initials: 'FZ' },
-    'madelcarmen.galindo@zuksa.net': { name: 'Ma del Carmen Galindo',  initials: 'MG' }
-  };
 
   let currentInvestorName = '';
   let currentInvestorEmail = '';
@@ -1281,6 +1277,36 @@
     set('sidebar-profit-range', '+' + fmt(totalCommitted * 0.20) + ' – ' + fmt(totalCommitted * 0.30));
   }
 
+  async function loadDocuments() {
+    const email = currentInvestorEmail;
+
+    const { data, error } = await supabaseClient
+      .from('project_documents')
+      .select('*')
+      .eq('project_name', 'Real del Monte')
+      .or('investor_email.is.null,investor_email.ilike.' + email)
+      .order('sort_order', { ascending: true });
+
+    const container = document.getElementById('rdm-docs-list');
+    if (!container) return;
+    if (error || !data || data.length === 0) {
+      container.innerHTML = '<div style="font-size:13px;color:#B0B0AA;padding:8px 0">No documents available yet.</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(doc => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F5F5F2;gap:10px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;color:#0D0D0D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(doc.document_name)}</div>
+          <div style="font-size:10px;color:#B0B0AA;margin-top:1px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">${escHtml(doc.document_type)}${doc.investor_email ? ' · Personal' : ''}</div>
+        </div>
+        <a href="${escHtml(doc.document_url)}" style="flex-shrink:0;width:30px;height:30px;border-radius:7px;background:#F5F5F3;border:1px solid #E8E8E4;display:flex;align-items:center;justify-content:center;color:#6B6B6B;text-decoration:none" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+      </div>
+    `).join('');
+  }
+
   /* ══════════════════════════════════════════
      LOAD ALL DATA
   ══════════════════════════════════════════ */
@@ -1336,13 +1362,44 @@
     const email = await checkAuth();
     if (!email) return;
     const normalEmail = email.toLowerCase();
-    const inv = INVESTORS[normalEmail];
-    if (!inv) { await supabaseClient.auth.signOut(); sessionStorage.clear(); window.location.href = 'dashboard.html'; return; }
+
+    const { data: invBase } = await supabaseClient
+      .from('investors')
+      .select('name')
+      .ilike('email', normalEmail)
+      .maybeSingle();
+
+    if (!invBase) {
+      await supabaseClient.auth.signOut();
+      sessionStorage.clear();
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    const { data: profile } = await supabaseClient
+      .from('investor_profiles')
+      .select('first_name, last_name')
+      .ilike('investor_email', normalEmail)
+      .maybeSingle();
+
+    let name, initials;
+    if (profile && (profile.first_name || profile.last_name)) {
+      const first = profile.first_name || '';
+      const last  = profile.last_name  || '';
+      name     = [first, last].filter(Boolean).join(' ');
+      initials = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase();
+    } else {
+      name     = invBase.name || normalEmail.split('@')[0];
+      const parts = name.split(' ');
+      initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+    }
+
     currentInvestorEmail = normalEmail;
-    currentInvestorName  = inv.name;
-    renderPage(inv);
+    currentInvestorName  = name;
+    renderPage({ name, initials });
     loadRDMData(normalEmail);
     loadGallery();
+    loadDocuments();
     ['qa-overview', 'qa-financials', 'qa-returns', 'qa-updates'].forEach(id => buildQASection(id));
   })();
 
