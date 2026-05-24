@@ -395,9 +395,9 @@
           </div>
           <div class="funding-bar-amts">
             <span id="overview-raised">Loading…</span>
-            <span id="overview-goal-lbl">~$800,000 goal</span>
+            <span id="overview-goal-lbl">~$595,000 goal</span>
           </div>
-          <p style="font-size:11px;color:#B0B0AA;margin-top:8px;font-style:italic">Target amount is approximate and subject to final project requirements.</p>
+          <p style="font-size:11px;color:#B0B0AA;margin-top:8px;font-style:italic">Showing EntreOcéanos investor portion (70% of total project CAPEX). AEDIFIKA holds 30% as construction equity.</p>
         </div>
 
         <div class="specs-row">
@@ -697,7 +697,7 @@
         <div class="mini-card-title">Funding Status</div>
         <div class="mini-row">
           <span class="mini-lbl">Goal</span>
-          <span class="mini-val" id="sidebar-goal-val">~$800,000</span>
+          <span class="mini-val" id="sidebar-goal-val">~$595,000</span>
         </div>
         <div class="mini-row">
           <span class="mini-lbl">Raised</span>
@@ -905,8 +905,8 @@
   );
 
   const PROJECT_NAME = 'Real del Monte';
-  let GOAL = 850000;
-  const AEDIFIKA_COMMITTED = 240000;
+  let GOAL = 595000;        // EntreOcéanos raise target (70% of total CAPEX)
+  let TOTAL_CAPEX = 850000; // Full project CAPEX
 
   let currentInvestorName = '';
   let currentInvestorEmail = '';
@@ -1222,7 +1222,7 @@
       .eq('project_name', PROJECT_NAME);
 
     const investorTotal = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
-    const total = investorTotal + AEDIFIKA_COMMITTED;
+    const total = investorTotal;
     const pct   = Math.min(total / GOAL * 100, 100);
     const pctRounded = Math.round(pct);
 
@@ -1328,7 +1328,17 @@
     if (e4) console.error('project_scenarios:', e4);
     if (e5) console.error('project_updates:', e5);
 
-    if (pd?.total_capex) GOAL = pd.total_capex;
+    if (pd?.total_capex) TOTAL_CAPEX = pd.total_capex;
+
+    // Load EntreOcéanos raise target from capital structure
+    const { data: capData } = await supabaseClient
+      .from('project_capital_structure')
+      .select('forecasted')
+      .eq('project_name', PROJECT_NAME)
+      .ilike('item', '%EntreO%')
+      .maybeSingle();
+    if (capData?.forecasted) GOAL = capData.forecasted;
+
     renderProjectDetails(pd);
     renderBudget(budget);
     renderScenarios(scen);
