@@ -395,9 +395,9 @@
           </div>
           <div class="funding-bar-amts">
             <span id="overview-raised">Loading…</span>
-            <span id="overview-goal-lbl">~$595,000 goal</span>
+            <span id="overview-goal-lbl">~$850,000 goal</span>
           </div>
-          <p style="font-size:11px;color:#B0B0AA;margin-top:8px;font-style:italic">Showing EntreOcéanos investor portion (70% of total project CAPEX). AEDIFIKA holds 30% as construction equity.</p>
+          <p style="font-size:11px;color:#B0B0AA;margin-top:8px;font-style:italic">Target amount is approximate and subject to final project requirements.</p>
         </div>
 
         <div class="specs-row">
@@ -513,8 +513,8 @@
                   <td style="color:#6B6B6B">70%</td>
                 </tr>
                 <tr>
-                  <td>AEDIFIKA (30%) — Committed</td>
-                  <td style="color:#9B9B9B;font-style:italic">Construction equity</td>
+                  <td>AEDIFIKA (30%)</td>
+                  <td id="cap-aedifika-amount">—</td>
                   <td style="color:#6B6B6B">30%</td>
                 </tr>
                 <tr class="row-total">
@@ -525,7 +525,7 @@
               </tbody>
             </table>
           </div>
-          <p class="fin-note" style="font-style:normal">EntreOcéanos holds 70% equity. AEDIFIKA (Construction Partner) holds the remaining 30% as construction equity — committed.</p>
+          <p class="fin-note" style="font-style:normal">EntreOcéanos holds 70% equity. AEDIFIKA holds the remaining 30% as a capital contributor.</p>
         </div>
 
         <!-- Project Budget -->
@@ -697,7 +697,7 @@
         <div class="mini-card-title">Funding Status</div>
         <div class="mini-row">
           <span class="mini-lbl">Goal</span>
-          <span class="mini-val" id="sidebar-goal-val">~$595,000</span>
+          <span class="mini-val" id="sidebar-goal-val">~$850,000</span>
         </div>
         <div class="mini-row">
           <span class="mini-lbl">Raised</span>
@@ -905,8 +905,7 @@
   );
 
   const PROJECT_NAME = 'Real del Monte';
-  let GOAL = 595000;        // EntreOcéanos raise target (70% of total CAPEX)
-  let TOTAL_CAPEX = 850000; // Full project CAPEX
+  let GOAL = 850000;
 
   let currentInvestorName = '';
   let currentInvestorEmail = '';
@@ -1222,7 +1221,7 @@
       .eq('project_name', PROJECT_NAME);
 
     const investorTotal = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
-    const total = investorTotal;
+    const total = investorTotal + AEDIFIKA_COMMITTED;
     const pct   = Math.min(total / GOAL * 100, 100);
     const pctRounded = Math.round(pct);
 
@@ -1243,6 +1242,8 @@
 
     const capEntreoc = document.getElementById('cap-entreoc-amount');
     if (capEntreoc) capEntreoc.textContent = '$' + investorTotal.toLocaleString('en-US');
+    const capAedifika = document.getElementById('cap-aedifika-amount');
+    if (capAedifika) capAedifika.textContent = '$' + AEDIFIKA_COMMITTED.toLocaleString('en-US');
     const capTotal = document.getElementById('cap-total-amount');
     if (capTotal) capTotal.textContent = goalFull;
   }
@@ -1328,16 +1329,17 @@
     if (e4) console.error('project_scenarios:', e4);
     if (e5) console.error('project_updates:', e5);
 
-    if (pd?.total_capex) TOTAL_CAPEX = pd.total_capex;
+    if (pd?.total_capex) GOAL = pd.total_capex;
 
-    // Load EntreOcéanos raise target from capital structure
-    const { data: capData } = await supabaseClient
+    // Load AEDIFIKA contribution from capital structure
+    const { data: aedifikaData } = await supabaseClient
       .from('project_capital_structure')
       .select('forecasted')
       .eq('project_name', PROJECT_NAME)
-      .ilike('item', '%EntreO%')
+      .ilike('item', '%AEDIFIKA%')
+      .eq('is_total', false)
       .maybeSingle();
-    if (capData?.forecasted) GOAL = capData.forecasted;
+    if (aedifikaData?.forecasted) AEDIFIKA_COMMITTED = aedifikaData.forecasted;
 
     renderProjectDetails(pd);
     renderBudget(budget);
@@ -1442,6 +1444,7 @@
   /* ══════════════════════════════════════════
      INVEST NOW MODAL
   ══════════════════════════════════════════ */
+  let AEDIFIKA_COMMITTED = 0; // Loaded from project_capital_structure
   const ALLURE_GROSS_MULTIPLIER = 1.3431;
   const ALLURE_NET_MULTIPLIER   = 1.3088;
 
