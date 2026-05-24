@@ -1657,7 +1657,7 @@
           </div>
           <div>
             <div class="opp-meta-lbl">Total Capex</div>
-            <div class="opp-meta-val" id="rdm-capex-val">~$800,000</div>
+            <div class="opp-meta-val" id="rdm-capex-val">—</div>
           </div>
           <div>
             <div class="opp-meta-lbl">Timeline</div>
@@ -1674,7 +1674,7 @@
         </div>
         <div class="prog-amts">
           <span id="prog-raised">Loading…</span>
-          <span id="prog-goal-lbl">~$800K target</span>
+          <span id="prog-goal-lbl">Loading…</span>
         </div>
         <div style="margin-top:5px;font-size:11px;color:#B0B0AA">Remaining: <span id="prog-remaining">—</span></div>
 
@@ -2104,7 +2104,7 @@
     'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
   );
 
-  let GOAL = 800000;
+  let GOAL = 0;
   
 
   const ALLURE_GROSS_MULTIPLIER = 1.3431;
@@ -2250,7 +2250,15 @@
         .eq('project_name', 'Real del Monte');
 
       const investorTotal = error ? 0 : (data || []).reduce((s, r) => s + Number(r.amount), 0);
-      const totalRaised = investorTotal;
+      const { data: capData } = await supabaseClient
+        .from('project_capital_structure')
+        .select('forecasted')
+        .eq('project_name', 'Real del Monte')
+        .ilike('item', '%AEDIFIKA%')
+        .eq('is_total', false)
+        .maybeSingle();
+      const aedifikaAmount = capData?.forecasted || 0;
+      const totalRaised = investorTotal + aedifikaAmount;
       currentRdmRaised = totalRaised;
       const pct = Math.min(totalRaised / GOAL * 100, 100);
       const goalK = '~$' + Math.round(GOAL / 1000) + 'K';
