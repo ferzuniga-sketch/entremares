@@ -2006,6 +2006,7 @@
           <button class="subnav-btn" data-rdmsubtab="positions">Investor Positions</button>
           <button class="subnav-btn" data-rdmsubtab="updates">Updates</button>
           <button class="subnav-btn" data-rdmsubtab="gallery">Gallery</button>
+          <button class="subnav-btn" data-rdmsubtab="documents">Documents</button>
         </div>
       </div>
 
@@ -2364,6 +2365,72 @@
         </div>
 
         <div id="rdm-gallery-admin-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div>
+      </div>
+
+      <div class="subtab-content" id="rdmsubtab-documents" style="display:none">
+        <div class="sec-top">
+          <div>
+            <div class="sec-heading">Documents</div>
+            <div class="sec-count">Investor documents</div>
+          </div>
+        </div>
+
+        <!-- Existing documents table -->
+        <div class="form-card" style="margin-bottom:20px">
+          <table class="data-table" style="width:100%">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>URL</th>
+                <th>Visible To</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rdm-docs-tbody">
+              <tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add document form -->
+        <div class="form-card">
+          <div class="form-card-title" style="font-size:15px;font-weight:700;margin-bottom:16px">Add Document</div>
+          <div class="form-grid-2" style="margin-bottom:14px">
+            <div class="field">
+              <label>Document Name</label>
+              <input type="text" id="rdm-doc-name" placeholder="e.g. Term Sheet">
+            </div>
+            <div class="field">
+              <label>Document Type</label>
+              <select id="rdm-doc-type">
+                <option value="Financial Report">Financial Report</option>
+                <option value="Legal">Legal</option>
+                <option value="Update">Update</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Visible To (leave blank for all investors)</label>
+            <select id="rdm-doc-investor">
+              <option value="">All investors</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Document URL</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="rdm-doc-url" placeholder="Paste URL or upload file below">
+              <button type="button" onclick="document.getElementById('rdm-doc-file').click()"
+                style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
+                Upload PDF
+              </button>
+              <input type="file" id="rdm-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'rdm-doc-url', 'rdm-doc-upload-status')">
+            </div>
+            <div id="rdm-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
+          </div>
+          <button onclick="addRdmDocument()" class="btn-primary">Add Document</button>
+        </div>
       </div>
 
     </div><!-- /tab-realdelmente -->
@@ -3572,7 +3639,7 @@
   }
 
   function populateInvestorDropdowns() {
-    const selectors = ['allure-doc-investor', 'kabil-doc-investor'];
+    const selectors = ['allure-doc-investor', 'kabil-doc-investor', 'rdm-doc-investor'];
     selectors.forEach(id => {
       const sel = document.getElementById(id);
       if (!sel) return;
@@ -6253,7 +6320,8 @@
         capital:   rdmLoadCapital,
         positions: rdmLoadPositions,
         updates:   rdmLoadUpdates,
-        gallery:   rdmLoadGallery
+        gallery:   rdmLoadGallery,
+        documents: loadRdmDocuments
       };
       if (loaders[btn.dataset.rdmsubtab]) loaders[btn.dataset.rdmsubtab]();
     });
@@ -8868,6 +8936,7 @@
     showToast('Document deleted.');
     if (project === 'allure') loadAllureDocuments();
     if (project === 'kabil')  loadKabilDocuments();
+    if (project === 'rdm')    loadRdmDocuments();
   }
 
   /* ══════════════════════════════════════════
@@ -8928,6 +8997,61 @@
     document.getElementById('kabil-doc-investor').value = '';
     showToast('Document added.');
     loadKabilDocuments();
+  }
+
+  /* ══════════════════════════════════════════
+     DOCUMENTS — REAL DEL MONTE
+  ══════════════════════════════════════════ */
+
+  async function loadRdmDocuments() {
+    if (!supabaseClient) return;
+    const { data } = await supabaseClient
+      .from('project_documents')
+      .select('*')
+      .eq('project_name', 'Real del Monte')
+      .order('sort_order', { ascending: true });
+
+    const tbody = document.getElementById('rdm-docs-tbody');
+    if (!tbody) return;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(doc => `
+      <tr>
+        <td>${escHtml(doc.document_name)}</td>
+        <td>${escHtml(doc.document_type)}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+        </td>
+        <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
+        <td><button class="btn-delete" onclick="deleteDocument('${doc.id}', 'rdm')">Delete</button></td>
+      </tr>
+    `).join('');
+  }
+
+  async function addRdmDocument() {
+    const name = document.getElementById('rdm-doc-name').value.trim();
+    const type = document.getElementById('rdm-doc-type').value;
+    const url  = document.getElementById('rdm-doc-url').value.trim();
+    const investorEmail = document.getElementById('rdm-doc-investor').value || null;
+
+    if (!name) { alert('Document name is required.'); return; }
+    if (!url)  { alert('Please paste a URL or upload a file first.'); return; }
+
+    const { error } = await supabaseClient.from('project_documents').insert({
+      project_name: 'Real del Monte',
+      document_name: name,
+      document_type: type,
+      document_url: url,
+      investor_email: investorEmail
+    });
+    if (error) { alert('Failed to add document: ' + error.message); return; }
+    document.getElementById('rdm-doc-name').value = '';
+    document.getElementById('rdm-doc-url').value  = '';
+    document.getElementById('rdm-doc-investor').value = '';
+    showToast('Document added.');
+    loadRdmDocuments();
   }
 </script>
 
