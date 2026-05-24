@@ -1091,11 +1091,11 @@
         </div>
         <div>
           <div class="sum-lbl">Funding Target</div>
-          <div class="sum-val">$800,000</div>
+          <div class="sum-val rdm-funding-target">$800,000</div>
         </div>
         <div>
           <div class="sum-lbl">Remaining</div>
-          <div class="sum-val" id="sum-remaining">$800,000</div>
+          <div class="sum-val" id="sum-remaining">—</div>
         </div>
         <div style="min-width:160px">
           <div class="sum-lbl" id="sum-pct-lbl">0% funded</div>
@@ -2218,7 +2218,7 @@
           </div>
           <button class="btn-add" id="rdm-btn-add-capital">+ Add Row</button>
         </div>
-        <div style="background:#FFF8E7;border:1px solid #F0D890;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#7A5900">
+        <div id="rdm-cap-banner" style="background:#FFF8E7;border:1px solid #F0D890;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#7A5900">
           Default structure: EntreOcéanos 70% / AEDIFIKA 30% / Total $800,000
         </div>
         <div class="table-card">
@@ -2259,11 +2259,11 @@
           </div>
           <div>
             <div class="sum-lbl">Funding Target</div>
-            <div class="sum-val">$800,000</div>
+            <div class="sum-val rdm-funding-target">$800,000</div>
           </div>
           <div>
             <div class="sum-lbl">Remaining</div>
-            <div class="sum-val" id="rdm-sum-remaining">$800,000</div>
+            <div class="sum-val" id="rdm-sum-remaining">—</div>
           </div>
           <div style="min-width:160px">
             <div class="sum-lbl" id="rdm-sum-pct-lbl">0% funded</div>
@@ -3853,7 +3853,7 @@
 
   function updateCommitmentSummary(data) {
     const totalCommitted = data.reduce((s, c) => s + Number(c.amount), 0);
-    const target    = 800000;
+    const target    = RDM_GOAL || 800000;
     const remaining = Math.max(0, target - totalCommitted);
     const pct       = Math.min(100, totalCommitted / target * 100);
     const n         = data.length;
@@ -3862,7 +3862,7 @@
     document.getElementById('sum-remaining').textContent  = fmt(remaining);
     document.getElementById('sum-pct-lbl').textContent    = pct.toFixed(1) + '% funded';
     document.getElementById('commitment-count').textContent =
-      n + ' commitment' + (n !== 1 ? 's' : '') + ' · $800,000 target';
+      n + ' commitment' + (n !== 1 ? 's' : '') + ' · $' + (RDM_GOAL || 800000).toLocaleString('en-US') + ' target';
 
     requestAnimationFrame(() => {
       setTimeout(() => {
@@ -3886,7 +3886,7 @@
       return;
     }
 
-    const ACTIVE_PROJECTS = [{ name: 'Real del Monte', target: 800000 }];
+    const ACTIVE_PROJECTS = [{ name: 'Real del Monte', target: RDM_GOAL || 800000 }];
     const byProject = {};
     (data || []).forEach(r => {
       byProject[r.project_name] = (byProject[r.project_name] || 0) + Number(r.amount);
@@ -3975,7 +3975,7 @@
     // Recalculate project funding and show inline success message
     const projectName = commitmentsCache[id]?.project_name || 'Real del Monte';
     commitmentsCache[id] = Object.assign({}, commitmentsCache[id], { amount: newAmount });
-    const target = 800000;
+    const target = RDM_GOAL || 800000;
     const allForProject = Object.values(commitmentsCache).filter(c => c.project_name === projectName);
     const newTotal = allForProject.reduce((s, c) => s + Number(c.amount), 0);
     const newPct   = Math.min(100, newTotal / target * 100);
@@ -6311,7 +6311,31 @@
   ═══════════════════════════════════════════ */
 
   const RDM_PROJECT = 'Real del Monte';
-  const RDM_GOAL    = 800000;
+  let RDM_GOAL = 0;
+  // Load RDM goal from Supabase project_details
+  (async function loadRdmGoal() {
+    if (!supabaseClient) return;
+    const { data } = await supabaseClient
+      .from('project_details')
+      .select('total_capex')
+      .eq('project_name', 'Real del Monte')
+      .maybeSingle();
+    if (data?.total_capex) {
+      RDM_GOAL = data.total_capex;
+      // Update any displayed funding targets
+      document.querySelectorAll('.rdm-funding-target').forEach(el => {
+        el.textContent = '$' + RDM_GOAL.toLocaleString('en-US');
+      });
+      // Update yellow banner
+      const banner = document.getElementById('rdm-cap-banner');
+      if (banner) {
+        const entreoc = Math.round(RDM_GOAL * 0.70).toLocaleString('en-US');
+        const aedifika = Math.round(RDM_GOAL * 0.30).toLocaleString('en-US');
+        const total = RDM_GOAL.toLocaleString('en-US');
+        banner.textContent = 'Default structure: EntreOcéanos 70% / AEDIFIKA 30% / Total $' + total;
+      }
+    }
+  })();
 
   /* ── RDM Sub-nav ── */
   document.querySelectorAll('#rdm-subnav .subnav-btn').forEach(btn => {
