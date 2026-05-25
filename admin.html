@@ -1793,19 +1793,19 @@
             <div class="sec-heading">Capital Structure</div>
             <div class="sec-count" id="kabil-capital-count">Loading…</div>
           </div>
-          <button class="btn-add" id="kabil-btn-add-capital" onclick="openKabilCapitalModal()">+ Add Row</button>
+          <button class="btn-add" id="kabil-btn-add-capital">+ Add Row</button>
         </div>
-
-        <div class="form-card" style="padding:0;overflow:hidden">
-          <table class="data-table" style="width:100%">
+        <div class="table-card">
+          <table class="data-table">
             <thead>
               <tr>
                 <th>Item</th>
-                <th>Forecasted ($)</th>
-                <th>Actual ($)</th>
-                <th>Stake (%)</th>
+                <th>Type</th>
+                <th>Forecasted</th>
+                <th>Actual</th>
+                <th>Variance</th>
                 <th>Is Total</th>
-                <th>Sort</th>
+                <th>Sort Order</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -3573,39 +3573,36 @@
 </div>
 
 <!-- ── Kabil: Capital Row Modal ── -->
-<div class="modal-overlay" id="kabil-modal-capital">
+<div class="modal-overlay" id="kabil-modal-capital" style="display:none">
   <div class="modal">
     <div class="modal-hdr">
-      <div class="modal-title" id="kabil-modal-capital-title">Add Capital Row</div>
+      <div class="modal-title" id="kabil-modal-capital-title">Add Capital Structure Row</div>
       <button class="modal-close" id="kabil-modal-capital-close">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="form-grid-2">
-        <div class="field">
-          <label>Item Name</label>
-          <input type="text" id="kabil-cap-item" placeholder="e.g. Kabil (70%)">
-        </div>
+      <div class="field">
+        <label>Item Name</label>
+        <input type="text" id="kabil-cr-item" placeholder="e.g. EntreOceanos (80%)">
+      </div>
+      <div class="form-grid-2" style="margin-top:14px">
         <div class="field">
           <label>Forecasted ($)</label>
-          <input type="number" id="kabil-cap-forecasted" placeholder="0" step="0.01">
+          <input type="number" id="kabil-cr-forecasted" placeholder="0" step="0.01">
         </div>
         <div class="field">
           <label>Actual ($)</label>
-          <input type="number" id="kabil-cap-actual" placeholder="0" step="0.01">
-        </div>
-        <div class="field">
-          <label>Stake (%)</label>
-          <input type="number" id="kabil-cap-stake" placeholder="0" step="0.01">
-        </div>
-        <div class="field">
-          <label>Sort Order</label>
-          <input type="number" id="kabil-cap-sort" placeholder="0" step="1" min="0">
+          <input type="number" id="kabil-cr-actual" placeholder="0" step="0.01">
         </div>
       </div>
-      <div style="margin-top:14px">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
-          <input type="checkbox" id="kabil-cap-is-total"> Mark as total row
-        </label>
+      <div class="form-grid-2" style="margin-top:14px">
+        <div class="field">
+          <label>Sort Order</label>
+          <input type="number" id="kabil-cr-sort" placeholder="0" step="1" min="0">
+        </div>
+        <div class="field" style="display:flex;align-items:center;gap:10px;padding-top:26px">
+          <input type="checkbox" id="kabil-cr-is-total" style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
+          <label for="kabil-cr-is-total" style="text-transform:none;font-size:13px;letter-spacing:0;font-weight:500;cursor:pointer">Bold / total row</label>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -8043,83 +8040,101 @@
   async function kabilLoadCapital() {
     const tbody = document.getElementById('kabil-capital-tbody');
     const count = document.getElementById('kabil-capital-count');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#9B9B9B;padding:40px 20px">Loading…</td></tr>';
 
     const { data, error } = await supabaseClient
       .from('project_capital_structure')
       .select('*')
       .eq('project_name', 'Kabil')
-      .order('sort_order', { ascending: true });
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('id', { ascending: true });
 
     if (error) { showToast('Failed to load capital structure: ' + error.message, true); return; }
-    const rows = data || [];
-    kabilCapitalCount = rows.length;
-    if (count) count.textContent = rows.length + ' row' + (rows.length !== 1 ? 's' : '');
-    kabilCapitalCache = {};
-    rows.forEach(r => kabilCapitalCache[r.id] = r);
-
-    if (!tbody) return;
-    if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:#B0B0AA;text-align:center">No rows yet. Click + Add Row to get started.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = rows.map(r => `
-      <tr>
-        <td>${escAdminHtml(r.item || '—')}${r.is_total ? ' <span style="font-size:10px;font-weight:700;color:#1A7F4A;background:#F0FBF5;border:1px solid #C3E8D2;border-radius:4px;padding:1px 6px">TOTAL</span>' : ''}</td>
-        <td>${r.forecasted != null ? '$' + Number(r.forecasted).toLocaleString('en-US') : '—'}</td>
-        <td>${r.actual != null ? '$' + Number(r.actual).toLocaleString('en-US') : '—'}</td>
-        <td>${r.stake != null ? r.stake + '%' : '—'}</td>
-        <td>${r.is_total ? '<span style="color:#1A7F4A">✓</span>' : ''}</td>
-        <td>${r.sort_order ?? '—'}</td>
-        <td>
-          <button class="btn-edit" onclick="kabilEditCapital('${r.id}')">Edit</button>
-          <button class="btn-delete" onclick="kabilDeleteCapital('${r.id}')">Delete</button>
-        </td>
-      </tr>
-    `).join('');
+    kabilRenderCapitalTable(data || []);
   }
 
-  function openKabilCapitalModal(id) {
+  function kabilCapitalRowType(item) {
+    const spv  = new Set(['EntreOceanos (80%)', 'AEDIFIKA (20%)', 'Total Entremares', 'EntreOceanos (70%)', 'AEDIFIKA (30%)']);
+    const eo   = new Set(['EntreOceanos Ops CAPEX', 'TOTAL RAISED']);
+    if (spv.has(item) && eo.has(item)) return { label: 'Both', style: 'color:#6B24A8;background:#F5EEFF;border:1px solid #D9C0F5' };
+    if (spv.has(item)) return { label: 'Entremares SPV', style: 'color:#1A5FA8;background:#EEF4FD;border:1px solid #BDD3F5' };
+    if (eo.has(item))  return { label: 'EntreOceanos Holding', style: 'color:#1A7F4A;background:#F0FBF5;border:1px solid #C3E8D2' };
+    return { label: '—', style: 'color:#B0B0AA' };
+  }
+
+  function kabilRenderCapitalTable(data) {
+    kabilCapitalCache = {};
+    kabilCapitalCount = data.length;
+    data.forEach(r => { kabilCapitalCache[r.id] = r; });
+
+    const tbody = document.getElementById('kabil-capital-tbody');
+    const count = document.getElementById('kabil-capital-count');
+    if (count) count.textContent = data.length + ' row' + (data.length !== 1 ? 's' : '');
+
+    if (!tbody) return;
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No rows yet.</td></tr>';
+      return;
+    }
+
+    const last = data.length - 1;
+    tbody.innerHTML = data.map((r, i) => {
+      const fore     = r.forecasted || 0;
+      const act      = r.actual     || 0;
+      const variance = fore - act;
+      const vc       = variance >= 0 ? 'color:#1A7F4A;font-weight:600' : 'color:#C0392B;font-weight:600';
+      const boldStyle = r.is_total ? 'font-weight:700' : 'font-weight:normal';
+      const type      = kabilCapitalRowType(r.item);
+      const typeBadge = `<span style="font-size:10px;font-weight:700;letter-spacing:0.04em;border-radius:100px;padding:3px 9px;white-space:nowrap;${type.style}">${type.label}</span>`;
+      return `
+        <tr data-id="${r.id}" style="${r.is_total ? 'background:#FAFAF8' : ''}">
+          <td style="${boldStyle}">${escAdminHtml(r.item)}</td>
+          <td>${typeBadge}</td>
+          <td class="td-mono" style="${boldStyle}">$${Number(fore).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          <td class="td-mono" style="${boldStyle}">$${Number(act).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          <td class="td-mono" style="${vc}">${variance >= 0 ? '+' : ''}$${Math.abs(variance).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          <td style="text-align:center;color:#1A7F4A;font-weight:700">${r.is_total ? '✓' : ''}</td>
+          <td style="color:#9B9B9B">${r.sort_order ?? i}</td>
+          <td class="td-actions">
+            <button class="btn-reorder" onclick="kabilMoveCapitalRow('${r.id}','up')" ${i === 0 ? 'disabled' : ''}>↑</button>
+            <button class="btn-reorder" onclick="kabilMoveCapitalRow('${r.id}','down')" ${i === last ? 'disabled' : ''}>↓</button>
+            <button class="btn-edit" onclick="kabilOpenCapitalModal('${r.id}')">Edit</button>
+            <button class="btn-delete" onclick="kabilDeleteCapital('${r.id}')">Delete</button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function kabilOpenCapitalModal(id) {
     kabilEditingCapitalId = id || null;
-    const title = document.getElementById('kabil-modal-capital-title');
+    const title  = document.getElementById('kabil-modal-capital-title');
     const saveBtn = document.getElementById('kabil-modal-capital-save');
-    if (title) title.textContent = id ? 'Edit Capital Row' : 'Add Capital Row';
-    if (saveBtn) saveBtn.textContent = id ? 'Save Changes' : 'Add Row';
+    if (title)   title.textContent   = id ? 'Edit Capital Row' : 'Add Capital Structure Row';
+    if (saveBtn) saveBtn.textContent = id ? 'Save Changes'     : 'Save Row';
 
     const row = id ? kabilCapitalCache[id] : null;
-    document.getElementById('kabil-cap-item').value       = row?.item       || '';
-    document.getElementById('kabil-cap-forecasted').value = row?.forecasted ?? '';
-    document.getElementById('kabil-cap-actual').value     = row?.actual     ?? '';
-    document.getElementById('kabil-cap-stake').value      = row?.stake      ?? '';
-    document.getElementById('kabil-cap-sort').value       = row?.sort_order ?? kabilCapitalCount;
-    document.getElementById('kabil-cap-is-total').checked = row?.is_total   || false;
+    document.getElementById('kabil-cr-item').value       = row?.item        || '';
+    document.getElementById('kabil-cr-forecasted').value = row?.forecasted  ?? '';
+    document.getElementById('kabil-cr-actual').value     = row?.actual      ?? '';
+    document.getElementById('kabil-cr-sort').value       = row?.sort_order  ?? kabilCapitalCount;
+    document.getElementById('kabil-cr-is-total').checked = row?.is_total    || false;
 
     document.getElementById('kabil-modal-capital').style.display = 'flex';
   }
 
-  function kabilEditCapital(id) { openKabilCapitalModal(id); }
-
-  async function kabilDeleteCapital(id) {
-    if (!confirm('Delete this capital row?')) return;
-    const { error } = await supabaseClient.from('project_capital_structure').delete().eq('id', id);
-    if (error) { showToast('Delete failed: ' + error.message, true); return; }
-    showToast('Row deleted.'); kabilLoadCapital();
-  }
-
   async function kabilSaveCapital() {
-    const item       = document.getElementById('kabil-cap-item').value.trim();
-    const forecasted = parseFloat(document.getElementById('kabil-cap-forecasted').value) || null;
-    const actual     = parseFloat(document.getElementById('kabil-cap-actual').value)     || null;
-    const stake      = parseFloat(document.getElementById('kabil-cap-stake').value)      || null;
-    const sortOrder  = parseInt(document.getElementById('kabil-cap-sort').value)         || 0;
-    const isTotal    = document.getElementById('kabil-cap-is-total').checked;
+    const item       = document.getElementById('kabil-cr-item').value.trim();
+    const forecasted = parseFloat(document.getElementById('kabil-cr-forecasted').value) || null;
+    const actual     = parseFloat(document.getElementById('kabil-cr-actual').value)     || null;
+    const sortOrder  = parseInt(document.getElementById('kabil-cr-sort').value)         || 0;
+    const isTotal    = document.getElementById('kabil-cr-is-total').checked;
 
     if (!item) { alert('Item name is required.'); return; }
 
     const btn = document.getElementById('kabil-modal-capital-save');
     btn.disabled = true;
 
-    const payload = { project_name: 'Kabil', item, forecasted, actual, stake, sort_order: sortOrder, is_total: isTotal };
+    const payload = { project_name: 'Kabil', item, forecasted, actual, sort_order: sortOrder, is_total: isTotal };
 
     let error;
     if (kabilEditingCapitalId) {
@@ -8130,13 +8145,50 @@
     btn.disabled = false;
     if (error) { showToast('Save failed: ' + error.message, true); return; }
     document.getElementById('kabil-modal-capital').style.display = 'none';
-    showToast('Row saved.'); kabilLoadCapital();
+    showToast('Row saved.');
+    kabilLoadCapital();
   }
 
-  document.getElementById('kabil-modal-capital-close').addEventListener('click', () => document.getElementById('kabil-modal-capital').style.display = 'none');
-  document.getElementById('kabil-modal-capital-cancel').addEventListener('click', () => document.getElementById('kabil-modal-capital').style.display = 'none');
+  async function kabilDeleteCapital(rowId) {
+    if (!confirm('Delete this row?')) return;
+    const { error } = await supabaseClient.from('project_capital_structure').delete().eq('id', rowId);
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
+    showToast('Row deleted.');
+    kabilLoadCapital();
+  }
+
+  async function kabilMoveCapitalRow(id, direction) {
+    const { data: freshItems, error } = await supabaseClient
+      .from('project_capital_structure')
+      .select('*')
+      .eq('project_name', 'Kabil')
+      .order('sort_order', { ascending: true, nullsFirst: false });
+    if (error) { showToast('Reorder failed.', true); return; }
+
+    const idx = freshItems.findIndex(r => String(r.id) === String(id));
+    if (idx === -1) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= freshItems.length) return;
+
+    const sortA = freshItems[idx].sort_order       ?? idx;
+    const sortB = freshItems[targetIdx].sort_order ?? targetIdx;
+
+    const [r1, r2] = await Promise.all([
+      supabaseClient.from('project_capital_structure').update({ sort_order: sortB }).eq('id', freshItems[idx].id),
+      supabaseClient.from('project_capital_structure').update({ sort_order: sortA }).eq('id', freshItems[targetIdx].id)
+    ]);
+    if (r1.error || r2.error) { showToast('Reorder failed.', true); return; }
+    kabilLoadCapital();
+  }
+
+  document.getElementById('kabil-modal-capital-close').addEventListener('click', () => {
+    document.getElementById('kabil-modal-capital').style.display = 'none';
+  });
+  document.getElementById('kabil-modal-capital-cancel').addEventListener('click', () => {
+    document.getElementById('kabil-modal-capital').style.display = 'none';
+  });
   document.getElementById('kabil-modal-capital-save').addEventListener('click', kabilSaveCapital);
-  document.getElementById('kabil-modal-capital').addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
+  document.getElementById('kabil-btn-add-capital').addEventListener('click', () => kabilOpenCapitalModal());
 
   function kabilRenderAdminGallery() {
     const grid = document.getElementById('kabil-gallery-admin-grid');
