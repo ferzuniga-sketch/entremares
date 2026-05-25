@@ -439,7 +439,7 @@
             </table>
           </div>
 
-          <p class="fin-note" style="font-style:normal">EntreOceanos holds 80% of Entremares. AEDIFIKA holds the remaining 20% as construction equity partner.</p>
+          <p class="fin-note" id="allure-capital-note" style="font-style:normal">Capital structure data loading…</p>
         </div>
 
         <!-- 2: Project Budget (Entremares Level) -->
@@ -1071,6 +1071,14 @@
     }
 
     const spvRows = rows.filter(r => r.type === 'Entremares SPV' || r.type === 'Both');
+    const noteEl = document.getElementById('allure-capital-note');
+    if (noteEl) {
+      const entreRow   = spvRows.find(r => !r.is_total && r.item.toLowerCase().includes('entreoceano'));
+      const aedRow     = spvRows.find(r => !r.is_total && r.item.toLowerCase().includes('aedifika'));
+      const entreStake = entreRow?.stake != null ? entreRow.stake + '%' : '—';
+      const aedStake   = aedRow?.stake   != null ? aedRow.stake   + '%' : '—';
+      noteEl.textContent = 'EntreOceanos holds ' + entreStake + ' of Entremares. AEDIFIKA holds the remaining ' + aedStake + ' as capital partner.';
+    }
     const eoRows  = rows.filter(r => r.type === 'EntreOceanos Holding' || r.type === 'Both');
 
     if (spvRows.length === 0) {
