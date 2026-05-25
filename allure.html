@@ -1070,58 +1070,31 @@
       return;
     }
 
-    const byItem = {};
-    rows.forEach(r => { byItem[r.item] = r; });
+    const spvRows = rows.filter(r => r.type === 'Entremares SPV' || r.type === 'Both');
+    const eoRows  = rows.filter(r => r.type === 'EntreOceanos Holding' || r.type === 'Both');
 
-    /* ── Card 1: Entremares SPV ── */
-    const spvRows = [
-      { key: 'EntreOceanos (80%)', stake: '80%',  total: false },
-      { key: 'AEDIFIKA (20%)',     stake: '20%',  total: false },
-      { key: 'Total Entremares',   stake: '100%', total: true  }
-    ];
-    spvTbody.innerHTML = spvRows.map(({ key, stake, total }) => {
-      const r    = byItem[key];
-      const fore = r ? fmt(r.forecasted || 0) : '—';
-      const act  = r ? fmt(r.actual     || 0) : '—';
-      if (total) {
-        return `<tr style="background:#F2F2EF">
-          <td style="font-weight:700">${escHtml(key)}</td>
-          <td style="font-weight:700">${fore}</td>
-          <td style="font-weight:700">${act}</td>
-          <td style="font-weight:700">${stake}</td>
-        </tr>`;
-      }
-      return `<tr>
-        <td>${escHtml(key)}</td>
-        <td>${fore}</td>
-        <td>${act}</td>
-        <td style="color:#6B6B6B">${stake}</td>
-      </tr>`;
-    }).join('');
+    if (spvRows.length === 0) {
+      spvTbody.innerHTML = empty4;
+    } else {
+      spvTbody.innerHTML = spvRows.map(r => {
+        const fore  = r.forecasted || 0;
+        const act   = r.actual     || 0;
+        const stake = r.stake != null ? r.stake + '%' : '—';
+        const bold  = r.is_total ? 'font-weight:700;background:#F2F2EF' : '';
+        return '<tr style="' + bold + '"><td style="' + bold + '">' + escHtml(r.item) + '</td><td style="' + bold + '">' + fmt(fore) + '</td><td style="' + bold + '">' + fmt(act) + '</td><td style="color:#6B6B6B">' + stake + '</td></tr>';
+      }).join('');
+    }
 
-    /* ── Card 2: EntreOceanos Holding ── */
-    const eoRows = [
-      { key: 'EntreOceanos (80%)',    label: 'Entremares (80%)', total: false },
-      { key: 'EntreOceanos Ops CAPEX', label: 'Ops CAPEX',       total: false },
-      { key: 'TOTAL RAISED',           label: 'TOTAL RAISED',    total: true  }
-    ];
-    eoTbody.innerHTML = eoRows.map(({ key, label, total }) => {
-      const r    = byItem[key];
-      const fore = r ? fmt(r.forecasted || 0) : '—';
-      const act  = r ? fmt(r.actual     || 0) : '—';
-      if (total) {
-        return `<tr style="background:#F2F2EF">
-          <td style="font-weight:700">${escHtml(label)}</td>
-          <td style="font-weight:700">${fore}</td>
-          <td style="font-weight:700">${act}</td>
-        </tr>`;
-      }
-      return `<tr>
-        <td>${escHtml(label)}</td>
-        <td>${fore}</td>
-        <td>${act}</td>
-      </tr>`;
-    }).join('');
+    if (eoRows.length === 0) {
+      eoTbody.innerHTML = empty3;
+    } else {
+      eoTbody.innerHTML = eoRows.map(r => {
+        const fore = r.forecasted || 0;
+        const act  = r.actual     || 0;
+        const bold = r.is_total ? 'font-weight:700;background:#F2F2EF' : '';
+        return '<tr style="' + bold + '"><td style="' + bold + '">' + escHtml(r.item) + '</td><td style="' + bold + '">' + fmt(fore) + '</td><td style="' + bold + '">' + fmt(act) + '</td></tr>';
+      }).join('');
+    }
   }
 
   function renderSalesFinancials(rows) {

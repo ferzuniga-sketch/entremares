@@ -2255,6 +2255,7 @@
             <thead>
               <tr>
                 <th>Item</th>
+                <th>Type</th>
                 <th>Forecasted</th>
                 <th>Actual</th>
                 <th>Stake</th>
@@ -3260,6 +3261,15 @@
         <label>Item Name</label>
         <input type="text" id="cr-item" placeholder="e.g. EntreOceanos (80%)">
       </div>
+      <div class="field" style="margin-top:14px">
+        <label>Type</label>
+        <select id="cr-type">
+          <option value="">— Select type —</option>
+          <option value="Entremares SPV">Entremares SPV</option>
+          <option value="EntreOceanos Holding">EntreOceanos Holding</option>
+          <option value="Both">Both</option>
+        </select>
+      </div>
       <div class="form-grid-2" style="margin-top:14px">
         <div class="field">
           <label>Forecasted ($)</label>
@@ -3448,6 +3458,15 @@
           <input type="number" id="rdm-cr-sort" placeholder="0" step="1" min="0">
         </div>
       </div>
+      <div class="field" style="margin-top:14px">
+        <label>Type</label>
+        <select id="rdm-cr-type">
+          <option value="">— Select type —</option>
+          <option value="Entremares SPV">Entremares SPV</option>
+          <option value="EntreOceanos Holding">EntreOceanos Holding</option>
+          <option value="Both">Both</option>
+        </select>
+      </div>
       <div style="margin-top:14px">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
           <input type="checkbox" id="rdm-cr-is-total"> Mark as total row
@@ -3583,6 +3602,15 @@
       <div class="field">
         <label>Item Name</label>
         <input type="text" id="kabil-cr-item" placeholder="e.g. EntreOceanos (80%)">
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label>Type</label>
+        <select id="kabil-cr-type">
+          <option value="">— Select type —</option>
+          <option value="Entremares SPV">Entremares SPV</option>
+          <option value="EntreOceanos Holding">EntreOceanos Holding</option>
+          <option value="Both">Both</option>
+        </select>
       </div>
       <div class="form-grid-2" style="margin-top:14px">
         <div class="field">
@@ -5815,16 +5843,6 @@
     renderCapitalAdminTable(data || []);
   }
 
-  function capitalRowType(item) {
-    const spv  = new Set(['EntreOceanos (80%)', 'AEDIFIKA (20%)', 'Total Entremares']);
-    const eo   = new Set(['EntreOceanos Ops CAPEX', 'TOTAL RAISED']);
-    const both = spv.has(item) && eo.has(item);
-    if (both)      return { label: 'Both',                  style: 'color:#6B24A8;background:#F5EEFF;border:1px solid #D9C0F5' };
-    if (spv.has(item)) return { label: 'Entremares SPV',   style: 'color:#1A5FA8;background:#EEF4FD;border:1px solid #BDD3F5' };
-    if (eo.has(item))  return { label: 'EntreOceanos Holding', style: 'color:#1A7F4A;background:#F0FBF5;border:1px solid #C3E8D2' };
-    return { label: '—', style: 'color:#B0B0AA' };
-  }
-
   function renderCapitalAdminTable(data) {
     capitalCache = {};
     capitalCount = data.length;
@@ -5846,8 +5864,7 @@
       const variance = fore - act;
       const vc        = variance >= 0 ? 'color:#1A7F4A;font-weight:600' : 'color:#C0392B;font-weight:600';
       const boldStyle = r.is_total ? 'font-weight:700' : 'font-weight:normal';
-      const type      = capitalRowType(r.item);
-      const typeBadge = `<span style="font-size:10px;font-weight:700;letter-spacing:0.04em;border-radius:100px;padding:3px 9px;white-space:nowrap;${type.style}">${type.label}</span>`;
+      const typeBadge = getCapitalTypeBadge(r.type);
       return `
         <tr data-id="${r.id}" data-sort="${i}" style="${r.is_total ? 'background:#FAFAF8' : ''}">
           <td style="${boldStyle}">${escHtml(r.item)}</td>
@@ -5874,6 +5891,7 @@
     document.getElementById('modal-capital-title').textContent = 'Add Capital Structure Row';
     document.getElementById('modal-capital-save').textContent  = 'Add Row';
     ['cr-item', 'cr-forecasted', 'cr-actual'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('cr-type').value        = '';
     document.getElementById('cr-sort').value       = capitalCount;
     document.getElementById('cr-is-total').checked = false;
     document.getElementById('modal-capital-row').classList.add('open');
@@ -5895,7 +5913,7 @@
     const btn = document.getElementById('modal-capital-save');
     btn.disabled = true;
 
-    const payload = { project_name: ALLURE_PROJECT, item, forecasted, actual, is_total: isTotal, sort_order: sortOrder };
+    const payload = { project_name: ALLURE_PROJECT, item, forecasted, actual, is_total: isTotal, sort_order: sortOrder, type: document.getElementById('cr-type').value || null };
 
     let error;
     if (editingCapitalId !== null) {
@@ -6169,6 +6187,7 @@
       document.getElementById('modal-capital-title').textContent = 'Edit Capital Structure Row';
       document.getElementById('modal-capital-save').textContent  = 'Save Row';
       document.getElementById('cr-item').value       = r.item       || '';
+      document.getElementById('cr-type').value       = r.type       || '';
       document.getElementById('cr-forecasted').value = r.forecasted != null ? r.forecasted : 0;
       document.getElementById('cr-actual').value     = r.actual     != null ? r.actual : 0;
       document.getElementById('cr-sort').value       = r.sort_order != null ? r.sort_order : 0;
@@ -6301,6 +6320,17 @@
 
   function escAdminHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getCapitalTypeBadge(type) {
+    if (!type) return '<span style="color:#B0B0AA">—</span>';
+    const styles = {
+      'Entremares SPV':       'color:#1A5FA8;background:#EEF4FD;border:1px solid #BDD3F5',
+      'EntreOceanos Holding': 'color:#1A7F4A;background:#F0FBF5;border:1px solid #C3E8D2',
+      'Both':                 'color:#6B24A8;background:#F5EEFF;border:1px solid #D9C0F5'
+    };
+    const style = styles[type] || 'color:#B0B0AA';
+    return '<span style="font-size:10px;font-weight:700;letter-spacing:0.04em;border-radius:100px;padding:3px 9px;white-space:nowrap;' + style + '">' + type + '</span>';
   }
 
   /* ── Upload ── */
@@ -6719,7 +6749,7 @@
     const tbody = document.getElementById('rdm-capital-tbody');
     const count = document.getElementById('rdm-capital-count');
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No rows yet. Add EntreOcéanos 70% ($560,000) and AEDIFIKA 30% ($240,000).</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No rows yet. Add EntreOcéanos 70% ($560,000) and AEDIFIKA 30% ($240,000).</td></tr>';
       if (count) count.textContent = '0 rows';
       return;
     }
@@ -6727,8 +6757,10 @@
       const fore = r.forecasted || 0, act = r.actual || 0;
       const v = fore - act;
       const vc = v >= 0 ? 'color:#1A7F4A;font-weight:600' : 'color:#C0392B;font-weight:600';
+      const typeBadge = getCapitalTypeBadge(r.type);
       return `<tr data-id="${r.id}" style="${r.is_total ? 'background:#FAFAF8' : ''}">
         <td style="${r.is_total ? 'font-weight:700' : ''}">${escAdminHtml(r.item)}</td>
+        <td>${typeBadge}</td>
         <td class="td-mono">${fmt(fore)}</td>
         <td class="td-mono">${fmt(act)}</td>
         <td style="color:#6B6B6B">${r.stake || '—'}</td>
@@ -6748,6 +6780,7 @@
     document.getElementById('rdm-modal-capital-title').textContent = 'Add Capital Row';
     document.getElementById('rdm-modal-capital-save').textContent  = 'Add Row';
     ['rdm-cr-item','rdm-cr-forecasted','rdm-cr-actual'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rdm-cr-type').value = '';
     document.getElementById('rdm-cr-sort').value = rdmCapitalCount;
     document.getElementById('rdm-cr-is-total').checked = false;
     document.getElementById('rdm-modal-capital').classList.add('open');
@@ -6759,6 +6792,7 @@
     document.getElementById('rdm-modal-capital-title').textContent = 'Edit Capital Row';
     document.getElementById('rdm-modal-capital-save').textContent  = 'Save';
     document.getElementById('rdm-cr-item').value       = r.item        || '';
+    document.getElementById('rdm-cr-type').value       = r.type        || '';
     document.getElementById('rdm-cr-forecasted').value = r.forecasted  || '';
     document.getElementById('rdm-cr-actual').value     = r.actual      || '';
     document.getElementById('rdm-cr-sort').value       = r.sort_order  ?? 0;
@@ -6781,7 +6815,7 @@
     const isTotal    = document.getElementById('rdm-cr-is-total').checked;
     if (!item) { alert('Item name is required.'); return; }
     const btn = document.getElementById('rdm-modal-capital-save'); btn.disabled = true;
-    const payload = { project_name: RDM_PROJECT, item, forecasted, actual, is_total: isTotal, sort_order: sortOrder };
+    const payload = { project_name: RDM_PROJECT, item, forecasted, actual, is_total: isTotal, sort_order: sortOrder, type: document.getElementById('rdm-cr-type').value || null };
     let error;
     if (rdmCapitalEditingId) {
       ({ error } = await supabaseClient.from('project_capital_structure').update(payload).eq('id', rdmCapitalEditingId));
@@ -8053,15 +8087,6 @@
     kabilRenderCapitalTable(data || []);
   }
 
-  function kabilCapitalRowType(item) {
-    const spv  = new Set(['EntreOceanos (80%)', 'AEDIFIKA (20%)', 'Total Entremares', 'EntreOceanos (70%)', 'AEDIFIKA (30%)']);
-    const eo   = new Set(['EntreOceanos Ops CAPEX', 'TOTAL RAISED']);
-    if (spv.has(item) && eo.has(item)) return { label: 'Both', style: 'color:#6B24A8;background:#F5EEFF;border:1px solid #D9C0F5' };
-    if (spv.has(item)) return { label: 'Entremares SPV', style: 'color:#1A5FA8;background:#EEF4FD;border:1px solid #BDD3F5' };
-    if (eo.has(item))  return { label: 'EntreOceanos Holding', style: 'color:#1A7F4A;background:#F0FBF5;border:1px solid #C3E8D2' };
-    return { label: '—', style: 'color:#B0B0AA' };
-  }
-
   function kabilRenderCapitalTable(data) {
     kabilCapitalCache = {};
     kabilCapitalCount = data.length;
@@ -8084,8 +8109,7 @@
       const variance = fore - act;
       const vc       = variance >= 0 ? 'color:#1A7F4A;font-weight:600' : 'color:#C0392B;font-weight:600';
       const boldStyle = r.is_total ? 'font-weight:700' : 'font-weight:normal';
-      const type      = kabilCapitalRowType(r.item);
-      const typeBadge = `<span style="font-size:10px;font-weight:700;letter-spacing:0.04em;border-radius:100px;padding:3px 9px;white-space:nowrap;${type.style}">${type.label}</span>`;
+      const typeBadge = getCapitalTypeBadge(r.type);
       return `
         <tr data-id="${r.id}" style="${r.is_total ? 'background:#FAFAF8' : ''}">
           <td style="${boldStyle}">${escAdminHtml(r.item)}</td>
@@ -8114,6 +8138,7 @@
 
     const row = id ? kabilCapitalCache[id] : null;
     document.getElementById('kabil-cr-item').value       = row?.item        || '';
+    document.getElementById('kabil-cr-type').value       = row?.type        || '';
     document.getElementById('kabil-cr-forecasted').value = row?.forecasted  ?? '';
     document.getElementById('kabil-cr-actual').value     = row?.actual      ?? '';
     document.getElementById('kabil-cr-sort').value       = row?.sort_order  ?? kabilCapitalCount;
@@ -8134,7 +8159,8 @@
     const btn = document.getElementById('kabil-modal-capital-save');
     btn.disabled = true;
 
-    const payload = { project_name: 'Kabil', item, forecasted, actual, sort_order: sortOrder, is_total: isTotal };
+    const kabilType = document.getElementById('kabil-cr-type').value || null;
+    const payload = { project_name: 'Kabil', item, forecasted, actual, sort_order: sortOrder, is_total: isTotal, type: kabilType };
 
     let error;
     if (kabilEditingCapitalId) {

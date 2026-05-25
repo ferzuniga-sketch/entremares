@@ -398,7 +398,6 @@
         <div class="section">
           <div class="sec-title">Capital Structure</div>
 
-          <!-- Card 1: Entremares SPV -->
           <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
             <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
               <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREMARES — Mexican SPV</div>
@@ -413,13 +412,12 @@
                   <th>Stake</th>
                 </tr>
               </thead>
-              <tbody id="capital-spv-tbody">
+              <tbody id="kabil-capital-spv-tbody">
                 <tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Card 2: EntreOceanos Holding -->
           <div class="card" style="padding:0;overflow:hidden">
             <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
               <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREOCÉANOS — Panama Holding</div>
@@ -433,13 +431,13 @@
                   <th>Actual</th>
                 </tr>
               </thead>
-              <tbody id="capital-eo-tbody">
+              <tbody id="kabil-capital-eo-tbody">
                 <tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
               </tbody>
             </table>
           </div>
 
-          <p class="fin-note" style="font-style:normal">EntreOceanos holds 80% of Entremares. AEDIFIKA holds the remaining 20% as construction equity partner.</p>
+          <p class="fin-note" id="kabil-capital-note" style="font-style:normal">Capital structure data loading…</p>
         </div>
 
         <!-- 2: Project Budget (Entremares Level) -->
@@ -1124,6 +1122,48 @@
     }).join('');
   }
 
+  function renderKabilCapitalStructure(rows) {
+    const spvTbody = document.getElementById('kabil-capital-spv-tbody');
+    const eoTbody  = document.getElementById('kabil-capital-eo-tbody');
+    if (!spvTbody || !eoTbody) return;
+
+    const empty4 = '<tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+    const empty3 = '<tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+
+    if (!rows || rows.length === 0) {
+      spvTbody.innerHTML = empty4;
+      eoTbody.innerHTML  = empty3;
+      return;
+    }
+
+    const spvRows = rows.filter(r => r.type === 'Entremares SPV' || r.type === 'Both');
+    const eoRows  = rows.filter(r => r.type === 'EntreOceanos Holding' || r.type === 'Both');
+    const spvTotal = spvRows.find(r => r.is_total);
+    const noteEl   = document.getElementById('kabil-capital-note');
+    if (noteEl && spvTotal) {
+      const entreRow = spvRows.find(r => !r.is_total && r.item.toLowerCase().includes('entreoceano'));
+      const aedRow   = spvRows.find(r => !r.is_total && r.item.toLowerCase().includes('aedifika'));
+      const entreStake = entreRow?.stake != null ? entreRow.stake + '%' : '—';
+      const aedStake   = aedRow?.stake   != null ? aedRow.stake   + '%' : '—';
+      noteEl.textContent = 'EntreOceanos holds ' + entreStake + ' of Entremares. AEDIFIKA holds the remaining ' + aedStake + ' as capital partner.';
+    }
+
+    spvTbody.innerHTML = spvRows.length === 0 ? empty4 : spvRows.map(r => {
+      const fore  = r.forecasted || 0;
+      const act   = r.actual     || 0;
+      const stake = r.stake != null ? r.stake + '%' : '—';
+      const bold  = r.is_total ? 'font-weight:700;background:#F2F2EF' : '';
+      return '<tr style="' + bold + '"><td style="' + bold + '">' + escHtml(r.item) + '</td><td style="' + bold + '">' + fmt(fore) + '</td><td style="' + bold + '">' + fmt(act) + '</td><td style="color:#6B6B6B">' + stake + '</td></tr>';
+    }).join('');
+
+    eoTbody.innerHTML = eoRows.length === 0 ? empty3 : eoRows.map(r => {
+      const fore = r.forecasted || 0;
+      const act  = r.actual     || 0;
+      const bold = r.is_total ? 'font-weight:700;background:#F2F2EF' : '';
+      return '<tr style="' + bold + '"><td style="' + bold + '">' + escHtml(r.item) + '</td><td style="' + bold + '">' + fmt(fore) + '</td><td style="' + bold + '">' + fmt(act) + '</td></tr>';
+    }).join('');
+  }
+
   function renderSalesFinancials(rows) {
     const tbody = document.getElementById('sales-tbody');
     if (!tbody) return;
@@ -1332,7 +1372,7 @@
     renderInvestorPosition(pos, pd);
     renderProceeds(sales);
     renderSalesFinancials(sales);
-    renderCapitalStructure(capital);
+    renderKabilCapitalStructure(capital);
   }
 
   function renderPage(inv) {

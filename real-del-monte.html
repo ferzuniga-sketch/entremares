@@ -493,7 +493,8 @@
         <!-- Capital Structure -->
         <div class="section">
           <div class="sec-title">Capital Structure</div>
-          <div class="card" style="padding:0;overflow:hidden">
+
+          <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
             <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
               <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREMARES — Mexican SPV</div>
               <div style="font-size:12px;color:#9B9B9B;margin-top:2px">Capital contributions to the project entity</div>
@@ -502,30 +503,37 @@
               <thead>
                 <tr>
                   <th>Partner</th>
-                  <th>Amount</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
                   <th>Stake</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>EntreOcéanos</td>
-                  <td id="cap-entreoc-amount">—</td>
-                  <td style="color:#6B6B6B">70%</td>
-                </tr>
-                <tr>
-                  <td>AEDIFIKA (30%)</td>
-                  <td id="cap-aedifika-amount">—</td>
-                  <td style="color:#6B6B6B">30%</td>
-                </tr>
-                <tr class="row-total">
-                  <td>Total</td>
-                  <td id="cap-total-amount">—</td>
-                  <td style="color:#6B6B6B">100%</td>
-                </tr>
+              <tbody id="rdm-capital-spv-tbody">
+                <tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
               </tbody>
             </table>
           </div>
-          <p class="fin-note" style="font-style:normal">EntreOcéanos holds 70% equity. AEDIFIKA holds the remaining 30% as a capital contributor.</p>
+
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 28px 12px;border-bottom:1px solid #EEEEE9">
+              <div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0D0D0D">ENTREOCÉANOS — Panama Holding</div>
+              <div style="font-size:12px;color:#9B9B9B;margin-top:2px">Total capital raised from investors</div>
+            </div>
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Forecasted</th>
+                  <th>Actual</th>
+                </tr>
+              </thead>
+              <tbody id="rdm-capital-eo-tbody">
+                <tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="fin-note" id="rdm-capital-note" style="font-style:normal">Capital structure data loading…</p>
         </div>
 
         <!-- Project Budget -->
@@ -1311,23 +1319,68 @@
   /* ══════════════════════════════════════════
      LOAD ALL DATA
   ══════════════════════════════════════════ */
+  function renderRdmCapitalStructure(rows) {
+    const spvTbody = document.getElementById('rdm-capital-spv-tbody');
+    const eoTbody  = document.getElementById('rdm-capital-eo-tbody');
+    if (!spvTbody || !eoTbody) return;
+
+    const empty4 = '<tr><td colspan="4" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+    const empty3 = '<tr><td colspan="3" style="padding:20px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
+
+    if (!rows || rows.length === 0) {
+      spvTbody.innerHTML = empty4;
+      eoTbody.innerHTML  = empty3;
+      return;
+    }
+
+    const spvRows = rows.filter(r => r.type === 'Entremares SPV' || r.type === 'Both');
+    const eoRows  = rows.filter(r => r.type === 'EntreOceanos Holding' || r.type === 'Both');
+
+    const noteEl = document.getElementById('rdm-capital-note');
+    if (noteEl) {
+      const entreRow = spvRows.find(r => !r.is_total && r.item.toLowerCase().includes('entreoceano'));
+      const aedRow   = spvRows.find(r => !r.is_total && r.item.toLowerCase().includes('aedifika'));
+      const entreStake = entreRow?.stake != null ? entreRow.stake + '%' : '—';
+      const aedStake   = aedRow?.stake   != null ? aedRow.stake   + '%' : '—';
+      noteEl.textContent = 'EntreOceanos holds ' + entreStake + ' of Entremares. AEDIFIKA holds the remaining ' + aedStake + ' as capital partner.';
+    }
+
+    spvTbody.innerHTML = spvRows.length === 0 ? empty4 : spvRows.map(r => {
+      const fore  = r.forecasted || 0;
+      const act   = r.actual     || 0;
+      const stake = r.stake != null ? r.stake + '%' : '—';
+      const bold  = r.is_total ? 'font-weight:700;background:#F2F2EF' : '';
+      return '<tr style="' + bold + '"><td style="' + bold + '">' + escHtml(r.item) + '</td><td style="' + bold + '">' + fmt(fore) + '</td><td style="' + bold + '">' + fmt(act) + '</td><td style="color:#6B6B6B">' + stake + '</td></tr>';
+    }).join('');
+
+    eoTbody.innerHTML = eoRows.length === 0 ? empty3 : eoRows.map(r => {
+      const fore = r.forecasted || 0;
+      const act  = r.actual     || 0;
+      const bold = r.is_total ? 'font-weight:700;background:#F2F2EF' : '';
+      return '<tr style="' + bold + '"><td style="' + bold + '">' + escHtml(r.item) + '</td><td style="' + bold + '">' + fmt(fore) + '</td><td style="' + bold + '">' + fmt(act) + '</td></tr>';
+    }).join('');
+  }
+
   async function loadRDMData(email) {
     const [
-      { data: pd,    error: e1 },
-      { data: budget, error: e3 },
-      { data: scen,   error: e4 },
-      { data: upd,    error: e5 }
+      { data: pd,      error: e1 },
+      { data: budget,  error: e3 },
+      { data: scen,    error: e4 },
+      { data: upd,     error: e5 },
+      { data: capital, error: e_cap }
     ] = await Promise.all([
       supabaseClient.from('project_details')  .select('*').eq('project_name', PROJECT_NAME).maybeSingle(),
       supabaseClient.from('project_budget')   .select('*').eq('project_name', PROJECT_NAME).order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
       supabaseClient.from('project_scenarios').select('*').eq('project_name', PROJECT_NAME).order('sort_order', { ascending: true, nullsFirst: false }),
-      supabaseClient.from('project_updates')  .select('*').eq('project_name', PROJECT_NAME).order('published_at', { ascending: false })
+      supabaseClient.from('project_updates')  .select('*').eq('project_name', PROJECT_NAME).order('published_at', { ascending: false }),
+      supabaseClient.from('project_capital_structure').select('*').eq('project_name','Real del Monte').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
     ]);
 
     if (e1) console.error('project_details:', e1);
     if (e3) console.error('project_budget:', e3);
     if (e4) console.error('project_scenarios:', e4);
     if (e5) console.error('project_updates:', e5);
+    if (e_cap) console.error('project_capital_structure:', e_cap);
 
     if (pd?.total_capex) GOAL = pd.total_capex;
 
@@ -1345,6 +1398,7 @@
     renderBudget(budget);
     renderScenarios(scen);
     renderUpdates(upd);
+    renderRdmCapitalStructure(capital);
     await loadFundingProgress();
     await loadInvestorCommitment(email);
   }
