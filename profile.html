@@ -424,17 +424,6 @@
     'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
   );
 
-  const INVESTORS = {
-    'fredbusher@gmail.com':          { name: 'Groupe Reaction',        initials: 'GR' },
-    'gilito.iii@gmail.com':          { name: 'Gilberto Padilla',       initials: 'GP' },
-    'alvaroilanes@gmail.com':        { name: 'Alvaro Villasante',      initials: 'AV' },
-    'cuellarolmos@gmail.com':        { name: 'Alberto Cuellar',        initials: 'AC' },
-    'sergio.gmd@gmail.com':          { name: 'Sergio Gomez',           initials: 'SG' },
-    'nacho.lucas@gmail.com':         { name: 'Nacho Lucas',            initials: 'NL' },
-    'ferzuniga@gmail.com':           { name: 'Fernando Zuniga',        initials: 'FZ' },
-    'madelcarmen.galindo@zuksa.net': { name: 'Ma del Carmen Galindo',  initials: 'MG' }
-  };
-
   let currentEmail = '';
 
   function getInitials(name) {
@@ -456,9 +445,33 @@
     }
 
     currentEmail = session.user.email.toLowerCase();
-    const inv         = INVESTORS[currentEmail];
-    const displayName = inv ? inv.name : session.user.email;
-    const initials    = inv ? inv.initials : getInitials(displayName);
+
+    const { data: invData } = await supabaseClient
+      .from('investors')
+      .select('name')
+      .ilike('email', currentEmail)
+      .maybeSingle();
+
+    const { data: profileData } = await supabaseClient
+      .from('investor_profiles')
+      .select('first_name, last_name')
+      .ilike('investor_email', currentEmail)
+      .maybeSingle();
+
+    let displayName, initials;
+    if (profileData && (profileData.first_name || profileData.last_name)) {
+      const first = profileData.first_name || '';
+      const last  = profileData.last_name  || '';
+      displayName = [first, last].filter(Boolean).join(' ');
+      initials = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase();
+    } else if (invData?.name) {
+      displayName = invData.name;
+      const parts = displayName.split(' ');
+      initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+    } else {
+      displayName = session.user.email;
+      initials = getInitials(displayName);
+    }
 
     document.getElementById('hdr-initials').textContent   = initials;
     document.getElementById('hdr-name').textContent       = displayName;
