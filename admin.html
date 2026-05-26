@@ -7597,10 +7597,24 @@
   }
 
   function kabilCalcNet(data) {
-    // NET TO INVESTORS = EntreOceanos Share - Less: WHT - Success Fee (and any other Less: rows after it)
-    // We exclude Gross Sales Revenue and Net to Entremares from the sum as they are subtotals
-    const excludeFromNet = ['Gross Sales Revenue', 'Net to Entremares', 'NET TO INVESTORS'];
-    const netRows = data.filter(r => !excludeFromNet.includes(r.item));
+    // NET TO INVESTORS = sum of rows AFTER Net to Entremares (excluding NET TO INVESTORS itself)
+    const netToEntreIdx = data.findIndex(r => r.item === 'Net to Entremares');
+    const netToInvIdx   = data.findIndex(r => r.item === 'NET TO INVESTORS');
+
+    // If we can find Net to Entremares, sum everything between it and NET TO INVESTORS
+    if (netToEntreIdx !== -1) {
+      const relevantRows = data.filter((r, i) =>
+        i > netToEntreIdx && r.item !== 'NET TO INVESTORS'
+      );
+      return {
+        forecasted: relevantRows.reduce((s, r) => s + (r.forecasted || 0), 0),
+        actual:     relevantRows.reduce((s, r) => s + (r.actual     || 0), 0)
+      };
+    }
+
+    // Fallback: sum all non-excluded rows
+    const excluded = ['Gross Sales Revenue', 'Net to Entremares', 'NET TO INVESTORS'];
+    const netRows  = data.filter(r => !excluded.includes(r.item));
     return {
       forecasted: netRows.reduce((s, r) => s + (r.forecasted || 0), 0),
       actual:     netRows.reduce((s, r) => s + (r.actual     || 0), 0)
