@@ -7597,10 +7597,13 @@
   }
 
   function kabilCalcNet(data) {
-    const nonNet = data.filter(r => r.item !== 'NET TO INVESTORS');
+    // NET TO INVESTORS = EntreOceanos Share - Less: WHT - Success Fee (and any other Less: rows after it)
+    // We exclude Gross Sales Revenue and Net to Entremares from the sum as they are subtotals
+    const excludeFromNet = ['Gross Sales Revenue', 'Net to Entremares', 'NET TO INVESTORS'];
+    const netRows = data.filter(r => !excludeFromNet.includes(r.item));
     return {
-      forecasted: nonNet.reduce((s, r) => s + (r.forecasted || 0), 0),
-      actual:     nonNet.reduce((s, r) => s + (r.actual     || 0), 0)
+      forecasted: netRows.reduce((s, r) => s + (r.forecasted || 0), 0),
+      actual:     netRows.reduce((s, r) => s + (r.actual     || 0), 0)
     };
   }
 
