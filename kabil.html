@@ -1005,52 +1005,43 @@
 
     const isNetRow = item => item === 'NET AVAILABLE FOR DISTRIBUTION' || item.toUpperCase().includes('NET TO INVESTORS');
 
-    /* max absolute variance across non-net rows, for bar scaling */
     const maxAbsVar = Math.max(
       ...rows.filter(r => !isNetRow(r.item)).map(r => Math.abs((r.actual || 0) - (r.forecasted || 0))),
       1
     );
 
     tbody.innerHTML = rows.map(r => {
-      const fore      = r.forecasted || 0;
-      const act       = r.actual     || 0;
-      const variance  = act - fore;
-      const isNet     = isNetRow(r.item);
-      const varColor  = variance > 0 ? '#1A7F4A' : (variance < 0 ? '#C0392B' : '#9B9B9B');
-      const cls       = isNet ? 'row-total' : '';
+      const fore     = r.forecasted || 0;
+      const act      = r.actual     || 0;
+      const variance = act - fore;
+      const isNet    = isNetRow(r.item);
+      const varColor = variance > 0 ? '#1A7F4A' : (variance < 0 ? '#C0392B' : '#9B9B9B');
+      const cls      = isNet ? 'row-total' : '';
 
       if (isNet) {
-        return `<tr class="${cls}">
-          <td>${escHtml(r.item)}</td>
-          <td>${fmt(fore)}</td>
-          <td>${fmt(act)}</td>
-          <td style="color:${varColor}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
-          <td></td>
-        </tr>`;
+        return '<tr class="' + cls + '">' +
+          '<td>' + escHtml(r.item) + '</td>' +
+          '<td>' + fmt(fore) + '</td>' +
+          '<td>' + fmt(act) + '</td>' +
+          '<td style="color:' + varColor + '">' + (variance >= 0 ? '+' : '') + fmt(Math.abs(variance)) + '</td>' +
+          '<td></td>' +
+        '</tr>';
       }
 
-      /* variance % using absolute forecasted as denominator so sign is unambiguous */
       const varPct    = fore !== 0 ? (Math.abs(variance) / Math.abs(fore) * 100) : 0;
       const varPctStr = (variance >= 0 ? '+' : '-') + varPct.toFixed(1) + '%';
       const barW      = Math.round(Math.abs(variance) / maxAbsVar * 80);
       const barHtml   = variance >= 0
-        ? `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden">
-             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
-           </div>`
-        : `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end">
-             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
-           </div>`;
+        ? '<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden"><div style="width:' + barW + 'px;height:100%;background:' + varColor + ';border-radius:3px"></div></div>'
+        : '<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end"><div style="width:' + barW + 'px;height:100%;background:' + varColor + ';border-radius:3px"></div></div>';
 
-      return `<tr class="${cls}">
-        <td>${escHtml(r.item)}</td>
-        <td>${fmt(fore)}</td>
-        <td>${fmt(act)}</td>
-        <td style="vertical-align:top;color:${varColor}">
-          <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
-          <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
-        </td>
-        <td style="vertical-align:middle">${barHtml}</td>
-      </tr>`;
+      return '<tr class="' + cls + '">' +
+        '<td>' + escHtml(r.item) + '</td>' +
+        '<td>' + fmt(fore) + '</td>' +
+        '<td>' + fmt(act) + '</td>' +
+        '<td style="vertical-align:top;color:' + varColor + '"><div>' + (variance >= 0 ? '+' : '') + fmt(Math.abs(variance)) + '</div><div style="font-size:11px;margin-top:2px;opacity:0.8">' + varPctStr + '</div></td>' +
+        '<td style="vertical-align:middle">' + barHtml + '</td>' +
+      '</tr>';
     }).join('');
   }
 
@@ -1161,30 +1152,6 @@
       const act  = r.actual     || 0;
       const bold = r.is_total ? 'font-weight:700;background:#F2F2EF' : '';
       return '<tr style="' + bold + '"><td style="' + bold + '">' + escHtml(r.item) + '</td><td style="' + bold + '">' + fmt(fore) + '</td><td style="' + bold + '">' + fmt(act) + '</td></tr>';
-    }).join('');
-  }
-
-  function renderSalesFinancials(rows) {
-    const tbody = document.getElementById('sales-tbody');
-    if (!tbody) return;
-    if (!rows || rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">No data available</td></tr>';
-      return;
-    }
-    tbody.innerHTML = rows.map(r => {
-      const fore     = r.forecasted || 0;
-      const act      = r.actual     || 0;
-      const variance = act - fore;
-      const itemStr  = r.item || '';
-      const isNet    = itemStr.toUpperCase().includes('NET TO INVESTORS') || itemStr.toUpperCase().includes('NET AVAILABLE FOR DISTRIBUTION');
-      const vc       = variance > 0 ? 'var-pos' : (variance < 0 ? 'var-neg' : '');
-      const rowCls   = isNet ? 'row-net' : '';
-      return `<tr class="${rowCls}">
-        <td>${escHtml(itemStr)}</td>
-        <td>${fmt(fore)}</td>
-        <td>${fmt(act)}</td>
-        <td class="${vc}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
-      </tr>`;
     }).join('');
   }
 
@@ -1371,7 +1338,6 @@
     renderUpdates(upd);
     renderInvestorPosition(pos, pd);
     renderProceeds(sales);
-    renderSalesFinancials(sales);
     renderKabilCapitalStructure(capital);
   }
 
