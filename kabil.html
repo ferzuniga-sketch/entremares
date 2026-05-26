@@ -1136,7 +1136,7 @@
       const aedRow   = spvRows.find(r => !r.is_total && r.item.toLowerCase().includes('aedifika'));
       const entreStake = entreRow?.stake != null ? entreRow.stake + '%' : '—';
       const aedStake   = aedRow?.stake   != null ? aedRow.stake   + '%' : '—';
-      noteEl.textContent = 'EntreOceanos holds ' + entreStake + ' of Entremares. AEDIFIKA holds the remaining ' + aedStake + ' as capital partner.';
+      noteEl.textContent = 'Initially forecasted at 70/30, the final capital structure was ' + entreStake + ' EntreOceanos and ' + aedStake + ' AEDIFIKA due to capital recycling from pre-sales.';
     }
 
     spvTbody.innerHTML = spvRows.length === 0 ? empty4 : spvRows.map(r => {
