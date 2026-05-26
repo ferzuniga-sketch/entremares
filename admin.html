@@ -7597,11 +7597,10 @@
   }
 
   function kabilCalcNet(data) {
-    const gross = data.find(r => r.item === 'Gross Sales Revenue');
-    const deds  = data.filter(r => r.item !== 'Gross Sales Revenue' && r.item !== 'NET TO INVESTORS');
+    const nonNet = data.filter(r => r.item !== 'NET TO INVESTORS');
     return {
-      forecasted: (gross?.forecasted || 0) - deds.reduce((s, r) => s + (r.forecasted || 0), 0),
-      actual:     (gross?.actual     || 0) - deds.reduce((s, r) => s + (r.actual     || 0), 0)
+      forecasted: nonNet.reduce((s, r) => s + (r.forecasted || 0), 0),
+      actual:     nonNet.reduce((s, r) => s + (r.actual     || 0), 0)
     };
   }
 
