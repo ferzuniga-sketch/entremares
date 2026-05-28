@@ -3089,16 +3089,19 @@
 
     // Build name and initials
     let name, initials, memberSince;
+    let firstName = '';
     if (profile && (profile.first_name || profile.last_name)) {
       const first = profile.first_name || '';
       const last  = profile.last_name  || '';
-      name     = [first, last].filter(Boolean).join(' ');
-      initials = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase();
+      name      = [first, last].filter(Boolean).join(' ');
+      firstName = first; // use full first_name field, e.g. "María del Carmen"
+      initials  = [(first[0] || ''), (last[0] || '')].filter(Boolean).join('').toUpperCase();
       memberSince = profile.member_since || invBase?.member_since || null;
     } else if (invBase?.name) {
-      name     = invBase.name;
+      name      = invBase.name;
+      firstName = name.split(' ')[0]; // fallback to first word
       const parts = name.split(' ');
-      initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+      initials  = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
       memberSince = invBase.member_since || null;
     } else {
       name     = email.split('@')[0];
@@ -3139,6 +3142,7 @@
     // Build investor object
     const inv = {
       name,
+      firstName,
       initials,
       memberSince,
       wallet:  allureGross,
@@ -3174,7 +3178,7 @@
     set('hdr-name', inv.name);
 
     /* Welcome */
-    const first = inv.name.split(' ')[0];
+    const first = inv.firstName || inv.name.split(' ')[0];
     set('welcome-name', 'Welcome back, ' + first);
     set('welcome-date', new Date().toLocaleDateString('en-US', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
