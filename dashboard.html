@@ -3036,19 +3036,6 @@
     set('stat-kabil-investment', inv.kabil.invested > 0 ? fmt(inv.kabil.invested) : '—');
     set('stat-total-returns', totalReturns > 0 ? '+' + fmt(totalReturns) : '—');
 
-    // Member since — from inv.memberSince set in initDashboard
-    if (inv.memberSince) {
-      const d = new Date(inv.memberSince + 'T12:00:00');
-      const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const sinceStr = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-      const years = new Date().getFullYear() - d.getFullYear();
-      set('stat-member-since', sinceStr);
-      set('stat-member-years', years >= 1 ? years + '+ years' : 'New member');
-    } else {
-      set('stat-member-since', '—');
-      set('stat-member-years', '');
-    }
-
     // Kabil card
     if (inv.kabil.invested > 0) {
       const kabilPct = ((inv.kabil.profit / inv.kabil.invested) * 100).toFixed(2);
