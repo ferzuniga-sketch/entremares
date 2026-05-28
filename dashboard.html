@@ -2584,20 +2584,30 @@
 
   function updatePortfolioHero() {
     if (!currentInvestor) return;
-    const initialInvestment  = currentInvestor.kabil.invested || 0;
+    const initialInvestment   = currentInvestor.kabil?.invested || 0;
+    const totalDistribution   = currentNetDistribution; // full earnings regardless of deployment
     const availableToWithdraw = Math.max(0, currentNetDistribution - pendingWithdrawalAmount - rdmCommittedAmount);
-    const totalProfit = availableToWithdraw - initialInvestment;
-    const returnPct   = initialInvestment > 0 ? (totalProfit / initialInvestment) * 100 : 0;
 
-    const profitEl  = document.getElementById('portfolio-profit');
-    const returnEl  = document.getElementById('portfolio-return');
-    const availEl   = document.getElementById('portfolio-avail');
-    const initEl    = document.getElementById('portfolio-initial');
+    const profitEl = document.getElementById('portfolio-profit');
+    const returnEl = document.getElementById('portfolio-return');
+    const availEl  = document.getElementById('portfolio-avail');
+    const initEl   = document.getElementById('portfolio-initial');
 
-    if (profitEl)  profitEl.textContent  = (totalProfit >= 0 ? '+' : '') + fmt(totalProfit);
-    if (returnEl)  returnEl.textContent  = (returnPct  >= 0 ? '+' : '') + returnPct.toFixed(2) + '%';
-    if (availEl)   availEl.textContent   = fmt(availableToWithdraw);
-    if (initEl)    initEl.textContent    = fmt(initialInvestment);
+    if (initialInvestment === 0 || totalDistribution === 0) {
+      if (profitEl) profitEl.textContent = '—';
+      if (returnEl) returnEl.textContent = '—';
+      if (availEl)  availEl.textContent  = '—';
+      if (initEl)   initEl.textContent   = '—';
+      return;
+    }
+
+    const totalProfit = totalDistribution - initialInvestment;
+    const returnPct   = (totalProfit / initialInvestment) * 100;
+
+    if (profitEl) profitEl.textContent = (totalProfit >= 0 ? '+' : '') + fmt(totalProfit);
+    if (returnEl) returnEl.textContent = (returnPct  >= 0 ? '+' : '') + returnPct.toFixed(2) + '%';
+    if (availEl)  availEl.textContent  = fmt(availableToWithdraw);
+    if (initEl)   initEl.textContent   = fmt(initialInvestment);
   }
 
   function updateNetDistributionDisplay() {
