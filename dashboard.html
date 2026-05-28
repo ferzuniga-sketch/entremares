@@ -678,31 +678,38 @@
       .login-wrap { padding: 36px 24px; }
       .stat-val { font-size: 20px; }
 
-      /* Portfolio hero — stack columns vertically on mobile */
-      .portfolio-hero { padding: 24px 20px 20px; }
+      /* Portfolio hero — mobile: compact list format */
+      .portfolio-hero { padding: 20px 18px 16px; border-radius: 12px; }
+      .portfolio-eyebrow { font-size: 9px; margin-bottom: 12px; }
       .portfolio-main { flex-direction: column; gap: 0; }
       .portfolio-col {
-        padding-right: 0 !important;
-        padding-left: 0 !important;
+        padding: 11px 0 !important;
         border-left: none !important;
-        border-top: 1px solid rgba(255,255,255,0.08);
-        padding-top: 16px;
-        padding-bottom: 4px;
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
+        border-top: 1px solid rgba(255,255,255,0.07) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
       }
       .portfolio-col:first-child {
-        border-top: none;
-        padding-top: 0;
+        border-top: none !important;
+        padding-top: 0 !important;
       }
-      .portfolio-number { font-size: 1.6rem; }
+      .portfolio-col:last-child { padding-bottom: 0 !important; }
+      .portfolio-number {
+        font-family: 'Inter', system-ui, sans-serif !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em !important;
+        margin-bottom: 0 !important;
+      }
       .portfolio-number-lbl {
-        font-size: 12px;
-        letter-spacing: 0;
-        order: -1;
+        font-size: 13px !important;
+        color: rgba(255,255,255,0.55) !important;
+        letter-spacing: 0 !important;
+        font-weight: 400 !important;
+        order: -1 !important;
       }
-      .portfolio-footnote { margin-top: 14px; padding-top: 12px; font-size: 11px; }
+      .portfolio-footnote { margin-top: 12px; padding-top: 12px; font-size: 10px; }
 
       /* Q&A topic selector */
       .dash-qa { padding: 22px 18px; }
