@@ -1161,6 +1161,8 @@
             if (capexCardEl) capexCardEl.textContent = rdm.capex || '~$' + Math.round(GOAL/1000) + 'K';
         }
         const rdmCardImg = document.getElementById('rdm-card-img');
+        console.log('RDM featured_photo from DB:', rdm.featured_photo);
+        console.log('RDM full object:', JSON.stringify(rdm));
         if (rdmCardImg && rdm.featured_photo) rdmCardImg.src = rdm.featured_photo;
         if (rdm.hero_title)  { const el = document.getElementById('rdm-card-title'); if (el) el.textContent = rdm.hero_title; }
         if (rdm.description) { const el = document.getElementById('rdm-desc');       if (el) el.textContent = rdm.description; }
