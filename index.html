@@ -664,7 +664,7 @@
                                 <div class="proj-num-lbl">Duration</div>
                             </div>
                         </div>
-                        <button class="proj-card-link" onclick="window.location.href='kabil.html'">
+                        <button class="proj-card-link" onclick="openProjectDetail('kabil')">
                             View Project Details <span class="arrow">→</span>
                         </button>
                     </div>
@@ -730,6 +730,10 @@
                         <p class="proj-card-desc" id="rdm-desc">Our current active project — a premium residential development in the heart of Tijuana's most sought-after neighborhood. Targeting 20-25% net return over 24 months.</p>
                         <div class="proj-card-numbers">
                             <div class="proj-num">
+                                <div class="proj-num-val" id="rdm-capex-card">~$850K</div>
+                                <div class="proj-num-lbl">Total Capex</div>
+                            </div>
+                            <div class="proj-num">
                                 <div class="proj-num-val" id="rdm-return">20–25%</div>
                                 <div class="proj-num-lbl">Target Return</div>
                             </div>
@@ -737,14 +741,10 @@
                                 <div class="proj-num-val" id="rdm-timeline">24 mo.</div>
                                 <div class="proj-num-lbl">Timeline</div>
                             </div>
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="rdm-status-val">Funding</div>
-                                <div class="proj-num-lbl">Status</div>
-                            </div>
                         </div>
-                        <a href="dashboard.html" class="proj-card-link">
+                        <button class="proj-card-link" onclick="openProjectDetail('real_del_monte')">
                             Learn More &amp; Participate <span class="arrow">→</span>
-                        </a>
+                        </button>
                     </div>
                 </article>
 
@@ -1149,6 +1149,11 @@
         if (tr.allure_investment_amount) document.getElementById('allure-investment').textContent = tr.allure_investment_amount;
 
         /* Real del Monte card */
+        // Update RDM capex card
+        if (rdm.capex || GOAL > 0) {
+            const capexCardEl = document.getElementById('rdm-capex-card');
+            if (capexCardEl) capexCardEl.textContent = rdm.capex || '~$' + Math.round(GOAL/1000) + 'K';
+        }
         const rdmCardImg = document.getElementById('rdm-card-img');
         if (rdmCardImg && rdm.featured_photo) rdmCardImg.src = rdm.featured_photo;
         if (rdm.hero_title)   document.getElementById('rdm-card-title').textContent = rdm.hero_title;

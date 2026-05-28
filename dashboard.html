@@ -2234,7 +2234,7 @@
         .eq('project_name', projectName);
       if (error) return;
       const total = (data || []).reduce((s, r) => s + Number(r.amount), 0);
-      if (total >= GOAL) {
+      if (GOAL > 0 && total >= GOAL) {
         document.getElementById('funded-banner').style.display = 'block';
         emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
           to_email:   'ferzuniga@gmail.com',
