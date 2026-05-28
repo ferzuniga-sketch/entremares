@@ -677,6 +677,43 @@
       .welcome-heading { font-size: 22px; }
       .login-wrap { padding: 36px 24px; }
       .stat-val { font-size: 20px; }
+
+      /* Portfolio hero — stack columns vertically on mobile */
+      .portfolio-hero { padding: 24px 20px 20px; }
+      .portfolio-main { flex-direction: column; gap: 0; }
+      .portfolio-col {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+        border-left: none !important;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        padding-top: 16px;
+        padding-bottom: 4px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+      }
+      .portfolio-col:first-child {
+        border-top: none;
+        padding-top: 0;
+      }
+      .portfolio-number { font-size: 1.6rem; }
+      .portfolio-number-lbl {
+        font-size: 12px;
+        letter-spacing: 0;
+        order: -1;
+      }
+      .portfolio-footnote { margin-top: 14px; padding-top: 12px; font-size: 11px; }
+
+      /* Q&A topic selector */
+      .dash-qa { padding: 22px 18px; }
+      .dash-qa-topic-select { min-width: 0; width: 100%; }
+      .dash-qa-topic-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .dash-qa-buttons { flex-direction: column; }
+      .btn-dash-qa-email,
+      .btn-dash-qa-wa { width: 100%; justify-content: center; }
+
+      /* Tabs */
+      .dash-tab { font-size: 13px; padding: 10px 14px 13px; }
     }
 
     /* ══════════════════════════════════════════
