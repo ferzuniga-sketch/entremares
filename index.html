@@ -358,6 +358,144 @@
             .proj-detail-inv-grid { grid-template-columns: repeat(2, 1fr); }
             .proj-detail-body { padding: 24px 20px 32px; }
         }
+
+    /* ── Hero eyebrow fix ── */
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-left: 2px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 1px;
+      background: rgba(255,255,255,0.45);
+      flex-shrink: 0;
+    }
+
+    /* ── Dark stats strip ── */
+    .stats-strip {
+      background: #0D0D0D;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 40px 0;
+    }
+    .stats-strip-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stats-strip-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      flex: 1;
+    }
+    .strip-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.25rem;
+      font-weight: 400;
+      color: #F5F5F0;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .strip-lbl {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.38);
+    }
+    .stats-strip-divider {
+      width: 1px;
+      height: 44px;
+      background: rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+
+    /* ── Editorial project list ── */
+    .proj-editorial { margin-top: 48px; }
+    .proj-editorial-row {
+      display: grid;
+      grid-template-columns: 36px 72px 1fr 200px 150px 130px 28px;
+      align-items: center;
+      gap: 28px;
+      padding: 28px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+    .proj-editorial-row:hover { background: rgba(0,0,0,0.03); }
+    .proj-editorial-row:hover .proj-ed-arrow { transform: translateX(5px); color: #0D0D0D; }
+    .proj-editorial-divider { height: 1px; background: #E8E8E4; }
+    .proj-ed-num {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #C0C0BA;
+    }
+    .proj-ed-img-wrap {
+      width: 72px;
+      height: 52px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .proj-ed-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .proj-ed-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: #0D0D0D;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .proj-ed-location { font-size: 0.75rem; color: #9B9B9B; margin-top: 3px; }
+    .proj-ed-dates { font-size: 0.8125rem; color: #6B6B6B; }
+    .proj-ed-return { display: flex; flex-direction: column; gap: 3px; }
+    .proj-ed-return-val {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #0D0D0D;
+    }
+    .proj-ed-return-lbl { font-size: 0.6875rem; color: #9B9B9B; }
+    .proj-ed-badge {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 100px;
+      padding: 5px 12px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+    .proj-ed-badge--done { background: #F0F0EC; color: #6B6B6B; }
+    .proj-ed-badge--funding { background: #ECFBF3; color: #1A7F4A; border: 1px solid #C3E8D2; }
+    .proj-ed-arrow { font-size: 1rem; color: #C0C0BA; transition: transform 0.2s, color 0.2s; text-align: right; }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .proj-editorial-row { grid-template-columns: 32px 60px 1fr 120px 24px; gap: 16px; }
+      .proj-ed-dates { display: none; }
+      .proj-ed-status { display: none; }
+    }
+    @media (max-width: 600px) {
+      .stats-strip-inner { flex-wrap: wrap; gap: 28px; padding: 0 24px; justify-content: center; }
+      .stats-strip-item { min-width: 42%; }
+      .stats-strip-divider { display: none; }
+      .strip-val { font-size: 1.875rem; }
+      .proj-editorial-row { grid-template-columns: 28px 52px 1fr 100px 20px; gap: 12px; padding: 20px 0; }
+      .proj-ed-title { font-size: 1.125rem; }
+      .proj-ed-return-val { font-size: 1rem; }
+    }
     </style>
 </head>
 <body>
@@ -469,37 +607,6 @@
     </section>
 
     <!-- ===== Photo Gallery Row ===== -->
-    <section class="hero-gallery" aria-label="Photo gallery">
-        <div class="gallery-row">
-            <div class="gallery-item" data-gallery-idx="0">
-                <img
-                    id="gallery-img-1"
-                    src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80"
-                    alt="Entremares development"
-                    class="gallery-img"
-                    loading="lazy"
-                >
-            </div>
-            <div class="gallery-item" data-gallery-idx="1">
-                <img
-                    id="gallery-img-2"
-                    src="https://images.unsplash.com/photo-1591867424488-7e3e1ef2ba65?w=900&q=80"
-                    alt="Tijuana aerial view"
-                    class="gallery-img"
-                    loading="lazy"
-                >
-            </div>
-            <div class="gallery-item" data-gallery-idx="2">
-                <img
-                    id="gallery-img-3"
-                    src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80"
-                    alt="Modern architecture"
-                    class="gallery-img"
-                    loading="lazy"
-                >
-            </div>
-        </div>
-    </section>
 
     <!-- Gallery Lightbox -->
     <div class="gallery-lightbox" id="gallery-lightbox" style="display:none" role="dialog" aria-modal="true" aria-label="Photo lightbox">
@@ -556,29 +663,28 @@
     </div>
 
     <!-- ===== Stats Bar ===== -->
-    <section class="stats" aria-label="Key statistics">
-        <div class="container">
-            <div class="stats-grid" data-stagger style="--stats-cols: 3">
-                <div class="stat-item fade-up">
-                    <div class="stat-value">
-                        <span id="stat-capital" class="dynamic-content">$1.1M+</span>
-                    </div>
-                    <div class="stat-label dynamic-content" id="stat-capital-lbl">Total Capital Deployed</div>
-                </div>
-                <div class="stat-item fade-up">
-                    <div class="stat-value">
-                        <span id="stat-return" class="dynamic-content">30.0%</span>
-                    </div>
-                    <div class="stat-label dynamic-content" id="stat-return-lbl">Historical Project Performance</div>
-                </div>
-                <div class="stat-item fade-up">
-                    <div class="stat-value">
-                        <span id="stat-investors" class="dynamic-content">10+</span>
-                    </div>
-                    <div class="stat-label dynamic-content" id="stat-investors-lbl">Active Participants</div>
-                </div>
-            </div>
+    <section class="stats-strip" aria-label="Performance statistics">
+      <div class="stats-strip-inner">
+        <div class="stats-strip-item">
+          <span class="strip-val dynamic-content" id="stat-capital">$1.1M+</span>
+          <span class="strip-lbl dynamic-content" id="stat-capital-lbl">Total Capital Deployed</span>
         </div>
+        <div class="stats-strip-divider"></div>
+        <div class="stats-strip-item">
+          <span class="strip-val dynamic-content" id="stat-return">31.3%</span>
+          <span class="strip-lbl dynamic-content" id="stat-return-lbl">Avg. Project Return</span>
+        </div>
+        <div class="stats-strip-divider"></div>
+        <div class="stats-strip-item">
+          <span class="strip-val">2</span>
+          <span class="strip-lbl">Projects Completed</span>
+        </div>
+        <div class="stats-strip-divider"></div>
+        <div class="stats-strip-item">
+          <span class="strip-val dynamic-content" id="stat-investors">10+</span>
+          <span class="strip-lbl dynamic-content" id="stat-investors-lbl">Active Participants</span>
+        </div>
+      </div>
     </section>
 
     <!-- ===== How It Works ===== -->
@@ -629,124 +735,77 @@
                 </h2>
             </div>
 
-            <div class="projects-row dynamic-content">
+            <div class="proj-editorial dynamic-content">
 
-                <!-- KABIL -->
-                <article class="proj-card fade-up">
-                    <div class="proj-card-img-wrap">
-                        <img
-                            id="kabil-card-img"
-                            src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80&auto=format&fit=crop"
-                            alt="Kabil — 4 luxury apartments in Tijuana"
-                            class="proj-card-img"
-                            loading="lazy"
-                        >
-                        <div class="proj-card-badge" id="kabil-badge">Completed</div>
-                    </div>
-                    <div class="proj-card-body">
-                        <div class="proj-card-meta">
-                            <span>Tijuana, Mexico</span>
-                            <span id="kabil-dates">Jun 2020 – Aug 2022</span>
-                        </div>
-                        <h3 class="proj-card-title">Kabil</h3>
-                        <p class="proj-card-desc dynamic-content" id="kabil-desc">Four luxury apartments designed with meticulous attention to finish and spatial flow. Built and fully sold in under 26 months — 3 months from first listing to sold out.</p>
-                        <div class="proj-card-numbers">
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="kabil-investment">$227,345</div>
-                                <div class="proj-num-lbl">Investment</div>
-                            </div>
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="kabil-return">31.71%</div>
-                                <div class="proj-num-lbl">Net Return</div>
-                            </div>
-                            <div class="proj-num">
-                                <div class="proj-num-val dynamic-content" id="kabil-timeline">26 mo.</div>
-                                <div class="proj-num-lbl">Duration</div>
-                            </div>
-                        </div>
-                        <button class="proj-card-link" onclick="openProjectDetail('kabil')">
-                            View Project Details <span class="arrow">→</span>
-                        </button>
-                    </div>
-                </article>
+              <div class="proj-editorial-row" onclick="openProjectDetail('kabil')" role="button" tabindex="0" aria-label="View Kabil project details">
+                <span class="proj-ed-num">01</span>
+                <div class="proj-ed-img-wrap">
+                  <img id="kabil-card-img" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&q=80" alt="Kabil" class="proj-ed-img" loading="lazy">
+                </div>
+                <div>
+                  <div class="proj-ed-title">Kabil</div>
+                  <div class="proj-ed-location">Tijuana, Mexico</div>
+                </div>
+                <div class="proj-ed-dates-wrap">
+                  <span class="proj-ed-dates" id="kabil-dates">Jun 2020 – Aug 2022</span>
+                </div>
+                <div class="proj-ed-return">
+                  <span class="proj-ed-return-val" id="kabil-return">31.71%</span>
+                  <span class="proj-ed-return-lbl">Net Return</span>
+                </div>
+                <div class="proj-ed-status">
+                  <span class="proj-ed-badge proj-ed-badge--done" id="kabil-badge">Completed</span>
+                </div>
+                <div class="proj-ed-arrow">→</div>
+              </div>
 
-                <!-- ALLURE -->
-                <article class="proj-card fade-up" style="transition-delay: 0.12s">
-                    <div class="proj-card-img-wrap">
-                        <img
-                            id="allure-card-img"
-                            src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&auto=format&fit=crop"
-                            alt="Allure — 2 premium townhouses in Tijuana"
-                            class="proj-card-img"
-                            loading="lazy"
-                        >
-                        <div class="proj-card-badge" id="allure-badge">Completed</div>
-                    </div>
-                    <div class="proj-card-body">
-                        <div class="proj-card-meta">
-                            <span>Tijuana, Mexico</span>
-                            <span id="allure-dates">Apr 2023 – Apr 2026</span>
-                        </div>
-                        <h3 class="proj-card-title" id="allure-card-title">Allure</h3>
-                        <p class="proj-card-desc" id="allure-desc">Two premium townhouses that pushed the bar on design and premium finishes. Delivered a 30.88% net return after withholding tax — our strongest result to date.</p>
-                        <div class="proj-card-numbers">
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="allure-investment">$449,059</div>
-                                <div class="proj-num-lbl">Investment</div>
-                            </div>
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="allure-return">30.88%</div>
-                                <div class="proj-num-lbl">Net Return (after WHT)</div>
-                            </div>
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="allure-timeline">36 mo.</div>
-                                <div class="proj-num-lbl">Duration</div>
-                            </div>
-                        </div>
-                        <button class="proj-card-link" onclick="openProjectDetail('allure')">
-                            View Project Details <span class="arrow">→</span>
-                        </button>
-                    </div>
-                </article>
+              <div class="proj-editorial-divider"></div>
 
-                <!-- REAL DEL MONTE -->
-                <article class="proj-card fade-up" style="transition-delay: 0.24s">
-                    <div class="proj-card-img-wrap">
-                        <img
-                            id="rdm-card-img"
-                            src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&auto=format&fit=crop"
-                            alt="Real del Monte — premium residential development in Tijuana"
-                            class="proj-card-img"
-                            loading="lazy"
-                        >
-                        <div class="proj-card-badge" id="rdm-badge" style="background:#1A7F4A;color:#fff;">NOW FUNDING</div>
-                    </div>
-                    <div class="proj-card-body">
-                        <div class="proj-card-meta">
-                            <span>Tijuana, Mexico</span>
-                            <span id="rdm-dates"></span>
-                        </div>
-                        <h3 class="proj-card-title" id="rdm-card-title">Real del Monte</h3>
-                        <p class="proj-card-desc" id="rdm-desc">Our current active project — a premium residential development in the heart of Tijuana's most sought-after neighborhood. Targeting 20-25% net return over 24 months.</p>
-                        <div class="proj-card-numbers">
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="rdm-capex-card">~$850K</div>
-                                <div class="proj-num-lbl">Total Capex</div>
-                            </div>
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="rdm-return">20–25%</div>
-                                <div class="proj-num-lbl">Target Return</div>
-                            </div>
-                            <div class="proj-num">
-                                <div class="proj-num-val" id="rdm-timeline">24 mo.</div>
-                                <div class="proj-num-lbl">Timeline</div>
-                            </div>
-                        </div>
-                        <button class="proj-card-link" onclick="openProjectDetail('real_del_monte')">
-                            Learn More &amp; Participate <span class="arrow">→</span>
-                        </button>
-                    </div>
-                </article>
+              <div class="proj-editorial-row" onclick="openProjectDetail('allure')" role="button" tabindex="0" aria-label="View Allure project details">
+                <span class="proj-ed-num">02</span>
+                <div class="proj-ed-img-wrap">
+                  <img id="allure-card-img" src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80" alt="Allure" class="proj-ed-img" loading="lazy">
+                </div>
+                <div>
+                  <div class="proj-ed-title">Allure</div>
+                  <div class="proj-ed-location">Tijuana, Mexico</div>
+                </div>
+                <div class="proj-ed-dates-wrap">
+                  <span class="proj-ed-dates" id="allure-dates">Apr 2023 – Apr 2026</span>
+                </div>
+                <div class="proj-ed-return">
+                  <span class="proj-ed-return-val" id="allure-return">30.88%</span>
+                  <span class="proj-ed-return-lbl">Net Return (after WHT)</span>
+                </div>
+                <div class="proj-ed-status">
+                  <span class="proj-ed-badge proj-ed-badge--done" id="allure-badge">Completed</span>
+                </div>
+                <div class="proj-ed-arrow">→</div>
+              </div>
+
+              <div class="proj-editorial-divider"></div>
+
+              <div class="proj-editorial-row" onclick="openProjectDetail('real_del_monte')" role="button" tabindex="0" aria-label="View Real del Monte project details">
+                <span class="proj-ed-num">03</span>
+                <div class="proj-ed-img-wrap">
+                  <img id="rdm-card-img" src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80" alt="Real del Monte" class="proj-ed-img" loading="lazy">
+                </div>
+                <div>
+                  <div class="proj-ed-title" id="rdm-card-title">Real del Monte</div>
+                  <div class="proj-ed-location">Tijuana, Mexico</div>
+                </div>
+                <div class="proj-ed-dates-wrap">
+                  <span class="proj-ed-dates" id="rdm-dates">2025 – ongoing</span>
+                </div>
+                <div class="proj-ed-return">
+                  <span class="proj-ed-return-val" id="rdm-return">25%</span>
+                  <span class="proj-ed-return-lbl">Target Return</span>
+                </div>
+                <div class="proj-ed-status">
+                  <span class="proj-ed-badge proj-ed-badge--funding" id="rdm-badge">Now Funding</span>
+                </div>
+                <div class="proj-ed-arrow">→</div>
+              </div>
 
             </div>
         </div>
@@ -1155,11 +1214,6 @@
         if (tr.allure_investment_amount) document.getElementById('allure-investment').textContent = tr.allure_investment_amount;
 
         /* Real del Monte card */
-        // Update RDM capex card
-        if (rdm.capex) {
-            const capexCardEl = document.getElementById('rdm-capex-card');
-            if (capexCardEl) capexCardEl.textContent = rdm.capex;
-        }
         const rdmCardImg = document.getElementById('rdm-card-img');
         if (rdmCardImg && rdm.featured_photo) rdmCardImg.src = rdm.featured_photo;
         if (rdm.hero_title)  { const el = document.getElementById('rdm-card-title'); if (el) el.textContent = rdm.hero_title; }
@@ -1200,6 +1254,13 @@
             revealAll();
         }
     })();
+
+    /* Keyboard support for editorial rows */
+    document.querySelectorAll('.proj-editorial-row').forEach(row => {
+      row.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); row.click(); }
+      });
+    });
     </script>
 </body>
 </html>
