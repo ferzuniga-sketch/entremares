@@ -1021,7 +1021,14 @@
         document.getElementById('pdm-units').textContent    = get('units');
 
         const heroImg = document.getElementById('pdm-hero-img');
-        heroImg.src = get('featured_photo');
+        // Use the actual card photo already loaded on the page
+        const cardImgMap = {
+            kabil:          document.getElementById('kabil-card-img'),
+            allure:         document.getElementById('allure-card-img'),
+            real_del_monte: document.getElementById('rdm-card-img')
+        };
+        const cardImg = cardImgMap[project];
+        heroImg.src = (cardImg && cardImg.src && !cardImg.src.endsWith('e8e8e4%22/%3E%3C/svg%3E')) ? cardImg.src : get('featured_photo');
         heroImg.alt = get('hero_title');
 
         document.getElementById('proj-detail-overlay').style.display = 'flex';
