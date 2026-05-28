@@ -969,7 +969,9 @@
 
     function buildWALink() {
       const q = textarea.value.trim() || 'I have a question about Real del Monte';
-      return 'https://wa.me/50769824455?text=' + encodeURIComponent('Hi Fernando, I have a question about Real del Monte: ' + q);
+      return 'https://wa.me/50769824455?text=' + encodeURIComponent(
+        'Hi Fernando, I have a question about Real del Monte.\n\nFrom: ' + currentInvestorName + ' (' + currentInvestorEmail + ')\n\nQuestion: ' + q
+      );
     }
 
     textarea.addEventListener('input', () => {
@@ -985,11 +987,11 @@
       status.style.display = 'none';
       try {
         await emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-          to_email:    'ferzuniga@gmail.com',
-          subject:     'Question about Real del Monte - ' + currentInvestorName,
-          from_name:   currentInvestorName,
-          from_email:  currentInvestorEmail,
-          message:     question
+          name:             currentInvestorName,
+          email:            currentInvestorEmail,
+          country:          currentInvestorName + ' — Real del Monte Q&A',
+          investment_amount: currentInvestorEmail,
+          message:          'Question from ' + currentInvestorName + ' (' + currentInvestorEmail + '):\n\n' + question
         });
         status.textContent = 'Email sent! We\'ll get back to you within 24 hours.';
         status.className = 'qa-status success';
