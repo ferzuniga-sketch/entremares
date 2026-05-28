@@ -16,7 +16,7 @@
         /* Page-specific overrides */
         .dynamic-content { opacity: 0; transition: opacity 0.4s ease; }
         .hero { min-height: 100vh; }
-        .hero-content { padding-top: 0; }
+        .hero-content { padding-top: 180px; }
 
         /* Sign In button in nav */
         .nav-signin {
@@ -423,7 +423,7 @@
     .proj-editorial { margin-top: 48px; }
     .proj-editorial-row {
       display: grid;
-      grid-template-columns: 36px 72px 1fr 200px 150px 130px 28px;
+      grid-template-columns: 36px 112px 1fr 200px 150px 130px 28px;
       align-items: center;
       gap: 28px;
       padding: 28px 0;
@@ -442,9 +442,9 @@
       color: #C0C0BA;
     }
     .proj-ed-img-wrap {
-      width: 72px;
-      height: 52px;
-      border-radius: 4px;
+      width: 112px;
+      height: 80px;
+      border-radius: 6px;
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -483,7 +483,8 @@
 
     /* Mobile */
     @media (max-width: 900px) {
-      .proj-editorial-row { grid-template-columns: 32px 60px 1fr 120px 24px; gap: 16px; }
+      .proj-editorial-row { grid-template-columns: 32px 90px 1fr 120px 24px; gap: 16px; }
+      .proj-ed-img-wrap { width: 90px; height: 66px; }
       .proj-ed-dates { display: none; }
       .proj-ed-status { display: none; }
     }
@@ -492,9 +493,38 @@
       .stats-strip-item { min-width: 42%; }
       .stats-strip-divider { display: none; }
       .strip-val { font-size: 1.875rem; }
-      .proj-editorial-row { grid-template-columns: 28px 52px 1fr 100px 20px; gap: 12px; padding: 20px 0; }
-      .proj-ed-title { font-size: 1.125rem; }
-      .proj-ed-return-val { font-size: 1rem; }
+      .proj-editorial-row {
+        grid-template-columns: 1fr auto 20px;
+        grid-template-rows: auto auto;
+        gap: 10px 14px;
+        padding: 16px 0;
+      }
+      .proj-ed-img-wrap {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        width: 100%;
+        height: 140px;
+        border-radius: 8px;
+      }
+      .proj-ed-num { display: none; }
+      .proj-ed-dates-wrap { display: none; }
+      .proj-ed-status { display: none; }
+      .proj-ed-title { font-size: 1rem; }
+      .proj-ed-return-val { font-size: 0.9375rem; }
+    }
+    .footer-bottom {
+      margin-top: 48px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-legal {
+      max-width: 100% !important;
+      column-count: 1 !important;
+      columns: 1 !important;
+      margin-top: 10px;
+      font-size: 0.75rem;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.32);
     }
     </style>
 </head>
@@ -795,7 +825,7 @@
                   <div class="proj-ed-location">Tijuana, Mexico</div>
                 </div>
                 <div class="proj-ed-dates-wrap">
-                  <span class="proj-ed-dates" id="rdm-dates">2025 – ongoing</span>
+                  <span class="proj-ed-dates" id="rdm-dates">2026 – ongoing</span>
                 </div>
                 <div class="proj-ed-return">
                   <span class="proj-ed-return-val" id="rdm-return">25%</span>
@@ -969,7 +999,7 @@
                 <div>
                     <span class="footer-col-label">Contact</span>
                     <div class="footer-links">
-                        <a href="mailto:info@entremares.com" class="footer-link">info@entremares.com</a>
+                        <a href="apply.html" class="footer-link">Send us a message →</a>
                         <span class="footer-link" style="cursor: default;">Est. 2020</span>
                         <a href="apply.html" class="footer-link">Register Interest →</a>
                     </div>
