@@ -2891,6 +2891,26 @@
           </div>
         </div>
 
+        <!-- ── WHAT'S NEXT SECTION ── -->
+        <div class="form-card" style="margin-top:20px">
+          <div class="form-section-label" style="margin-top:0">What's Next Section</div>
+          <div class="sec-count" style="margin-bottom:16px">Background photo shown in the "The next project is taking shape" section</div>
+          <div class="field">
+            <label>Background Photo</label>
+            <div id="lp-next-photo-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="lp-next-photo-preview" src="" alt="What's Next Photo" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1.5px solid #E8E8E4;">
+            </div>
+            <input type="file" id="lp-next-photo-file-input" accept="image/*" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button type="button" id="lp-next-photo-upload-btn" class="btn-upload-cover">Upload Photo</button>
+              <span id="lp-next-photo-upload-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end">
+            <button class="btn-save" id="btn-save-lp-next">Save What's Next</button>
+          </div>
+        </div>
+
         <!-- ── KABIL — PROJECT DETAIL PAGE ── -->
         <div class="form-card" style="margin-top:20px">
           <div class="form-section-label" style="margin-top:0">Kabil — Project Detail Page</div>
@@ -8520,6 +8540,12 @@
     const rdmPhoto = rdm.featured_photo || '';
     document.getElementById('lp-rdm-photo-preview').src = rdmPhoto;
     document.getElementById('lp-rdm-photo-preview-wrap').style.display = rdmPhoto ? 'block' : 'none';
+
+  /* Load What's Next photo */
+  const np = lp.next_project || {};
+  const nextPhoto = np.photo || '';
+  document.getElementById('lp-next-photo-preview').src = nextPhoto;
+  document.getElementById('lp-next-photo-preview-wrap').style.display = nextPhoto ? 'block' : 'none';
   }
 
   /* ── Save Hero ── */
@@ -8778,6 +8804,30 @@
   setupDetailPhotoUpload('kd', 'kabil');
   setupDetailPhotoUpload('rdm', 'real_del_monte');
 
+  document.getElementById('lp-next-photo-upload-btn').addEventListener('click', () => {
+    document.getElementById('lp-next-photo-file-input').click();
+  });
+
+  document.getElementById('lp-next-photo-file-input').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const statusEl = document.getElementById('lp-next-photo-upload-status');
+    const btn = document.getElementById('lp-next-photo-upload-btn');
+    btn.textContent = 'Uploading…'; btn.disabled = true;
+    statusEl.style.display = 'inline'; statusEl.textContent = 'Uploading…';
+    const ext = file.name.split('.').pop();
+    const fileName = 'next-project_' + Date.now() + '.' + ext;
+    const { data, error } = await supabaseClient.storage.from('project-assets').upload('landing/' + fileName, file, { upsert: true });
+    btn.textContent = 'Upload Photo'; btn.disabled = false;
+    if (error) { statusEl.textContent = 'Upload failed'; showToast('Upload failed: ' + error.message, true); return; }
+    const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl('landing/' + fileName);
+    const publicUrl = urlData.publicUrl;
+    document.getElementById('lp-next-photo-preview').src = publicUrl;
+    document.getElementById('lp-next-photo-preview-wrap').style.display = 'block';
+    statusEl.textContent = 'Uploaded!'; statusEl.style.color = '#1A7F4A';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+  });
+
   /* ── Hero photo upload ── */
   document.getElementById('lp-hero-upload-btn').addEventListener('click', () => {
     document.getElementById('lp-hero-file-input').click();
@@ -8900,6 +8950,18 @@
     if (!failed) showToast('Real del Monte saved.');
   }
 
+  async function saveLandingPageNext() {
+    const btn = document.getElementById('btn-save-lp-next');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const photoUrl = document.getElementById('lp-next-photo-preview').src;
+    if (photoUrl && !photoUrl.startsWith('data:')) {
+      const err = await upsertLandingPageRow('next_project', 'photo', photoUrl);
+      if (err) { showToast('Save failed: ' + err.message, true); btn.disabled = false; btn.textContent = 'Save What\'s Next'; return; }
+    }
+    btn.disabled = false; btn.textContent = 'Save What\'s Next';
+    showToast('What\'s Next saved!');
+  }
+
   document.getElementById('btn-save-lp-hero').addEventListener('click', saveLandingPageHero);
   document.getElementById('btn-save-lp-stats').addEventListener('click', saveLandingPageStats);
   document.getElementById('btn-save-lp-tijuana').addEventListener('click', saveLandingPageTijuana);
@@ -8907,6 +8969,7 @@
   document.getElementById('btn-save-lp-allure-detail').addEventListener('click', saveLandingPageAllureDetail);
   document.getElementById('btn-save-lp-kabil-detail').addEventListener('click', saveLandingPageKabilDetail);
   document.getElementById('btn-save-lp-rdm-detail').addEventListener('click', saveLandingPageRdmDetail);
+  document.getElementById('btn-save-lp-next').addEventListener('click', saveLandingPageNext);
 
   /* ═══════════════════════════════════════════
      9. WITHDRAWALS
