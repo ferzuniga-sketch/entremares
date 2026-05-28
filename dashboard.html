@@ -1653,7 +1653,7 @@
         <div class="opp-meta">
           <div>
             <div class="opp-meta-lbl">Target Return</div>
-            <div class="opp-meta-val">20–25%</div>
+            <div class="opp-meta-val" id="rdm-target-return">—</div>
           </div>
           <div>
             <div class="opp-meta-lbl">Total Capex</div>
@@ -1709,7 +1709,7 @@
             </div>
             <div>
               <div class="inv-fig-lbl">Target Return</div>
-              <div class="inv-fig-val">20–25%</div>
+              <div class="inv-fig-val" id="rdm-target-return-card">—</div>
             </div>
             <div>
               <div class="inv-fig-lbl">Status</div>
@@ -2129,6 +2129,13 @@
       activeProjects = [{ project_name: 'Real del Monte', location: 'Tijuana, Mexico', target_return: 25, duration_months: 24 }];
     }
     const rdm = activeProjects.find(p => p.project_name === 'Real del Monte');
+    if (rdm?.target_return) {
+      const targetStr = rdm.target_return + '%';
+      const el1 = document.getElementById('rdm-target-return');
+      const el2 = document.getElementById('rdm-target-return-card');
+      if (el1) el1.textContent = targetStr;
+      if (el2) el2.textContent = targetStr;
+    }
     if (rdm?.total_capex) {
       GOAL = rdm.total_capex;
       const goalFull = '~$' + GOAL.toLocaleString('en-US');
