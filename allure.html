@@ -454,7 +454,6 @@
                   <th>Forecasted</th>
                   <th>Actual</th>
                   <th>Variance</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody id="budget-tbody">
@@ -509,7 +508,6 @@
                   <th>Forecasted</th>
                   <th>Actual</th>
                   <th>Variance</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody id="proceeds-tbody">
@@ -799,23 +797,14 @@
       tbody.innerHTML = '<tr><td colspan="5" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">No budget data available yet</td></tr>';
       return;
     }
-    const maxAbsVar = Math.max(...rows.map(r => Math.abs((r.forecasted || 0) - (r.actual || 0))), 1);
     let totalFore = 0, totalAct = 0;
     const html = rows.map(r => {
       const fore = r.forecasted || 0, act = r.actual || 0;
       const variance = fore - act;
       totalFore += fore; totalAct += act;
       const varColor  = variance >= 0 ? '#1A7F4A' : '#C0392B';
-      const barW      = Math.round(Math.abs(variance) / maxAbsVar * 80);
       const varPct    = fore !== 0 ? ((fore - act) / fore * 100) : 0;
       const varPctStr = (varPct >= 0 ? '+' : '') + varPct.toFixed(1) + '%';
-      const barHtml   = variance >= 0
-        ? `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden">
-             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
-           </div>`
-        : `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end">
-             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
-           </div>`;
       return `<tr>
         <td>${escHtml(r.item)}</td>
         <td>${fmt(fore)}</td>
@@ -824,7 +813,6 @@
           <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
           <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
         </td>
-        <td style="vertical-align:middle">${barHtml}</td>
       </tr>`;
     });
     const totalVar       = totalFore - totalAct;
@@ -839,7 +827,6 @@
         <div>${totalVar >= 0 ? '+' : ''}${fmt(Math.abs(totalVar))}</div>
         <div style="font-size:11px;margin-top:2px;opacity:0.8">${totalVarPctStr}</div>
       </td>
-      <td></td>
     </tr>`);
     tbody.innerHTML = html.join('');
     const capexEl = document.getElementById('capex-total');
@@ -1007,12 +994,6 @@
 
     const isNetRow = item => item === 'NET AVAILABLE FOR DISTRIBUTION' || item.toUpperCase().includes('NET TO INVESTORS');
 
-    /* max absolute variance across non-net rows, for bar scaling */
-    const maxAbsVar = Math.max(
-      ...rows.filter(r => !isNetRow(r.item)).map(r => Math.abs((r.actual || 0) - (r.forecasted || 0))),
-      1
-    );
-
     tbody.innerHTML = rows.map(r => {
       const fore      = r.forecasted || 0;
       const act       = r.actual     || 0;
@@ -1027,21 +1008,12 @@
           <td>${fmt(fore)}</td>
           <td>${fmt(act)}</td>
           <td style="color:${varColor}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
-          <td></td>
         </tr>`;
       }
 
       /* variance % using absolute forecasted as denominator so sign is unambiguous */
       const varPct    = fore !== 0 ? (Math.abs(variance) / Math.abs(fore) * 100) : 0;
       const varPctStr = (variance >= 0 ? '+' : '-') + varPct.toFixed(1) + '%';
-      const barW      = Math.round(Math.abs(variance) / maxAbsVar * 80);
-      const barHtml   = variance >= 0
-        ? `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden">
-             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
-           </div>`
-        : `<div style="width:80px;height:5px;background:#EEEEE9;border-radius:3px;overflow:hidden;display:flex;justify-content:flex-end">
-             <div style="width:${barW}px;height:100%;background:${varColor};border-radius:3px"></div>
-           </div>`;
 
       return `<tr class="${cls}">
         <td>${escHtml(r.item)}</td>
@@ -1051,7 +1023,6 @@
           <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
           <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
         </td>
-        <td style="vertical-align:middle">${barHtml}</td>
       </tr>`;
     }).join('');
   }
