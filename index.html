@@ -524,7 +524,7 @@
       margin-top: 10px;
       font-size: 0.75rem;
       line-height: 1.75;
-      color: rgba(255,255,255,0.32);
+      opacity: 0.55;
     }
     </style>
 </head>
@@ -910,6 +910,7 @@
 
                 <div class="next-img-wrap fade-up" style="transition-delay: 0.12s">
                     <img
+                        id="next-project-img"
                         src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&auto=format&fit=crop"
                         alt="Premium residential development"
                         class="next-img"
@@ -1264,6 +1265,12 @@
             const l = tj['chip_' + i + '_label'];
             if (v) document.getElementById('wt-chip-' + i + '-val').textContent = v;
             if (l) document.getElementById('wt-chip-' + i + '-lbl').textContent = l;
+        }
+
+        /* What's Next photo */
+        if (lp.next_project && lp.next_project.photo) {
+          const npImg = document.getElementById('next-project-img');
+          if (npImg) npImg.src = lp.next_project.photo;
         }
 
         } catch(err) {
