@@ -943,9 +943,9 @@
                 </div>
 
                 <div class="team-card fade-up" style="transition-delay: 0.12s">
-                    <div class="team-avatar team-avatar--alt" aria-hidden="true">AE</div>
+                    <div class="team-avatar team-avatar--alt" aria-hidden="true">AR</div>
                     <div>
-                        <h3 class="team-name">Alberto</h3>
+                        <h3 class="team-name">Alberto Rojas</h3>
                         <div class="team-role">Development Partner · AEDIFIKA</div>
                         <p class="team-bio">Architect and founder of AEDIFIKA construction company. 15+ years designing and building premium residential properties in Tijuana, Mexico. Responsible for every Entremares project from ground-up to handover.</p>
                     </div>
@@ -1192,11 +1192,6 @@
         if (h.title) document.getElementById('hero-title').innerHTML = h.title;
         if (h.subtitle) document.getElementById('hero-subtitle').textContent = h.subtitle;
 
-        /* ── Gallery (Tijuana photos) ── */
-        for (let i = 1; i <= 3; i++) {
-            const img = document.getElementById('gallery-img-' + i);
-            if (img) img.src = (h['tijuana_photo_' + i] && h['tijuana_photo_' + i].trim()) || GALLERY_DEFAULTS[i - 1];
-        }
 
         /* ── Stats ── */
         const s = lp.stats || {};
@@ -1222,32 +1217,25 @@
 
         /* Card descriptions: prefer allure_detail / kabil_detail, fall back to track_record */
         const kabilDescVal = kd.description || tr.kabil_description;
-        if (kabilDescVal) document.getElementById('kabil-desc').textContent = kabilDescVal;
         const allureDescVal = ad.description || tr.allure_description;
-        if (allureDescVal) document.getElementById('allure-desc').textContent = allureDescVal;
 
         /* Card metrics: prefer detail section, fall back to track_record */
         const kabilRetVal = kd.return || tr.kabil_return;
         if (kabilRetVal) document.getElementById('kabil-return').textContent = kabilRetVal + (String(kabilRetVal).includes('%') ? '' : '%');
         const kabilTlVal = kd.timeline || tr.kabil_timeline;
-        if (kabilTlVal) document.getElementById('kabil-timeline').textContent = kabilTlVal;
         if (tr.kabil_dates)             document.getElementById('kabil-dates').textContent     = tr.kabil_dates;
         if (tr.kabil_status)            document.getElementById('kabil-badge').textContent     = tr.kabil_status;
-        if (tr.kabil_investment_amount) document.getElementById('kabil-investment').textContent = tr.kabil_investment_amount;
 
         const allureRetVal = ad.return || tr.allure_return;
         if (allureRetVal) document.getElementById('allure-return').textContent = allureRetVal + (String(allureRetVal).includes('%') ? '' : '%');
         const allureTlVal = ad.timeline || tr.allure_timeline;
-        if (allureTlVal) document.getElementById('allure-timeline').textContent = allureTlVal;
         if (tr.allure_dates)             document.getElementById('allure-dates').textContent     = tr.allure_dates;
         if (tr.allure_status)            document.getElementById('allure-badge').textContent     = tr.allure_status;
-        if (tr.allure_investment_amount) document.getElementById('allure-investment').textContent = tr.allure_investment_amount;
 
         /* Real del Monte card */
         const rdmCardImg = document.getElementById('rdm-card-img');
         if (rdmCardImg && rdm.featured_photo) rdmCardImg.src = rdm.featured_photo;
         if (rdm.hero_title)  { const el = document.getElementById('rdm-card-title'); if (el) el.textContent = rdm.hero_title; }
-        if (rdm.description) { const el = document.getElementById('rdm-desc');       if (el) el.textContent = rdm.description; }
         if (rdm.return)      { const el = document.getElementById('rdm-return');      if (el) el.textContent = rdm.return; }
         if (rdm.timeline)    { const el = document.getElementById('rdm-timeline');    if (el) el.textContent = rdm.timeline; }
         if (rdm.status) {
