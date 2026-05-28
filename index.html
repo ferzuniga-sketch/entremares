@@ -1156,9 +1156,9 @@
 
         /* Real del Monte card */
         // Update RDM capex card
-        if (rdm.capex || GOAL > 0) {
+        if (rdm.capex) {
             const capexCardEl = document.getElementById('rdm-capex-card');
-            if (capexCardEl) capexCardEl.textContent = rdm.capex || '~$' + Math.round(GOAL/1000) + 'K';
+            if (capexCardEl) capexCardEl.textContent = rdm.capex;
         }
         const rdmCardImg = document.getElementById('rdm-card-img');
         console.log('RDM featured_photo from DB:', rdm.featured_photo);
