@@ -1046,6 +1046,11 @@
     });
 
     (async function() {
+        function revealAll() {
+            document.querySelectorAll('.dynamic-content').forEach(el => { el.style.opacity = '1'; });
+        }
+
+        try {
         const SUPABASE_URL   = 'https://ghkhvjgeqqxfisfjozzr.supabase.co';
         const SUPABASE_KEY   = 'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR';
         const DEFAULT_HERO_BG     = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80';
@@ -1068,13 +1073,7 @@
 
         const { data, error } = lpResult;
 
-        function revealHeroAndStats() {
-            document.querySelectorAll('.dynamic-content').forEach(el => {
-                el.style.opacity = '1';
-            });
-        }
-
-        if (error || !data) { revealHeroAndStats(); return; }
+        if (error || !data) { return; }
 
         /* Build nested lookup: lp[section][key] = value */
         const lp = {};
@@ -1156,15 +1155,16 @@
         }
         const rdmCardImg = document.getElementById('rdm-card-img');
         if (rdmCardImg && rdm.featured_photo) rdmCardImg.src = rdm.featured_photo;
-        if (rdm.hero_title)   document.getElementById('rdm-card-title').textContent = rdm.hero_title;
-        if (rdm.description)  document.getElementById('rdm-desc').textContent       = rdm.description;
-        if (rdm.return)       document.getElementById('rdm-return').textContent      = rdm.return;
-        if (rdm.timeline)     document.getElementById('rdm-timeline').textContent    = rdm.timeline;
+        if (rdm.hero_title)  { const el = document.getElementById('rdm-card-title'); if (el) el.textContent = rdm.hero_title; }
+        if (rdm.description) { const el = document.getElementById('rdm-desc');       if (el) el.textContent = rdm.description; }
+        if (rdm.return)      { const el = document.getElementById('rdm-return');      if (el) el.textContent = rdm.return; }
+        if (rdm.timeline)    { const el = document.getElementById('rdm-timeline');    if (el) el.textContent = rdm.timeline; }
         if (rdm.status) {
-            document.getElementById('rdm-status-val').textContent = rdm.status;
+            const rdmStatusVal = document.getElementById('rdm-status-val');
+            if (rdmStatusVal) rdmStatusVal.textContent = rdm.status;
             const rdmBadge = document.getElementById('rdm-badge');
-            rdmBadge.textContent = rdm.status;
-            if (rdm.status === 'Completed') {
+            if (rdmBadge) rdmBadge.textContent = rdm.status;
+            if (rdmBadge && rdm.status === 'Completed') {
                 rdmBadge.style.background = 'rgba(255,255,255,0.95)';
                 rdmBadge.style.color      = '#0D0D0D';
             }
@@ -1187,7 +1187,11 @@
             if (l) document.getElementById('wt-chip-' + i + '-lbl').textContent = l;
         }
 
-        revealHeroAndStats();
+        } catch(err) {
+            console.error('Landing page load error:', err);
+        } finally {
+            revealAll();
+        }
     })();
     </script>
 </body>
