@@ -2658,7 +2658,7 @@
       const rdmRemaining = Math.max(0, GOAL - totalRaised);
       document.getElementById('prog-remaining').textContent = '$' + rdmRemaining.toLocaleString('en-US');
 
-      if (totalRaised >= GOAL) {
+      if (GOAL > 0 && totalRaised >= GOAL) {
         document.getElementById('funded-banner').style.display = 'block';
       }
     } catch (err) {
@@ -3384,7 +3384,7 @@
     document.getElementById('prog-raised').textContent = '$' + currentRdmRaised.toLocaleString('en-US') + ' raised of ' + goalK + ' target';
     const rdmRemaining = Math.max(0, GOAL - currentRdmRaised);
     document.getElementById('prog-remaining').textContent = '$' + rdmRemaining.toLocaleString('en-US');
-    if (currentRdmRaised >= GOAL) document.getElementById('funded-banner').style.display = 'block';
+    if (GOAL > 0 && currentRdmRaised >= GOAL) document.getElementById('funded-banner').style.display = 'block';
 
     document.getElementById('active-investments-section').style.display = '';
     document.getElementById('rdm-committed-amount').textContent = fmt(rdmCommittedAmount);
