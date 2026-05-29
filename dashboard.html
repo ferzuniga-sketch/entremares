@@ -937,7 +937,7 @@
 
     .modal-presets {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 8px;
       margin-bottom: 18px;
     }
@@ -2212,10 +2212,11 @@
       <div class="modal-min-notice" id="modal-min-notice">$25,000 minimum investment</div>
 
       <div class="modal-presets">
-        <button class="modal-preset-btn" data-pct="0.25" onclick="setPreset(0.25)">25%</button>
-        <button class="modal-preset-btn" data-pct="0.50" onclick="setPreset(0.50)">50%</button>
-        <button class="modal-preset-btn" data-pct="0.75" onclick="setPreset(0.75)">75%</button>
-        <button class="modal-preset-btn" data-pct="1.00" onclick="setPreset(1.00)">100%</button>
+        <button class="modal-preset-btn" data-amt="30000" onclick="setPresetAmount(30000)">$30K</button>
+        <button class="modal-preset-btn" data-amt="35000" onclick="setPresetAmount(35000)">$35K</button>
+        <button class="modal-preset-btn" data-amt="40000" onclick="setPresetAmount(40000)">$40K</button>
+        <button class="modal-preset-btn" data-amt="50000" onclick="setPresetAmount(50000)">$50K</button>
+        <button class="modal-preset-btn" data-amt="0" onclick="setPresetAmount(0)">100%</button>
       </div>
 
       <div class="modal-ownership dim" id="modal-ownership">
@@ -3277,7 +3278,7 @@
   /* ── Modal functions ── */
   function openModal() {
     if (!currentInvestor) return;
-    const availableBalance = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
+    const availableBalance = getAvailableBalance();
     document.getElementById('modal-wallet-display').textContent = fmt(availableBalance);
     const inp = document.getElementById('modal-amount-input');
     inp.value = '';
@@ -3342,6 +3343,17 @@
     document.getElementById('modal-amount-input').value = amount;
     document.querySelectorAll('.modal-preset-btn').forEach(b => {
       b.classList.toggle('selected', parseFloat(b.dataset.pct) === fraction);
+    });
+    validateAmount(amount);
+    updateOwnership(amount <= balance ? amount : 0);
+  }
+
+  function setPresetAmount(amt) {
+    const balance = getAvailableBalance();
+    const amount  = amt === 0 ? balance : amt;
+    document.getElementById('modal-amount-input').value = amount;
+    document.querySelectorAll('.modal-preset-btn').forEach(b => {
+      b.classList.toggle('selected', parseFloat(b.dataset.amt) === amt);
     });
     validateAmount(amount);
     updateOwnership(amount <= balance ? amount : 0);
