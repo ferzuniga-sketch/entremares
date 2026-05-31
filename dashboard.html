@@ -2618,9 +2618,9 @@
       const fmtAmount = '$' + modalAmount.toLocaleString('en-US');
       const fmtTotal  = '$' + newTotal.toLocaleString('en-US');
       emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-        name:              currentInvestor.name,
+        name:              '✅ NEW COMMITMENT — ' + currentInvestor.name + ' — ' + fmtAmount + ' — ' + projectName,
         email:             currentInvestorEmail,
-        country:           currentInvestor.name + ' — New Investment Commitment',
+        country:           '✅ NEW COMMITMENT — ' + currentInvestor.name + ' — ' + fmtAmount + ' — ' + projectName,
         investment_amount: fmtAmount,
         message:           '✅ ACTION REQUIRED: Send Shareholders Loan Agreement\n\n'
                          + 'INVESTOR\n'
@@ -4010,9 +4010,9 @@
       const iban     = wdBankData ? (wdBankData.iban        || '—') : '—';
       const swift    = wdBankData ? (wdBankData.swift_code  || '—') : '—';
       emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-        name:              'Withdrawal Request',
+        name:              '💸 WITHDRAWAL REQUEST — ' + currentInvestor.name + ' — ' + fmt(wdAmount) + ' — Ref #' + wdRefNum,
         email:             currentInvestorEmail,
-        country:           currentInvestor.name,
+        country:           '💸 WITHDRAWAL REQUEST — ' + currentInvestor.name + ' — ' + fmt(wdAmount) + ' — Ref #' + wdRefNum,
         investment_amount: fmt(wdAmount),
         message:           '💸 ACTION REQUIRED: Process Withdrawal Transfer\n\n'
                          + 'INVESTOR\n'
@@ -4058,9 +4058,9 @@
 
       // Notify Fernando
       emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-        name:              invName,
+        name:              '🚫 CANCELLATION REQUEST — ' + invName + ' — ' + fmt(amount) + ' — Ref #' + refNum,
         email:             currentInvestorEmail,
-        country:           invName + ' — Cancellation Request',
+        country:           '🚫 CANCELLATION REQUEST — ' + invName + ' — ' + fmt(amount) + ' — Ref #' + refNum,
         investment_amount: fmt(amount),
         message:           '🚫 ACTION REQUIRED: Review Withdrawal Cancellation\n\n'
                          + 'INVESTOR\n'
@@ -4125,8 +4125,10 @@
       await emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
         to_email:   'ferzuniga@gmail.com',
         subject:    'Add Funds Request - ' + (currentInvestor ? currentInvestor.name : ''),
+        name:       '💰 ADD FUNDS REQUEST — ' + (currentInvestor ? currentInvestor.name : '') + ' — $' + amount.toLocaleString('en-US'),
         from_name:  currentInvestor ? currentInvestor.name : '',
         from_email: currentInvestorEmail,
+        country:    '💰 ADD FUNDS REQUEST — ' + (currentInvestor ? currentInvestor.name : '') + ' — $' + amount.toLocaleString('en-US'),
         message:    '💰 ACTION REQUIRED: Add Funds to Investor Wallet\n\n'
                   + 'INVESTOR\n'
                   + 'Name:    ' + (currentInvestor ? currentInvestor.name : '') + '\n'
@@ -4387,9 +4389,9 @@
       // Send email notification
       const dir = newAmount > oldAmount ? 'increased' : 'decreased';
       emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-        name:             currentInvestor.name,
+        name:             '✏️ COMMITMENT MODIFIED — ' + currentInvestor.name + ' — ' + fmt(oldAmount) + ' → ' + fmt(newAmount) + ' — Real del Monte',
         email:            currentInvestorEmail,
-        country:          currentInvestor.name + ' — RDM Commitment Modified',
+        country:          '✏️ COMMITMENT MODIFIED — ' + currentInvestor.name + ' — ' + fmt(oldAmount) + ' → ' + fmt(newAmount) + ' — Real del Monte',
         investment_amount: fmt(newAmount),
         message:          '✏️ INFO: Commitment Modified by Investor (auto-applied)\n\n'
                         + 'INVESTOR\n'
