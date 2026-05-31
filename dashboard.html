@@ -1924,7 +1924,7 @@
         </div>
       </div>
       <div class="portfolio-footnote">
-        On <span id="portfolio-initial">—</span> initial investment · 2 completed projects
+        On <span id="portfolio-initial">—</span> total invested · 2 completed projects
       </div>
     </div>
 
@@ -2770,16 +2770,23 @@
 
   function updatePortfolioHero() {
     if (!currentInvestor) return;
-    const initialInvestment   = currentInvestor.kabil?.invested || 0;
-    const totalDistribution   = currentNetDistribution; // full earnings regardless of deployment
-    const availableToWithdraw = Math.max(0, currentNetDistribution - pendingWithdrawalAmount - rdmCommittedAmount);
+    const kabilInvested       = currentInvestor.kabil?.invested  || 0;
+    const kabilDistribution   = (currentInvestor.kabil?.profit || 0) + kabilInvested;
+    const allureInvested      = currentInvestor.allure?.invested || 0;
+    const allureProfit        = currentNetDistribution - allureInvested;
+    const kabilProfit         = kabilDistribution - kabilInvested;
+    const totalInvested       = kabilInvested + allureInvested;
+    const totalProfit         = kabilProfit + allureProfit;
+    const rocA                = totalInvested > 0 ? (totalProfit / totalInvested) * 100 : 0;
+    const rocB                = kabilInvested > 0 ? ((currentNetDistribution - kabilInvested) / kabilInvested) * 100 : 0;
+    const availableToWithdraw = getAvailableToWithdraw();
 
     const profitEl = document.getElementById('portfolio-profit');
     const returnEl = document.getElementById('portfolio-return');
     const availEl  = document.getElementById('portfolio-avail');
     const initEl   = document.getElementById('portfolio-initial');
 
-    if (initialInvestment === 0 || totalDistribution === 0) {
+    if (totalInvested === 0 || currentNetDistribution === 0) {
       if (profitEl) profitEl.textContent = '—';
       if (returnEl) returnEl.textContent = '—';
       if (availEl)  availEl.textContent  = '—';
@@ -2787,13 +2794,14 @@
       return;
     }
 
-    const totalProfit = totalDistribution - initialInvestment;
-    const returnPct   = (totalProfit / initialInvestment) * 100;
-
     if (profitEl) profitEl.textContent = (totalProfit >= 0 ? '+' : '') + fmt(totalProfit);
-    if (returnEl) returnEl.textContent = (returnPct  >= 0 ? '+' : '') + returnPct.toFixed(2) + '%';
+    if (returnEl) returnEl.innerHTML =
+      '<span style="display:block;font-size:inherit;line-height:1">' + (rocA >= 0 ? '+' : '') + rocA.toFixed(1) + '%</span>' +
+      '<span style="display:block;font-size:0.55em;opacity:0.55;margin-top:5px;font-family:inherit;letter-spacing:0.04em;text-transform:uppercase;font-weight:700">Blended · All Capital</span>' +
+      '<span style="display:block;font-size:0.8em;margin-top:8px;line-height:1">' + (rocB >= 0 ? '+' : '') + rocB.toFixed(1) + '%</span>' +
+      '<span style="display:block;font-size:0.55em;opacity:0.55;margin-top:4px;font-family:inherit;letter-spacing:0.04em;text-transform:uppercase;font-weight:700">Compound · Original Capital</span>';
     if (availEl)  availEl.textContent  = fmt(availableToWithdraw);
-    if (initEl)   initEl.textContent   = fmt(initialInvestment);
+    if (initEl)   initEl.textContent   = fmt(totalInvested);
   }
 
   function updateNetDistributionDisplay() {
