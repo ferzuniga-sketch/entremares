@@ -9054,6 +9054,7 @@
               <select id="wdselect-${escHtml(w.id)}">
                 <option value="pending"${w.status === 'pending' ? ' selected' : ''}>Pending</option>
                 <option value="approved"${w.status === 'approved' ? ' selected' : ''}>Approved</option>
+                <option value="cancellation_requested"${w.status === 'cancellation_requested' ? ' selected' : ''}>Cancellation Requested</option>
                 <option value="transferred"${w.status === 'transferred' ? ' selected' : ''}>Transferred</option>
                 <option value="cancelled"${w.status === 'cancelled' ? ' selected' : ''}>Cancelled</option>
               </select>

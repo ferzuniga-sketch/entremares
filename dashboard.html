@@ -2756,9 +2756,9 @@
     try {
       const { data, error } = await supabaseClient
         .from('withdrawal_requests')
-        .select('id, amount, reference_number, investor_name')
+        .select('id, amount, reference_number, investor_name, status')
         .ilike('investor_email', email)
-        .in('status', ['pending', 'approved']);
+        .in('status', ['pending', 'approved', 'cancellation_requested']);
       if (!error && data) {
         pendingWithdrawalAmount   = data.reduce((s, r) => s + Number(r.amount), 0);
         pendingWithdrawalRequests = data;
@@ -2772,8 +2772,13 @@
     const noteEl = document.getElementById('stat-pending-withdrawal');
     if (!noteEl) return;
     if (pendingWithdrawalAmount > 0) {
-      noteEl.innerHTML = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal pending' +
-        ' &nbsp;<a href="javascript:void(0)" onclick="requestCancellation()" style="font-size:11px;color:#D97706;text-decoration:underline;font-weight:600;white-space:nowrap">Request Cancellation</a>';
+      const hasCancellationRequest = pendingWithdrawalRequests.some(r => r.status === 'cancellation_requested');
+      if (hasCancellationRequest) {
+        noteEl.innerHTML = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal &nbsp;<span style="font-size:11px;color:#9B9B9B;font-weight:600">· Cancellation pending review</span>';
+      } else {
+        noteEl.innerHTML = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal pending' +
+          ' &nbsp;<a href="javascript:void(0)" onclick="requestCancellation()" style="font-size:11px;color:#D97706;text-decoration:underline;font-weight:600;white-space:nowrap">Request Cancellation</a>';
+      }
       noteEl.style.display = '';
     } else {
       noteEl.style.display = 'none';
@@ -4011,37 +4016,42 @@
   }
 
   /* ── Investor cancellation request ── */
-  function requestCancellation() {
-    const amount = pendingWithdrawalAmount;
-    const req    = pendingWithdrawalRequests.length > 0 ? pendingWithdrawalRequests[0] : null;
-    const refNum = req ? (req.reference_number || (req.id || '').slice(0, 8) || '—') : '—';
+  async function requestCancellation() {
+    const amount  = pendingWithdrawalAmount;
+    const req     = pendingWithdrawalRequests.length > 0 ? pendingWithdrawalRequests[0] : null;
+    const refNum  = req ? (req.reference_number || (req.id || '').slice(0, 8) || '—') : '—';
     const invName = currentInvestor ? currentInvestor.name : '';
 
     if (!confirm('Are you sure you want to request cancellation of your ' + fmt(amount) + ' withdrawal?')) return;
 
     try {
+      // Mark as cancellation_requested in Supabase so it persists after refresh
+      await supabaseClient
+        .from('withdrawal_requests')
+        .update({ status: 'cancellation_requested' })
+        .ilike('investor_email', currentInvestorEmail)
+        .in('status', ['pending', 'approved']);
+
+      // Update local state to reflect new status
+      pendingWithdrawalRequests = pendingWithdrawalRequests.map(r => ({ ...r, status: 'cancellation_requested' }));
+      updatePendingWithdrawalNote();
+
+      // Notify Fernando
       emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-        name:              'Withdrawal Cancellation Request',
-        email:             'ferzuniga@gmail.com',
-        country:           invName,
+        name:              invName,
+        email:             currentInvestorEmail,
+        country:           invName + ' — Cancellation Request',
         investment_amount: fmt(amount),
-        message:           'Investor: ' + invName +
+        message:           'Cancellation requested by investor.\n\nInvestor: ' + invName +
+                           '\nEmail: ' + currentInvestorEmail +
                            '\nAmount: ' + fmt(amount) +
                            '\nReference: #' + refNum +
-                           '\n\nThis investor is requesting cancellation of their withdrawal.'
-      }).catch(err => console.error('EmailJS cancellation request failed:', err));
+                           '\n\nPlease review in admin panel and update status to Cancelled to restore their balance.'
+      }).catch(err => console.error('EmailJS failed:', err));
+
     } catch (err) {
-      console.error('Failed to send cancellation email:', err);
-    }
-
-    const waMsg = encodeURIComponent(
-      'Hi Fernando, I would like to cancel my withdrawal request of ' + fmt(amount) + '. Reference: #' + refNum
-    );
-    window.open('https://wa.me/50769824455?text=' + waMsg, '_blank');
-
-    const noteEl = document.getElementById('stat-pending-withdrawal');
-    if (noteEl) {
-      noteEl.innerHTML = '⏳ ' + fmt(amount) + ' withdrawal pending &nbsp;<span style="color:#2563EB;font-size:11px;font-weight:600">Cancellation requested. We\'ll process it shortly.</span>';
+      console.error('Failed to save cancellation request:', err);
+      alert('Failed to send cancellation request. Please contact Fernando directly.');
     }
   }
 
