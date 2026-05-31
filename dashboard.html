@@ -3396,8 +3396,7 @@
   function recalculateAllBalances(amount) {
     rdmCommittedAmount += amount;
 
-    const newWallet = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
-    setFade('wallet-balance', fmt(newWallet));
+    setFade('wallet-balance', fmt(getAvailableBalance()));
     setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
 
     if (currentNetDistribution > 0) updateNetDistributionDisplay();
@@ -3937,8 +3936,7 @@
 
     pendingWithdrawalAmount += wdAmount;
     updateNetDistributionDisplay();
-    const walletRemaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
-    setFade('wallet-balance', fmt(walletRemaining));
+    setFade('wallet-balance', fmt(getAvailableBalance()));
     setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
 
     try {
