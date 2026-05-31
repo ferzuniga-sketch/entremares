@@ -2851,8 +2851,7 @@
       loadCommitmentStatus(email),
       loadPendingWithdrawals(email)
     ]);
-    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
-    setFade('wallet-balance', fmt(remaining));
+    setFade('wallet-balance', fmt(getAvailableBalance()));
     setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
     if (currentNetDistribution > 0) {
       updateNetDistributionDisplay();
@@ -2876,16 +2875,14 @@
           pendingWithdrawalAmount = Math.max(0, pendingWithdrawalAmount - amount);
           pendingWithdrawalRequests = pendingWithdrawalRequests.filter(r => r.id !== row.id);
           updatePendingWithdrawalNote();
-          const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
-          setFade('wallet-balance', fmt(remaining));
+          setFade('wallet-balance', fmt(getAvailableBalance()));
           setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
           if (currentNetDistribution > 0) updateNetDistributionDisplay();
           setTimeout(() => loadActivityTimeline(currentInvestorEmail), 1500);
         } else if (newStatus === 'approved' || newStatus === 'transferred') {
           await loadPendingWithdrawals(email);
           updatePendingWithdrawalNote();
-          const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
-          setFade('wallet-balance', fmt(remaining));
+          setFade('wallet-balance', fmt(getAvailableBalance()));
           setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
           if (currentNetDistribution > 0) updateNetDistributionDisplay();
           setTimeout(() => loadActivityTimeline(currentInvestorEmail), 1500);
@@ -3388,8 +3385,7 @@
         rdmCommittedAmount = data.reduce((s, r) => s + Number(r.amount), 0);
       }
     } catch (_) {}
-    const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
-    setFade('wallet-balance', fmt(remaining));
+    setFade('wallet-balance', fmt(getAvailableBalance()));
     setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
   }
 
