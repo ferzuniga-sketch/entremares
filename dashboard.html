@@ -1973,12 +1973,12 @@
       </div>
 
       <div class="opp-card">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:0">
-          <div class="opp-funding-pill" style="flex-shrink:0">
+        <div style="display:flex;flex-direction:row;align-items:stretch;gap:8px;margin-bottom:0">
+          <div class="opp-funding-pill" style="display:flex;align-items:center;flex-shrink:0">
             <span class="opp-dot"></span>
             Now Funding
           </div>
-          <div id="opp-committed-badge" class="opp-funding-pill" style="display:none;flex-shrink:0;color:#1A5FA8;background:#EEF4FD;border-color:#BDD3F5;">
+          <div id="opp-committed-badge" class="opp-funding-pill" style="display:none;align-items:center;flex-shrink:0;color:#1A5FA8;background:#EEF4FD;border-color:#BDD3F5;">
             ✓ Committed
           </div>
         </div>
@@ -4240,7 +4240,7 @@
     const btnModify  = document.getElementById('btn-opp-modify');
     if (!badge) return;
     if (rdmCommittedAmount > 0) {
-      badge.style.display  = 'inline-flex';
+      badge.style.display  = 'flex';
       amtEl.style.display  = '';
       amtEl.textContent    = 'Your commitment: ' + fmt(rdmCommittedAmount);
       if (btnInvest) btnInvest.style.display = 'none';
