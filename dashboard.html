@@ -1973,13 +1973,19 @@
       </div>
 
       <div class="opp-card">
-        <div class="opp-funding-pill">
-          <span class="opp-dot"></span>
-          Now Funding
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:0">
+          <div class="opp-funding-pill">
+            <span class="opp-dot"></span>
+            Now Funding
+          </div>
+          <div id="opp-committed-badge" style="display:none;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#1A5FA8;background:#EEF4FD;border:1px solid #BDD3F5;border-radius:100px;padding:5px 12px;">
+            ✓ Committed
+          </div>
         </div>
 
         <div class="opp-name">Real del Monte</div>
         <div class="opp-loc">Tijuana, Mexico</div>
+        <div id="opp-committed-amount" style="display:none;font-size:14px;font-weight:700;color:#1A5FA8;margin-top:6px;margin-bottom:2px;letter-spacing:-0.01em"></div>
 
         <div class="opp-meta">
           <div>
@@ -2011,7 +2017,8 @@
 
         <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
           <button class="btn-opp" style="margin-top:0" onclick="window.location.href='real-del-monte.html'">View Details &rarr;</button>
-          <button class="btn-opp-primary" style="margin-top:0" onclick="openModalForRDM()">Invest Now &rarr;</button>
+          <button class="btn-opp-primary" id="btn-opp-invest" style="margin-top:0" onclick="openModalForRDM()">Invest Now &rarr;</button>
+          <button class="btn-opp" id="btn-opp-modify" style="display:none;margin-top:0;color:#1A5FA8;border-color:#BDD3F5;background:#EEF4FD" onclick="openRDMModifyModal()">Modify &rarr;</button>
         </div>
       </div>
 
@@ -2711,6 +2718,7 @@
       rdmCommittedAmount = data.reduce((s, r) => s + Number(r.amount), 0);
       document.getElementById('active-investments-section').style.display = '';
       document.getElementById('rdm-committed-amount').textContent = fmt(rdmCommittedAmount);
+      updateRDMCommittedBadge();
     } catch (err) {
       console.error('Failed to load commitment status:', err);
       document.getElementById('active-investments-section').style.display = 'none';
@@ -3426,6 +3434,7 @@
 
     document.getElementById('active-investments-section').style.display = '';
     document.getElementById('rdm-committed-amount').textContent = fmt(rdmCommittedAmount);
+    updateRDMCommittedBadge();
   }
 
   function validateAmount(amount) {
@@ -4222,7 +4231,167 @@
       observer.observe(document.body, { childList: true, subtree: true });
     }
   })();
+
+  /* ── RDM Commitment Badge & Modify Flow ── */
+  function updateRDMCommittedBadge() {
+    const badge  = document.getElementById('opp-committed-badge');
+    const amtEl  = document.getElementById('opp-committed-amount');
+    const btnInvest  = document.getElementById('btn-opp-invest');
+    const btnModify  = document.getElementById('btn-opp-modify');
+    if (!badge) return;
+    if (rdmCommittedAmount > 0) {
+      badge.style.display  = '';
+      amtEl.style.display  = '';
+      amtEl.textContent    = 'Your commitment: ' + fmt(rdmCommittedAmount);
+      if (btnInvest) btnInvest.style.display = 'none';
+      if (btnModify) btnModify.style.display = '';
+    } else {
+      badge.style.display  = 'none';
+      amtEl.style.display  = 'none';
+      if (btnInvest) btnInvest.style.display = '';
+      if (btnModify) btnModify.style.display = 'none';
+    }
+  }
+
+  function openRDMModifyModal() {
+    const maxCommit = rdmCommittedAmount + getAvailableBalance();
+    document.getElementById('rdm-modify-current').textContent = fmt(rdmCommittedAmount);
+    document.getElementById('rdm-modify-max').textContent     = fmt(maxCommit);
+    document.getElementById('rdm-modify-input').value         = '';
+    document.getElementById('rdm-modify-notice').style.color  = '#9B9B9B';
+    document.getElementById('rdm-modify-notice').textContent  = 'Minimum $25,000 · Maximum ' + fmt(maxCommit);
+    document.getElementById('rdm-modify-status').style.display = 'none';
+    const btn = document.getElementById('rdm-modify-confirm-btn');
+    btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none';
+    document.getElementById('rdm-modify-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('rdm-modify-input').focus(), 60);
+  }
+
+  function closeRDMModifyModal() {
+    document.getElementById('rdm-modify-modal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function rdmModifyValidate() {
+    const maxCommit = rdmCommittedAmount + getAvailableBalance();
+    const raw       = parseFloat(document.getElementById('rdm-modify-input').value) || 0;
+    const notice    = document.getElementById('rdm-modify-notice');
+    const btn       = document.getElementById('rdm-modify-confirm-btn');
+    const inp       = document.getElementById('rdm-modify-input');
+    if (raw === rdmCommittedAmount) {
+      notice.style.color = '#9B9B9B';
+      notice.textContent = 'Enter a different amount to modify your commitment.';
+      btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none';
+    } else if (raw < 25000) {
+      notice.style.color = '#C0392B';
+      notice.textContent = 'Minimum commitment is $25,000.';
+      btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none';
+    } else if (raw > maxCommit + 0.01) {
+      notice.style.color = '#C0392B';
+      notice.textContent = 'Amount exceeds your maximum available (' + fmt(maxCommit) + ').';
+      btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none';
+    } else {
+      const diff = raw - rdmCommittedAmount;
+      notice.style.color = '#1A7F4A';
+      notice.textContent = (diff > 0 ? '↑ Increasing by ' : '↓ Decreasing by ') + fmt(Math.abs(diff));
+      btn.style.opacity = '1'; btn.style.pointerEvents = '';
+    }
+  }
+
+  async function submitRDMModification() {
+    const newAmount = parseFloat(document.getElementById('rdm-modify-input').value) || 0;
+    const oldAmount = rdmCommittedAmount;
+    const btn       = document.getElementById('rdm-modify-confirm-btn');
+    const statusEl  = document.getElementById('rdm-modify-status');
+    btn.textContent = 'Saving…'; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none';
+    statusEl.style.display = 'none';
+    try {
+      // Delete existing commitments and insert new one
+      await supabaseClient.from('commitments')
+        .delete()
+        .ilike('investor_email', currentInvestorEmail)
+        .eq('project_name', 'Real del Monte')
+        .neq('status', 'cancelled');
+      await supabaseClient.from('commitments').insert({
+        investor_email: currentInvestorEmail,
+        investor_name:  currentInvestor.name,
+        amount:         newAmount,
+        project_name:   'Real del Monte',
+        status:         'pending'
+      });
+      // Update local state
+      const diff = newAmount - oldAmount;
+      rdmCommittedAmount = newAmount;
+      currentRdmRaised   = Math.max(0, currentRdmRaised + diff);
+      // Update UI
+      updateRDMCommittedBadge();
+      setFade('wallet-balance', fmt(getAvailableBalance()));
+      setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
+      updateNetDistributionDisplay();
+      await updateFundingProgress();
+      // Send email notification
+      const dir = newAmount > oldAmount ? 'increased' : 'decreased';
+      emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+        name:             currentInvestor.name,
+        email:            currentInvestorEmail,
+        country:          currentInvestor.name + ' — RDM Commitment Modified',
+        investment_amount: fmt(newAmount),
+        message:          'Commitment modification — Real del Monte\n\nInvestor: ' + currentInvestor.name + ' (' + currentInvestorEmail + ')\nPrevious: ' + fmt(oldAmount) + '\nNew amount: ' + fmt(newAmount) + '\nChange: ' + dir + ' by ' + fmt(Math.abs(diff))
+      }).catch(e => console.error('Email failed:', e));
+      closeRDMModifyModal();
+      statusEl.textContent = 'Commitment updated to ' + fmt(newAmount) + '!';
+      statusEl.style.color = '#1A7F4A';
+      statusEl.style.display = '';
+    } catch (err) {
+      console.error('Modification failed:', err);
+      statusEl.textContent = 'Failed to update. Please try again or contact us.';
+      statusEl.style.color = '#C0392B';
+      statusEl.style.display = '';
+      btn.textContent = 'Confirm Change';
+      btn.style.opacity = '1'; btn.style.pointerEvents = '';
+    }
+  }
 </script>
+
+<!-- RDM Modify Commitment Modal -->
+<div id="rdm-modify-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(13,13,13,0.50);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeRDMModifyModal()">
+  <div style="background:#FFFFFF;border-radius:20px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.22);padding:36px 36px 32px">
+    <div style="font-size:22px;font-weight:700;letter-spacing:-0.04em;margin-bottom:6px">Modify Commitment</div>
+    <div style="font-size:13px;color:#9B9B9B;margin-bottom:22px">Real del Monte · Tijuana, Mexico</div>
+
+    <div style="background:#F5F5F3;border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9B9B9B">Current Commitment</span>
+      <span style="font-size:17px;font-weight:700;letter-spacing:-0.03em;color:#0D0D0D" id="rdm-modify-current">—</span>
+    </div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6B6B6B;margin-bottom:8px">New Commitment Amount ($)</div>
+    <div style="position:relative;margin-bottom:7px">
+      <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:600;color:#9B9B9B;pointer-events:none">$</span>
+      <input type="number" id="rdm-modify-input" min="0" step="1" placeholder="25000"
+        style="width:100%;padding:13px 16px 13px 32px;font-family:inherit;font-size:20px;font-weight:700;letter-spacing:-0.03em;color:#0D0D0D;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:10px;outline:none"
+        oninput="rdmModifyValidate()">
+    </div>
+    <div id="rdm-modify-notice" style="font-size:12px;color:#9B9B9B;margin-bottom:18px">Minimum $25,000 · Maximum is your available balance + current commitment</div>
+
+    <div style="background:#0D0D0D;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.4)">Max you can commit</span>
+      <span style="font-size:15px;font-weight:700;color:#FFFFFF" id="rdm-modify-max">—</span>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button id="rdm-modify-confirm-btn" onclick="submitRDMModification()"
+        style="flex:1;padding:14px;font-family:inherit;font-size:15px;font-weight:700;color:#FFFFFF;background:#0D0D0D;border:none;border-radius:10px;cursor:pointer;opacity:0.3;pointer-events:none">
+        Confirm Change
+      </button>
+      <button onclick="closeRDMModifyModal()"
+        style="padding:14px 20px;font-family:inherit;font-size:14px;font-weight:500;color:#9B9B9B;background:none;border:1px solid #E0E0DC;border-radius:10px;cursor:pointer">
+        Cancel
+      </button>
+    </div>
+    <div id="rdm-modify-status" style="font-size:13px;margin-top:12px;display:none"></div>
+  </div>
+</div>
 
 </body>
 </html>
