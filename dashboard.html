@@ -2618,11 +2618,22 @@
       const fmtAmount = '$' + modalAmount.toLocaleString('en-US');
       const fmtTotal  = '$' + newTotal.toLocaleString('en-US');
       emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-        name:              'New Commitment Alert',
+        name:              currentInvestor.name,
         email:             currentInvestorEmail,
-        country:           currentInvestor.name,
+        country:           currentInvestor.name + ' — New Investment Commitment',
         investment_amount: fmtAmount,
-        message:           'New commitment received: ' + currentInvestor.name + ' has committed ' + fmtAmount + ' to ' + projectName + '. Total raised for ' + projectName + ': ' + fmtTotal + '.'
+        message:           '✅ ACTION REQUIRED: Send Shareholders Loan Agreement\n\n'
+                         + 'INVESTOR\n'
+                         + 'Name:    ' + currentInvestor.name + '\n'
+                         + 'Email:   ' + currentInvestorEmail + '\n\n'
+                         + 'COMMITMENT\n'
+                         + 'Project: ' + projectName + '\n'
+                         + 'Amount:  ' + fmtAmount + '\n'
+                         + 'Total raised so far: ' + fmtTotal + '\n\n'
+                         + 'NEXT STEP\n'
+                         + 'Send the Shareholders Loan Agreement to ' + currentInvestorEmail + '\n'
+                         + 'Then update commitment status in Admin Panel → Commitments\n'
+                         + 'Admin: https://entremares-nine.vercel.app/admin.html'
       }).catch(err => console.error('EmailJS commitment alert failed:', err));
     } catch (err) {
       console.error('sendNewCommitmentAlert error:', err);
@@ -4003,12 +4014,21 @@
         email:             currentInvestorEmail,
         country:           currentInvestor.name,
         investment_amount: fmt(wdAmount),
-        message:           'Withdrawal request received from ' + currentInvestor.name +
-                           ' for ' + fmt(wdAmount) +
-                           '. Bank: ' + bankName +
-                           ', IBAN: ' + iban +
-                           ', Swift: ' + swift +
-                           '. Reference: #' + wdRefNum
+        message:           '💸 ACTION REQUIRED: Process Withdrawal Transfer\n\n'
+                         + 'INVESTOR\n'
+                         + 'Name:    ' + currentInvestor.name + '\n'
+                         + 'Email:   ' + currentInvestorEmail + '\n\n'
+                         + 'WITHDRAWAL DETAILS\n'
+                         + 'Amount:  ' + fmt(wdAmount) + '\n'
+                         + 'Reference: #' + wdRefNum + '\n\n'
+                         + 'BANK DETAILS\n'
+                         + 'Beneficiary: ' + bankName + '\n'
+                         + 'IBAN:    ' + iban + '\n'
+                         + 'Swift:   ' + swift + '\n\n'
+                         + 'NEXT STEP\n'
+                         + 'Transfer ' + fmt(wdAmount) + ' to the account above.\n'
+                         + 'Then update status in Admin Panel → Withdrawals → #' + wdRefNum + ' → Transferred\n'
+                         + 'Admin: https://entremares-nine.vercel.app/admin.html'
       }).catch(err => console.error('EmailJS withdrawal alert failed:', err));
     } catch (err) {
       console.error('Failed to send withdrawal email:', err);
@@ -4042,11 +4062,18 @@
         email:             currentInvestorEmail,
         country:           invName + ' — Cancellation Request',
         investment_amount: fmt(amount),
-        message:           'Cancellation requested by investor.\n\nInvestor: ' + invName +
-                           '\nEmail: ' + currentInvestorEmail +
-                           '\nAmount: ' + fmt(amount) +
-                           '\nReference: #' + refNum +
-                           '\n\nPlease review in admin panel and update status to Cancelled to restore their balance.'
+        message:           '🚫 ACTION REQUIRED: Review Withdrawal Cancellation\n\n'
+                         + 'INVESTOR\n'
+                         + 'Name:    ' + invName + '\n'
+                         + 'Email:   ' + currentInvestorEmail + '\n\n'
+                         + 'CANCELLATION REQUEST\n'
+                         + 'Amount:  ' + fmt(amount) + '\n'
+                         + 'Reference: #' + refNum + '\n\n'
+                         + 'NEXT STEP\n'
+                         + 'If approved: go to Admin Panel → Withdrawals → find #' + refNum + '\n'
+                         + '→ Change status to "Cancelled" → Save\n'
+                         + '→ Investor balance will be automatically restored\n'
+                         + 'Admin: https://entremares-nine.vercel.app/admin.html'
       }).catch(err => console.error('EmailJS failed:', err));
 
     } catch (err) {
@@ -4100,7 +4127,17 @@
         subject:    'Add Funds Request - ' + (currentInvestor ? currentInvestor.name : ''),
         from_name:  currentInvestor ? currentInvestor.name : '',
         from_email: currentInvestorEmail,
-        message:    'Add Funds Request\n\nInvestor: ' + (currentInvestor ? currentInvestor.name : '') + '\nAmount: $' + amount.toLocaleString('en-US') + (note ? '\nNote: ' + note : '')
+        message:    '💰 ACTION REQUIRED: Add Funds to Investor Wallet\n\n'
+                  + 'INVESTOR\n'
+                  + 'Name:    ' + (currentInvestor ? currentInvestor.name : '') + '\n'
+                  + 'Email:   ' + currentInvestorEmail + '\n\n'
+                  + 'REQUEST\n'
+                  + 'Amount:  $' + amount.toLocaleString('en-US') + '\n'
+                  + (note ? 'Note:    ' + note + '\n' : '')
+                  + '\nNEXT STEP\n'
+                  + 'Confirm receipt of funds, then update investor_positions\n'
+                  + 'in Supabase to reflect the new balance.\n'
+                  + 'Admin: https://entremares-nine.vercel.app/admin.html'
       });
       statusEl.textContent = 'Request sent! We\'ll confirm and update your balance within 24 hours.';
       statusEl.className = 'modify-status success';
@@ -4354,7 +4391,18 @@
         email:            currentInvestorEmail,
         country:          currentInvestor.name + ' — RDM Commitment Modified',
         investment_amount: fmt(newAmount),
-        message:          'Commitment modification — Real del Monte\n\nInvestor: ' + currentInvestor.name + ' (' + currentInvestorEmail + ')\nPrevious: ' + fmt(oldAmount) + '\nNew amount: ' + fmt(newAmount) + '\nChange: ' + dir + ' by ' + fmt(Math.abs(diff))
+        message:          '✏️ INFO: Commitment Modified by Investor (auto-applied)\n\n'
+                        + 'INVESTOR\n'
+                        + 'Name:    ' + currentInvestor.name + '\n'
+                        + 'Email:   ' + currentInvestorEmail + '\n\n'
+                        + 'MODIFICATION\n'
+                        + 'Project: Real del Monte\n'
+                        + 'Previous amount: ' + fmt(oldAmount) + '\n'
+                        + 'New amount:      ' + fmt(newAmount) + '\n'
+                        + 'Change:          ' + (newAmount > oldAmount ? '↑ Increased' : newAmount === 0 ? '❌ Cancelled' : '↓ Decreased') + ' by ' + fmt(Math.abs(newAmount - oldAmount)) + '\n\n'
+                        + 'NOTE: This change was applied automatically in Supabase.\n'
+                        + 'No further action needed unless you want to review.\n'
+                        + 'Admin: https://entremares-nine.vercel.app/admin.html'
       }).catch(e => console.error('Email failed:', e));
       closeRDMModifyModal();
       statusEl.textContent = 'Commitment updated to ' + fmt(newAmount) + '!';
