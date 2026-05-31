@@ -1920,7 +1920,7 @@
         </div>
         <div class="portfolio-col">
           <div class="portfolio-number" id="portfolio-avail">—</div>
-          <div class="portfolio-number-lbl">Available to Withdraw</div>
+          <div class="portfolio-number-lbl">Available to Invest</div>
         </div>
       </div>
       <div class="portfolio-footnote">
@@ -1940,7 +1940,7 @@
         <div class="stat-val green" id="stat-total-returns">—</div>
       </div>
       <div class="stat">
-        <div class="stat-lbl">Available for Distribution</div>
+        <div class="stat-lbl">AVAILABLE FOR WITHDRAWAL</div>
         <div class="stat-val green" id="stat-net-distribution">—</div>
         <div class="stat-note">After withholding tax</div>
         <div class="stat-note" id="stat-pending-withdrawal" style="display:none;color:#D97706"></div>
@@ -1948,7 +1948,6 @@
       <div class="stat">
         <div class="stat-lbl">BLENDED RETURN</div>
         <div class="stat-val green" id="stat-blended-roc">—</div>
-        <div class="stat-sub">All capital deployed</div>
       </div>
       <div class="stat">
         <div class="stat-lbl">Projects Completed</div>
@@ -2803,7 +2802,7 @@
 
     if (profitEl) profitEl.textContent = (totalProfit >= 0 ? '+' : '') + fmt(totalProfit);
     if (returnEl) returnEl.textContent = (rocB >= 0 ? '+' : '') + rocB.toFixed(1) + '%';
-    if (availEl)  availEl.textContent  = fmt(availableToWithdraw);
+    if (availEl)  availEl.textContent  = fmt(getAvailableBalance());
     if (initEl)   initEl.textContent   = fmt(totalInvested);
   }
 
