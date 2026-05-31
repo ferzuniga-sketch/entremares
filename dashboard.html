@@ -2807,7 +2807,7 @@
   }
 
   function updateNetDistributionDisplay() {
-    const netAfterPending = Math.max(0, currentNetDistribution - pendingWithdrawalAmount - rdmCommittedAmount);
+    const netAfterPending = getAvailableToWithdraw();
     setFade('stat-net-distribution', '+' + fmt(netAfterPending));
     updatePendingWithdrawalNote();
     updatePortfolioHero();
