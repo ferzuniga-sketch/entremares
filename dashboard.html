@@ -1946,8 +1946,13 @@
         <div class="stat-note" id="stat-pending-withdrawal" style="display:none;color:#D97706"></div>
       </div>
       <div class="stat">
+        <div class="stat-lbl">BLENDED RETURN</div>
+        <div class="stat-val green" id="stat-blended-roc">—</div>
+        <div class="stat-sub">All capital deployed</div>
+      </div>
+      <div class="stat">
         <div class="stat-lbl">Projects Completed</div>
-        <div class="stat-val">2</div>
+        <div class="stat-val" id="stat-projects">2</div>
       </div>
     </div>
 
@@ -2778,7 +2783,9 @@
     const totalInvested       = kabilInvested + allureInvested;
     const totalProfit         = kabilProfit + allureProfit;
     const rocA                = totalInvested > 0 ? (totalProfit / totalInvested) * 100 : 0;
-    const rocB                = kabilInvested > 0 ? ((currentNetDistribution - kabilInvested) / kabilInvested) * 100 : 0;
+    const freshCapital        = Math.max(0, allureInvested - kabilDistribution);
+    const totalFreshCapital   = kabilInvested + freshCapital;
+    const rocB                = totalFreshCapital > 0 ? (totalProfit / totalFreshCapital) * 100 : 0;
     const availableToWithdraw = getAvailableToWithdraw();
 
     const profitEl = document.getElementById('portfolio-profit');
@@ -2795,11 +2802,7 @@
     }
 
     if (profitEl) profitEl.textContent = (totalProfit >= 0 ? '+' : '') + fmt(totalProfit);
-    if (returnEl) returnEl.innerHTML =
-      '<span style="display:block;font-size:inherit;line-height:1">' + (rocA >= 0 ? '+' : '') + rocA.toFixed(1) + '%</span>' +
-      '<span style="display:block;font-size:0.55em;opacity:0.55;margin-top:5px;font-family:inherit;letter-spacing:0.04em;text-transform:uppercase;font-weight:700">Blended · All Capital</span>' +
-      '<span style="display:block;font-size:0.8em;margin-top:8px;line-height:1">' + (rocB >= 0 ? '+' : '') + rocB.toFixed(1) + '%</span>' +
-      '<span style="display:block;font-size:0.55em;opacity:0.55;margin-top:4px;font-family:inherit;letter-spacing:0.04em;text-transform:uppercase;font-weight:700">Compound · Original Capital</span>';
+    if (returnEl) returnEl.textContent = (rocB >= 0 ? '+' : '') + rocB.toFixed(1) + '%';
     if (availEl)  availEl.textContent  = fmt(availableToWithdraw);
     if (initEl)   initEl.textContent   = fmt(totalInvested);
   }
@@ -3196,11 +3199,17 @@
     const allureProfit = allureNet - allureInvested;
 
     // Build investor object
+    const allureProfitCalc    = allureNet - allureInvested;
+    const kabilDistCalc       = kabilInvested + kabilProfit;
+    const totalProfitCalc     = kabilProfit + allureProfitCalc;
+    const totalInvestedCalc   = kabilInvested + allureInvested;
+    const rocACalc            = totalInvestedCalc > 0 ? (totalProfitCalc / totalInvestedCalc) * 100 : 0;
     const inv = {
       name,
       firstName,
       initials,
       memberSince,
+      rocA:    rocACalc,
       wallet:  allureGross,
       kabil:   { invested: kabilInvested,  profit: kabilProfit  },
       allure:  { invested: allureInvested, profit: allureProfit }
@@ -3243,6 +3252,7 @@
     /* Stats */
     // Stats from Supabase positions
     const totalReturns = (inv.kabil.profit || 0) + (inv.allure.profit || 0);
+    set('stat-blended-roc', inv.rocA != null ? (inv.rocA >= 0 ? '+' : '') + inv.rocA.toFixed(1) + '%' : '—');
     set('stat-kabil-investment', inv.kabil.invested > 0 ? fmt(inv.kabil.invested) : '—');
     set('stat-total-returns', totalReturns > 0 ? '+' + fmt(totalReturns) : '—');
 
