@@ -1958,6 +1958,10 @@
         <div>
           <div class="wallet-lbl">Available Balance to Invest</div>
           <div class="wallet-amount" id="wallet-balance">—</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.10)">
+            <span style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;letter-spacing:0.04em;text-transform:uppercase">After WHT (withdrawable)</span>
+            <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.7)" id="wallet-net-balance">—</span>
+          </div>
         </div>
         <button class="btn-invest" id="btn-invest">Invest Now &rarr;</button>
         <button class="btn-withdraw" id="btn-withdraw">Request Withdrawal &rarr;</button>
@@ -2496,8 +2500,7 @@
   let GOAL = 0;
   
 
-  const ALLURE_GROSS_MULTIPLIER = 1.3431;
-  const ALLURE_NET_MULTIPLIER   = 1.3088;
+  const WHT_RATE = 0.10; // 10% WHT on interest only
 
   /* ── Active projects cache ── */
   let activeProjects = [];
@@ -2679,7 +2682,8 @@
   let modalRefNum = '';
   let rdmCommittedAmount = 0;
   let currentGrossDistribution = 0;
-  let currentNetDistribution = 0;
+  let currentNetDistribution   = 0;
+  let currentPrincipal         = 0;
   let pendingWithdrawalAmount = 0;
   let pendingWithdrawalRequests = [];
   let currentRdmRaised = 0;
@@ -2720,20 +2724,16 @@
 
       if (error || !data) return;
 
-      let gross, net;
-      if (data.distribution_amount != null) {
-        net   = Number(data.distribution_amount);
-        gross = net * (ALLURE_GROSS_MULTIPLIER / ALLURE_NET_MULTIPLIER);
-      } else if (data.amount_invested != null) {
-        gross = Number(data.amount_invested) * ALLURE_GROSS_MULTIPLIER;
-        net   = Number(data.amount_invested) * ALLURE_NET_MULTIPLIER;
-      } else {
-        return;
-      }
+      const allurePrincipal = parseFloat(data.amount_invested || 0);
+      const allureNet       = parseFloat(data.distribution_amount || 0);
+      const netInterest     = allureNet - allurePrincipal;
+      const grossInterest   = netInterest / (1 - WHT_RATE);
+      const allureGross     = allurePrincipal + grossInterest;
+      currentPrincipal      = allurePrincipal;
 
-      currentInvestor.wallet = gross;
-      currentGrossDistribution = gross;
-      currentNetDistribution = net;
+      currentInvestor.wallet = allureGross;
+      currentGrossDistribution = allureGross;
+      currentNetDistribution   = allureNet;
     } catch (err) {
       console.error('Failed to load Allure balance:', err);
     }
@@ -2853,6 +2853,7 @@
     ]);
     const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
     setFade('wallet-balance', fmt(remaining));
+    setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
     if (currentNetDistribution > 0) {
       updateNetDistributionDisplay();
     }
@@ -2877,6 +2878,7 @@
           updatePendingWithdrawalNote();
           const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
           setFade('wallet-balance', fmt(remaining));
+          setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
           if (currentNetDistribution > 0) updateNetDistributionDisplay();
           setTimeout(() => loadActivityTimeline(currentInvestorEmail), 1500);
         } else if (newStatus === 'approved' || newStatus === 'transferred') {
@@ -2884,6 +2886,7 @@
           updatePendingWithdrawalNote();
           const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
           setFade('wallet-balance', fmt(remaining));
+          setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
           if (currentNetDistribution > 0) updateNetDistributionDisplay();
           setTimeout(() => loadActivityTimeline(currentInvestorEmail), 1500);
         }
@@ -3360,7 +3363,16 @@
   }
 
   function getAvailableBalance() {
-    return Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
+    if (!currentGrossDistribution || !currentNetDistribution) return 0;
+    const ratio = currentGrossDistribution / currentNetDistribution;
+    const grossConsumedByWithdrawals = pendingWithdrawalAmount * ratio;
+    return Math.max(0, currentGrossDistribution - rdmCommittedAmount - grossConsumedByWithdrawals);
+  }
+
+  function getAvailableToWithdraw() {
+    if (!currentGrossDistribution || !currentNetDistribution) return 0;
+    const availableGross = getAvailableBalance();
+    return Math.max(0, availableGross * (currentNetDistribution / currentGrossDistribution));
   }
 
   async function fetchAndUpdateBalance() {
@@ -3378,6 +3390,7 @@
     } catch (_) {}
     const remaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
     setFade('wallet-balance', fmt(remaining));
+    setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
   }
 
   function recalculateAllBalances(amount) {
@@ -3385,6 +3398,7 @@
 
     const newWallet = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
     setFade('wallet-balance', fmt(newWallet));
+    setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
 
     if (currentNetDistribution > 0) updateNetDistributionDisplay();
 
@@ -3454,7 +3468,7 @@
     const balance = getAvailableBalance();
     const remaining = Math.max(0, balance - amount);
     const remainingWHT = remaining > 0
-      ? remaining * (ALLURE_NET_MULTIPLIER / ALLURE_GROSS_MULTIPLIER)
+      ? remaining * (currentNetDistribution / currentGrossDistribution)
       : 0;
     document.getElementById('s2-remaining').textContent = fmt(remaining);
     document.getElementById('s2-remaining-wht').textContent = fmt(remainingWHT);
@@ -3786,10 +3800,8 @@
 
   function openWithdrawModal() {
     if (!currentInvestor) return;
-    const grossAvailable = Math.max(0, currentInvestor.wallet - rdmCommittedAmount);
-    const netAvailable   = Math.max(0, currentNetDistribution - pendingWithdrawalAmount - rdmCommittedAmount);
-    document.getElementById('wd-gross-display').textContent = fmt(grossAvailable);
-    document.getElementById('wd-net-display').textContent   = fmt(netAvailable);
+    document.getElementById('wd-gross-display').textContent = fmt(getAvailableBalance());
+    document.getElementById('wd-net-display').textContent   = fmt(getAvailableToWithdraw());
     const inp = document.getElementById('wd-amount-input');
     inp.max   = netAvailable.toFixed(2);
     inp.value = '';
@@ -3927,6 +3939,7 @@
     updateNetDistributionDisplay();
     const walletRemaining = Math.max(0, currentInvestor.wallet - rdmCommittedAmount - pendingWithdrawalAmount);
     setFade('wallet-balance', fmt(walletRemaining));
+    setFade('wallet-net-balance', fmt(getAvailableToWithdraw()));
 
     try {
       const bankJson = wdBankData ? JSON.stringify(wdBankData) : null;
