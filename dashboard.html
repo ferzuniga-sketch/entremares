@@ -3803,7 +3803,7 @@
     document.getElementById('wd-gross-display').textContent = fmt(getAvailableBalance());
     document.getElementById('wd-net-display').textContent   = fmt(getAvailableToWithdraw());
     const inp = document.getElementById('wd-amount-input');
-    inp.max   = netAvailable.toFixed(2);
+    inp.max   = getAvailableToWithdraw().toFixed(2);
     inp.value = '';
     inp.classList.remove('error');
     document.getElementById('wd-amount-notice').textContent = '';
@@ -3830,7 +3830,7 @@
   }
 
   function wdRequestFull() {
-    const netAvailable = Math.max(0, currentNetDistribution - pendingWithdrawalAmount - rdmCommittedAmount);
+    const netAvailable = getAvailableToWithdraw();
     document.getElementById('wd-amount-input').value = netAvailable.toFixed(2);
     document.getElementById('wd-amount-input').classList.remove('error');
     document.getElementById('wd-amount-notice').textContent = '';
@@ -3838,7 +3838,7 @@
 
   async function wdGoStep2() {
     const raw          = parseFloat(document.getElementById('wd-amount-input').value) || 0;
-    const netAvailable = Math.max(0, currentNetDistribution - pendingWithdrawalAmount - rdmCommittedAmount);
+    const netAvailable = getAvailableToWithdraw();
     const notice       = document.getElementById('wd-amount-notice');
     const inp          = document.getElementById('wd-amount-input');
 
