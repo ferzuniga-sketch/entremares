@@ -2622,7 +2622,7 @@
         email:             currentInvestorEmail,
         country:           '✅ NEW COMMITMENT — ' + currentInvestor.name + ' — ' + fmtAmount + ' — ' + projectName,
         investment_amount: fmtAmount,
-        message:           '✅ ACTION REQUIRED: Send Shareholders Loan Agreement\n\n'
+        message:           '✅ ACTION REQUIRED: Send Profit-Sharing Loan Agreement\n\n'
                          + 'INVESTOR\n'
                          + 'Name:    ' + currentInvestor.name + '\n'
                          + 'Email:   ' + currentInvestorEmail + '\n\n'
@@ -2631,7 +2631,7 @@
                          + 'Amount:  ' + fmtAmount + '\n'
                          + 'Total raised so far: ' + fmtTotal + '\n\n'
                          + 'NEXT STEP\n'
-                         + 'Send the Shareholders Loan Agreement to ' + currentInvestorEmail + '\n'
+                         + 'Send the Profit-Sharing Loan Agreement to ' + currentInvestorEmail + '\n'
                          + 'Then update commitment status in Admin Panel → Commitments\n'
                          + 'Admin: https://entremares-nine.vercel.app/admin.html'
       }).catch(err => console.error('EmailJS commitment alert failed:', err));
