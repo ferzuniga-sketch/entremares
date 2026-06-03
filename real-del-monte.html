@@ -1675,17 +1675,26 @@
     await loadFundingProgress();
     await loadInvestorCommitment(currentInvestorEmail);
 
+    // Send email notification to Fernando
     try {
+      const fmtAmount = '$' + rdmModalAmt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-        to_email:    'ferzuniga@gmail.com',
-        subject:     'New Commitment — Real del Monte — ' + currentInvestorName,
-        from_name:   currentInvestorName,
-        from_email:  currentInvestorEmail,
-        message:     'New commitment: ' + currentInvestorName + ' committed ' + fmt(rdmModalAmt) + ' to Real del Monte. Reference: #' + rdmModalRef
-      }).catch(err => console.error('EmailJS alert failed:', err));
-    } catch (err) {
-      console.error('Email alert failed:', err);
-    }
+        name:              '✅ NEW COMMITMENT — ' + currentInvestorName + ' — ' + fmtAmount + ' — Real del Monte',
+        email:             currentInvestorEmail,
+        country:           '✅ NEW COMMITMENT — ' + currentInvestorName + ' — ' + fmtAmount + ' — Real del Monte',
+        investment_amount: fmtAmount,
+        message:           '✅ ACTION REQUIRED: Send Shareholders Loan Agreement\n\n'
+                         + 'INVESTOR\n'
+                         + 'Name:    ' + currentInvestorName + '\n'
+                         + 'Email:   ' + currentInvestorEmail + '\n\n'
+                         + 'COMMITMENT\n'
+                         + 'Project: Real del Monte\n'
+                         + 'Amount:  ' + fmtAmount + '\n\n'
+                         + 'NEXT STEP\n'
+                         + 'Reach out to ' + currentInvestorEmail + ' within 24 hours.\n'
+                         + 'Admin: https://entremares-nine.vercel.app/admin.html'
+      }).catch(err => console.error('EmailJS commitment alert failed:', err));
+    } catch (err) { console.error('Email notification failed:', err); }
   }
 
   document.getElementById('rdm-amount-input').addEventListener('input', function() {
