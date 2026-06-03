@@ -3549,6 +3549,9 @@
 
     showStep(3);
 
+    // Send email FIRST before any other operations
+    sendNewCommitmentAlert(projectName);
+
     await saveCommitmentToSupabase();
 
     recalculateAllBalances(modalAmount);
@@ -3560,7 +3563,6 @@
       loadActivityTimeline(currentInvestorEmail);
     }, 2000);
 
-    sendNewCommitmentAlert(projectName);
     checkFullyFunded(projectName);
   }
 
