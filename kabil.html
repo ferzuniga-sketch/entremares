@@ -503,9 +503,9 @@
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>Forecasted</th>
-                  <th>Actual</th>
-                  <th>Variance</th>
+                  <th id="proceeds-th-forecast">Forecasted</th>
+                  <th id="proceeds-th-actual">Actual</th>
+                  <th id="proceeds-th-variance">Variance</th>
                 </tr>
               </thead>
               <tbody id="proceeds-tbody">
@@ -985,15 +985,36 @@
   function renderProceeds(rows) {
     const tbody = document.getElementById('proceeds-tbody');
     if (!tbody) return;
+
+    const section = document.getElementById('returns-proceeds-section');
+    if (section) {
+      section.style.display = rows && rows.length ? '' : 'none';
+      if (!rows || !rows.length) return;
+    }
+
     if (!rows || rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">—</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">—</td></tr>';
       return;
     }
+
+    const thFore = document.getElementById('proceeds-th-forecast');
+    const thAct  = document.getElementById('proceeds-th-actual');
+    const thVar  = document.getElementById('proceeds-th-variance');
+    const hasActuals = rows.some(r => r.actual != null && r.actual !== '');
+
+    if (thFore) thFore.textContent = hasActuals ? 'Forecasted' : 'Projected';
+    if (thAct)  thAct.style.display  = hasActuals ? '' : 'none';
+    if (thVar)  thVar.style.display  = hasActuals ? '' : 'none';
 
     const isNetRow = item => item === 'NET AVAILABLE FOR DISTRIBUTION' || item.toUpperCase().includes('NET TO INVESTORS');
 
     tbody.innerHTML = rows.map(r => {
-      const fore     = r.forecasted || 0;
+      const fore = r.forecasted || 0;
+      if (!hasActuals) {
+        const cls = isNetRow(r.item) ? 'row-total' : '';
+        return '<tr class="' + cls + '"><td>' + escHtml(r.item) + '</td><td>' + fmt(fore) + '</td></tr>';
+      }
+
       const act      = r.actual     || 0;
       const variance = act - fore;
       const isNet    = isNetRow(r.item);

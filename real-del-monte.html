@@ -352,7 +352,7 @@
     </div>
     <div class="hero-subtitle" id="hero-subtitle">Tijuana, Mexico</div>
     <div class="hero-key-results">
-      <span class="kchip kchip-gray" id="kr-duration">24 months</span>
+      <span class="kchip kchip-gray" id="kr-duration">—</span>
       <span class="kchip kchip-green">20–30% Target Return</span>
       <span class="kchip kchip-blue">Active</span>
     </div>
@@ -638,7 +638,7 @@
               <div class="inv-section">
                 <div class="inv-row">
                   <span class="inv-lbl">Project Timeline</span>
-                  <span class="inv-val">24 months</span>
+                  <span class="inv-val" id="tab-project-timeline">—</span>
                 </div>
                 <div class="inv-row">
                   <span class="inv-lbl">Status</span>
@@ -679,6 +679,25 @@
           </div>
         </div>
 
+        <div class="section" id="returns-proceeds-section" style="display:none">
+          <div class="sec-title">Proceeds &amp; Sales</div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th id="proceeds-th-forecast">Forecasted</th>
+                  <th id="proceeds-th-actual">Actual</th>
+                  <th id="proceeds-th-variance">Variance</th>
+                </tr>
+              </thead>
+              <tbody id="proceeds-tbody">
+                <tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Q&A -->
         <div id="qa-returns"></div>
 
@@ -716,7 +735,7 @@
         </div>
         <div class="mini-row">
           <span class="mini-lbl">Timeline</span>
-          <span class="mini-val">24 months</span>
+          <span class="mini-val" id="sidebar-duration">—</span>
         </div>
         <div class="mini-funding-track">
           <div class="mini-funding-fill" id="sidebar-prog-fill" style="width:0%"></div>
@@ -1126,7 +1145,12 @@
     const end   = pd.end_date   ? fmtMonthYear(pd.end_date)   : null;
     if (start || end) subtitleParts.push([start, end].filter(Boolean).join(' – '));
     if (subtitleParts.length) set('hero-subtitle', subtitleParts.join(' · '));
-    if (pd.duration_months != null) set('kr-duration', pd.duration_months + ' months');
+    if (pd.duration_months != null) {
+      const durLbl = pd.duration_months + ' months';
+      set('kr-duration', durLbl);
+      set('tab-project-timeline', durLbl);
+      set('sidebar-duration', durLbl);
+    }
     if (pd.cover_photo_url) {
       document.getElementById('hero-placeholder').style.display = 'none';
       const img = document.getElementById('hero-img');
@@ -1146,6 +1170,69 @@
       const iframe = document.getElementById('map-iframe');
       if (iframe) iframe.src = 'https://maps.google.com/maps?q=' + encodeURIComponent(pd.address) + '&output=embed';
     }
+  }
+
+  function renderProceeds(rows) {
+    const tbody = document.getElementById('proceeds-tbody');
+    if (!tbody) return;
+
+    const section = document.getElementById('returns-proceeds-section');
+    if (section) {
+      section.style.display = rows && rows.length ? '' : 'none';
+      if (!rows || !rows.length) return;
+    }
+
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">—</td></tr>';
+      return;
+    }
+
+    const thFore = document.getElementById('proceeds-th-forecast');
+    const thAct  = document.getElementById('proceeds-th-actual');
+    const thVar  = document.getElementById('proceeds-th-variance');
+    const hasActuals = rows.some(r => r.actual != null && r.actual !== '');
+
+    if (thFore) thFore.textContent = hasActuals ? 'Forecasted' : 'Projected';
+    if (thAct)  thAct.style.display  = hasActuals ? '' : 'none';
+    if (thVar)  thVar.style.display  = hasActuals ? '' : 'none';
+
+    const isNetRow = item => item === 'NET AVAILABLE FOR DISTRIBUTION' || item.toUpperCase().includes('NET TO INVESTORS');
+
+    tbody.innerHTML = rows.map(r => {
+      const fore = r.forecasted || 0;
+      if (!hasActuals) {
+        const cls = isNetRow(r.item) ? 'row-total' : '';
+        return `<tr class="${cls}"><td>${escHtml(r.item)}</td><td>${fmt(fore)}</td></tr>`;
+      }
+
+      const act      = r.actual     || 0;
+      const variance = act - fore;
+      const isNet    = isNetRow(r.item);
+      const varColor = variance > 0 ? '#1A7F4A' : (variance < 0 ? '#C0392B' : '#9B9B9B');
+      const cls      = isNet ? 'row-total' : '';
+
+      if (isNet) {
+        return `<tr class="${cls}">
+          <td>${escHtml(r.item)}</td>
+          <td>${fmt(fore)}</td>
+          <td>${fmt(act)}</td>
+          <td style="color:${varColor}">${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</td>
+        </tr>`;
+      }
+
+      const varPct    = fore !== 0 ? (Math.abs(variance) / Math.abs(fore) * 100) : 0;
+      const varPctStr = (variance >= 0 ? '+' : '-') + varPct.toFixed(1) + '%';
+
+      return `<tr class="${cls}">
+        <td>${escHtml(r.item)}</td>
+        <td>${fmt(fore)}</td>
+        <td>${fmt(act)}</td>
+        <td style="vertical-align:top;color:${varColor}">
+          <div>${variance >= 0 ? '+' : ''}${fmt(Math.abs(variance))}</div>
+          <div style="font-size:11px;margin-top:2px;opacity:0.8">${varPctStr}</div>
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   function renderBudget(rows) {
@@ -1359,13 +1446,15 @@
       { data: budget,  error: e3 },
       { data: scen,    error: e4 },
       { data: upd,     error: e5 },
-      { data: capital, error: e_cap }
+      { data: capital, error: e_cap },
+      { data: sales,   error: e6 }
     ] = await Promise.all([
       supabaseClient.from('project_details')  .select('*').eq('project_name', PROJECT_NAME).maybeSingle(),
       supabaseClient.from('project_budget')   .select('*').eq('project_name', PROJECT_NAME).order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
       supabaseClient.from('project_scenarios').select('*').eq('project_name', PROJECT_NAME).order('sort_order', { ascending: true, nullsFirst: false }),
       supabaseClient.from('project_updates')  .select('*').eq('project_name', PROJECT_NAME).order('published_at', { ascending: false }),
       supabaseClient.from('project_capital_structure').select('*').eq('project_name','Real del Monte').order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
+      supabaseClient.from('project_sales').select('*').eq('project_name', PROJECT_NAME).order('sort_order', { ascending: true, nullsFirst: false }).order('id', { ascending: true }),
     ]);
 
     if (e1) console.error('project_details:', e1);
@@ -1373,6 +1462,7 @@
     if (e4) console.error('project_scenarios:', e4);
     if (e5) console.error('project_updates:', e5);
     if (e_cap) console.error('project_capital_structure:', e_cap);
+    if (e6) console.error('project_sales:', e6);
 
     if (pd?.total_capex) GOAL = pd.total_capex;
 
@@ -1391,6 +1481,7 @@
     renderScenarios(scen);
     renderUpdates(upd);
     renderRdmCapitalStructure(capital);
+    renderProceeds(sales);
     await loadFundingProgress();
     await loadInvestorCommitment(email);
   }
