@@ -593,6 +593,25 @@
       <!-- ══ TAB 3: RETURNS ══ -->
       <div id="tab-returns" class="tab-content">
 
+        <div class="section" id="returns-proceeds-section" style="display:none">
+          <div class="sec-title">Proceeds &amp; Sales</div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th id="proceeds-th-forecast">Forecasted</th>
+                  <th id="proceeds-th-actual">Actual</th>
+                  <th id="proceeds-th-variance">Variance</th>
+                </tr>
+              </thead>
+              <tbody id="proceeds-tbody">
+                <tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="section">
           <div class="sec-title">My Commitment</div>
           <div class="investment-card" id="commitment-card">
@@ -676,25 +695,6 @@
               <button class="btn-invest-now" onclick="openInvestModal()">Invest Now &rarr;</button>
             </div>
 
-          </div>
-        </div>
-
-        <div class="section" id="returns-proceeds-section" style="display:none">
-          <div class="sec-title">Proceeds &amp; Sales</div>
-          <div class="card" style="padding:0;overflow:hidden">
-            <table class="budget-table">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th id="proceeds-th-forecast">Forecasted</th>
-                  <th id="proceeds-th-actual">Actual</th>
-                  <th id="proceeds-th-variance">Variance</th>
-                </tr>
-              </thead>
-              <tbody id="proceeds-tbody">
-                <tr><td colspan="4" style="padding:24px 28px;text-align:center;color:#B0B0AA;font-size:13px">Loading…</td></tr>
-              </tbody>
-            </table>
           </div>
         </div>
 
