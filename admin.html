@@ -330,6 +330,27 @@
       border-color: #C0392B;
     }
 
+    .btn-view-as {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1D4ED8;
+      background: #EEF3FF;
+      border: 1px solid #C7D7FE;
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      margin-left: 6px;
+    }
+
+    .btn-view-as:hover {
+      background: #1D4ED8;
+      color: #FFFFFF;
+      border-color: #1D4ED8;
+    }
+
     .btn-reorder {
       font-family: inherit;
       font-size: 12px;
@@ -3820,6 +3841,7 @@
           <td class="td-mono">${fmt(totalInvested)}</td>
           <td class="td-mono td-green">+${fmt(totalReturns)}</td>
           <td class="td-actions">
+            <button class="btn-view-as" onclick="viewAsInvestor('${inv.email}')">View as</button>
             <button class="btn-edit" onclick="openEditInvestor(${inv.id})">Edit</button>
             <button class="btn-delete" onclick="deleteInvestor('${inv.email}', '${inv.name}')">Delete</button>
           </td>
@@ -3827,6 +3849,11 @@
       `;
     }).join('');
     document.getElementById('inv-count').textContent = INVESTORS_DATA.length + ' investor' + (INVESTORS_DATA.length !== 1 ? 's' : '');
+  }
+
+  /* ── Admin: view an investor's exact dashboard, read-only ── */
+  function viewAsInvestor(email) {
+    window.open('dashboard.html?viewAs=' + encodeURIComponent(email), '_blank');
   }
 
   function renderProjects() {

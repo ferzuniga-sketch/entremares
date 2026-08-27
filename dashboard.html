@@ -1798,6 +1798,16 @@
     .dash-qa-status { font-size: 13px; margin-top: 10px; }
     .dash-qa-status.success { color: #1A7F4A; }
     .dash-qa-status.error   { color: #C0392B; }
+
+    /* Admin "view as" preview — force-hide all mutating action buttons */
+    body.admin-preview-mode #btn-invest,
+    body.admin-preview-mode #btn-withdraw,
+    body.admin-preview-mode #btn-add-funds,
+    body.admin-preview-mode #btn-opp-invest,
+    body.admin-preview-mode #btn-opp-modify,
+    body.admin-preview-mode #dash-btn-toggle-modify {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -1877,6 +1887,11 @@
 </div>
 
 <div id="dashboard">
+
+  <div id="admin-preview-banner" style="display:none;position:sticky;top:0;z-index:500;background:#FFFBEB;border-bottom:1px solid #FDE68A;color:#92400E;padding:10px 24px;font-size:13px;font-weight:600;align-items:center;justify-content:center;gap:14px;text-align:center">
+    <span>Admin preview &mdash; viewing as <span id="admin-preview-name">&mdash;</span></span>
+    <button onclick="exitAdminPreview()" style="font-family:inherit;font-size:12px;font-weight:700;color:#92400E;background:#FFFFFF;border:1px solid #FDE68A;border-radius:6px;padding:4px 12px;cursor:pointer">Exit preview</button>
+  </div>
 
   <header class="hdr">
     <a href="index.html" class="hdr-logo">Entremares</a>
@@ -2700,6 +2715,7 @@
   /* ── Modal state ── */
   let currentInvestor = null;
   let currentInvestorEmail = '';
+  let isAdminPreview = false;
   let modalAmount = 0;
   let modalRefNum = '';
   let rdmCommittedAmount = 0;
@@ -2786,6 +2802,8 @@
       const hasCancellationRequest = pendingWithdrawalRequests.some(r => r.status === 'cancellation_requested');
       if (hasCancellationRequest) {
         noteEl.innerHTML = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal &nbsp;<span style="font-size:11px;color:#9B9B9B;font-weight:600">· Cancellation pending review</span>';
+      } else if (isAdminPreview) {
+        noteEl.innerHTML = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal pending';
       } else {
         noteEl.innerHTML = '⏳ ' + fmt(pendingWithdrawalAmount) + ' withdrawal pending' +
           ' &nbsp;<a href="javascript:void(0)" onclick="requestCancellation()" style="font-size:11px;color:#D97706;text-decoration:underline;font-weight:600;white-space:nowrap">Request Cancellation</a>';
@@ -3318,6 +3336,7 @@
 
   /* ── Modal functions ── */
   function openModal() {
+    if (isAdminPreview) return;
     if (!currentInvestor) return;
     const availableBalance = getAvailableBalance();
     document.getElementById('modal-wallet-display').textContent = fmt(availableBalance);
@@ -3669,6 +3688,44 @@
     if (document.getElementById('login-screen').style.display !== 'none') attemptLogin();
   });
 
+  /* ── Admin "view as" preview ── */
+  function enterAdminPreviewMode(name) {
+    isAdminPreview = true;
+    document.body.classList.add('admin-preview-mode');
+    document.getElementById('admin-preview-name').textContent = name;
+    document.getElementById('admin-preview-banner').style.display = 'flex';
+  }
+
+  function exitAdminPreview() {
+    window.location.href = 'admin.html';
+  }
+
+  /* Only an authenticated Supabase session belonging to an investor
+     flagged is_admin in the `investors` table may view another
+     investor's dashboard. A normal investor's session will fail the
+     is_admin check and simply see their own dashboard. */
+  async function tryEnterAdminPreview(adminEmail, viewAsEmail) {
+    const { data: adminData } = await supabaseClient
+      .from('investors')
+      .select('is_admin')
+      .ilike('email', adminEmail)
+      .maybeSingle();
+
+    if (!adminData?.is_admin) return false;
+
+    const { data: targetInv } = await supabaseClient
+      .from('investors')
+      .select('email, name')
+      .ilike('email', viewAsEmail)
+      .maybeSingle();
+
+    if (!targetInv) return false;
+
+    await initDashboard(targetInv.email);
+    enterAdminPreviewMode(targetInv.name || targetInv.email);
+    return true;
+  }
+
   /* ── Restore session ── */
   (async function checkSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -3677,6 +3734,12 @@
       return;
     }
     const email = session.user.email.toLowerCase();
+
+    const viewAsParam = new URLSearchParams(window.location.search).get('viewAs');
+    if (viewAsParam) {
+      const entered = await tryEnterAdminPreview(email, viewAsParam.trim().toLowerCase());
+      if (entered) return;
+    }
 
     const { data: invData } = await supabaseClient
       .from('investors')
@@ -3706,6 +3769,7 @@
      MODIFY COMMITMENT FORM (dashboard card)
   ══════════════════════════════════════════ */
   function toggleDashModifyForm() {
+    if (isAdminPreview) return;
     const wrap = document.getElementById('dash-modify-form-wrap');
     const btn  = document.getElementById('dash-btn-toggle-modify');
     if (wrap.style.display === 'none') {
@@ -3837,6 +3901,7 @@
   let wdBankData = null;
 
   function openWithdrawModal() {
+    if (isAdminPreview) return;
     if (!currentInvestor) return;
     document.getElementById('wd-gross-display').textContent = fmt(getAvailableBalance());
     document.getElementById('wd-net-display').textContent   = fmt(getAvailableToWithdraw());
@@ -4038,6 +4103,7 @@
 
   /* ── Investor cancellation request ── */
   async function requestCancellation() {
+    if (isAdminPreview) return;
     const amount  = pendingWithdrawalAmount;
     const req     = pendingWithdrawalRequests.length > 0 ? pendingWithdrawalRequests[0] : null;
     const refNum  = req ? (req.reference_number || (req.id || '').slice(0, 8) || '—') : '—';
@@ -4085,6 +4151,7 @@
 
   /* ── Add Funds modal ── */
   function openAddFundsModal() {
+    if (isAdminPreview) return;
     document.getElementById('add-funds-input').value = '';
     document.getElementById('add-funds-note-input').value = '';
     document.getElementById('add-funds-status').style.display = 'none';
@@ -4304,6 +4371,7 @@
   }
 
   function openRDMModifyModal() {
+    if (isAdminPreview) return;
     const maxCommit = rdmCommittedAmount + getAvailableBalance();
     document.getElementById('rdm-modify-current').textContent = fmt(rdmCommittedAmount);
     document.getElementById('rdm-modify-max').textContent     = fmt(maxCommit);
