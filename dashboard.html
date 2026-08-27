@@ -3408,9 +3408,8 @@
   }
 
   function getAvailableToWithdraw() {
-    if (!currentGrossDistribution || !currentNetDistribution) return 0;
-    const availableGross = getAvailableBalance();
-    return Math.max(0, availableGross * (currentNetDistribution / currentGrossDistribution));
+    // Remaining wallet is un-reinvested profit (capital was reinvested first), so 10% WHT applies to the full balance.
+    return Math.max(0, getAvailableBalance() * (1 - WHT_RATE));
   }
 
   async function fetchAndUpdateBalance() {
@@ -3505,7 +3504,7 @@
     const balance = getAvailableBalance();
     const remaining = Math.max(0, balance - amount);
     const remainingWHT = remaining > 0
-      ? remaining * (currentNetDistribution / currentGrossDistribution)
+      ? remaining * (1 - WHT_RATE)
       : 0;
     document.getElementById('s2-remaining').textContent = fmt(remaining);
     document.getElementById('s2-remaining-wht').textContent = fmt(remainingWHT);
