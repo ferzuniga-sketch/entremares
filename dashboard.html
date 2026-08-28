@@ -3214,6 +3214,23 @@
     renderDocumentsTab();
   }
 
+  /* Individual documents store an investor-docs object path in
+     document_url (private bucket), so a short-lived signed URL is
+     generated on demand; public documents open document_url directly. */
+  async function openDocument(id) {
+    const doc = allDocuments.find(d => d.id === id);
+    if (!doc) return;
+    if (doc.investor_email) {
+      const { data, error } = await supabaseClient.storage
+        .from('investor-docs')
+        .createSignedUrl(doc.document_url, 300);
+      if (error) { alert('Failed to open document: ' + error.message); return; }
+      window.open(data.signedUrl, '_blank');
+    } else {
+      window.open(doc.document_url, '_blank');
+    }
+  }
+
   function setDocFilter(cat) {
     docFilter = cat;
     document.querySelectorAll('.doc-filter-chip').forEach(chip => {
@@ -3256,7 +3273,7 @@
                 ${doc.investor_email ? '<span class="doc-project-tag">Personal</span>' : ''}
               </div>
             </div>
-            <a href="${escHtml(doc.document_url)}" class="doc-dl" target="_blank" rel="noopener">Download</a>
+            <a href="#" class="doc-dl" onclick="openDocument('${doc.id}'); return false;">Download</a>
           </div>
         `).join('')
         + '</div>';
