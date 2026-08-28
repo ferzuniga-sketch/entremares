@@ -3067,7 +3067,8 @@
         .from('investor_activity')
         .select('*')
         .or(`investor_email.ilike.${email},and(activity_type.eq.Document,investor_email.is.null)`)
-        .order('activity_date', { ascending: false });
+        .order('activity_date', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 

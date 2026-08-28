@@ -6180,7 +6180,8 @@
     const { data, error } = await supabaseClient
       .from('investor_activity')
       .select('*')
-      .order('activity_date', { ascending: false });
+      .order('activity_date', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#C0392B;padding:40px 20px">' + escHtml(error.message) + '</td></tr>';
