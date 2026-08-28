@@ -3908,8 +3908,10 @@
 
   /* ── Investor notification helper (documents & updates) ──
      NOTIFY_MODE = 'test' → always sends only to ferzuniga@gmail.com, regardless of audience.
-     NOTIFY_MODE = 'live' → sends to investorEmail if set, else to every investor on file. */
-  async function notifyInvestors(investorEmail, subject, message) {
+     NOTIFY_MODE = 'live' → sends to investorEmail if set, else to every investor on file.
+     Uses the generic notification template (template_dmhzal8) — separate from the
+     investment-application template used elsewhere in this file. */
+  async function notifyInvestors(investorEmail, subject, title, message) {
     let recipients;
     if (NOTIFY_MODE === 'test') {
       recipients = ['ferzuniga@gmail.com'];
@@ -3922,12 +3924,12 @@
 
     for (const to of recipients) {
       try {
-        const result = await emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
-          to_email:   to,
-          subject:    subject,
-          from_name:  'Entremares',
-          from_email: 'portal@entremares.com',
-          message:    message
+        const result = await emailjs.send('service_x6mgiqm', 'template_dmhzal8', {
+          to_email:  to,
+          subject:   subject,
+          title:     title,
+          message:   message,
+          from_name: 'Entremares Portal'
         }, { publicKey: EMAILJS_PUBLIC_KEY });
         console.log('[EmailJS] Notification sent to', to, '—', subject, result);
       } catch (err) {
@@ -5904,6 +5906,7 @@
       notifyInvestors(
         null,
         'New update: ' + title,
+        'New update posted',
         'A new update has been posted to your Allure project on Entremares.\n\n'
           + 'Project: Allure\n'
           + 'Update: ' + title + '\n\n'
@@ -7143,6 +7146,7 @@
       notifyInvestors(
         null,
         'New update: ' + title,
+        'New update posted',
         'A new update has been posted to your Real del Monte project on Entremares.\n\n'
           + 'Project: Real del Monte\n'
           + 'Update: ' + title + '\n\n'
@@ -8176,6 +8180,7 @@
       notifyInvestors(
         null,
         'New update: ' + title,
+        'New update posted',
         'A new update has been posted to your Kabil project on Entremares.\n\n'
           + 'Project: Kabil\n'
           + 'Update: ' + title + '\n\n'
@@ -9402,6 +9407,7 @@
     notifyInvestors(
       investorEmail,
       'New document: ' + name,
+      'New document added',
       'A new document has been added to your Allure project on Entremares.\n\n'
         + 'Project: Allure\n'
         + 'Document: ' + name + '\n\n'
@@ -9480,6 +9486,7 @@
     notifyInvestors(
       investorEmail,
       'New document: ' + name,
+      'New document added',
       'A new document has been added to your Kabil project on Entremares.\n\n'
         + 'Project: Kabil\n'
         + 'Document: ' + name + '\n\n'
@@ -9549,6 +9556,7 @@
     notifyInvestors(
       investorEmail,
       'New document: ' + name,
+      'New document added',
       'A new document has been added to your Real del Monte project on Entremares.\n\n'
         + 'Project: Real del Monte\n'
         + 'Document: ' + name + '\n\n'
