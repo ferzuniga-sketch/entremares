@@ -1808,6 +1808,73 @@
     body.admin-preview-mode #dash-btn-toggle-modify {
       display: none !important;
     }
+
+    /* Documents tab */
+    .doc-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .doc-filter-chip {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6B6B6B;
+      background: #FFFFFF;
+      border: 1px solid #E0E0DC;
+      border-radius: 100px;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .doc-filter-chip:hover { border-color: #0D0D0D; color: #0D0D0D; }
+    .doc-filter-chip.active { background: #0D0D0D; color: #FFFFFF; border-color: #0D0D0D; }
+    .doc-group { margin-bottom: 26px; }
+    .doc-group:last-child { margin-bottom: 0; }
+    .doc-group-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6B6B6B;
+      margin-bottom: 8px;
+    }
+    .doc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #F5F5F2;
+      gap: 12px;
+    }
+    .doc-row:last-child { border-bottom: none; }
+    .doc-name { font-size: 14px; font-weight: 600; color: #0D0D0D; }
+    .doc-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .doc-project-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6B6B6B;
+      background: #F5F5F3;
+      border: 1px solid #E8E8E4;
+      border-radius: 100px;
+      padding: 2px 9px;
+      white-space: nowrap;
+    }
+    .doc-dl {
+      flex-shrink: 0;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: #0D0D0D;
+      background: #F5F5F3;
+      border: 1px solid #E8E8E4;
+      border-radius: 7px;
+      padding: 7px 14px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .doc-dl:hover { background: #0D0D0D; color: #FFFFFF; border-color: #0D0D0D; }
+    .doc-empty { padding: 30px; text-align: center; color: #B0B0AA; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -1918,6 +1985,7 @@
       <button class="dash-tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
       <button class="dash-tab" data-tab="projects" onclick="switchTab('projects')">Projects</button>
       <button class="dash-tab" data-tab="activity" onclick="switchTab('activity')">Activity</button>
+      <button class="dash-tab" data-tab="documents" onclick="switchTab('documents')">Documents</button>
     </div>
 
     <div class="dash-tab-panel active" id="tab-overview">
@@ -2202,6 +2270,27 @@
       <div class="tl" id="timeline"></div>
     </div>
     </div><!-- end tab-activity -->
+
+    <div class="dash-tab-panel" id="tab-documents">
+    <!-- Documents -->
+    <div class="sec-hdr">
+      <span class="sec-title">Documents</span>
+      <span class="sec-meta" id="docs-count">&mdash;</span>
+    </div>
+
+    <div class="doc-filters" id="doc-filters">
+      <button class="doc-filter-chip active" data-doc-filter="all">All</button>
+      <button class="doc-filter-chip" data-doc-filter="Contracts &amp; Agreements">Contracts &amp; Agreements</button>
+      <button class="doc-filter-chip" data-doc-filter="Statements">Statements</button>
+      <button class="doc-filter-chip" data-doc-filter="Reports &amp; Updates">Reports &amp; Updates</button>
+      <button class="doc-filter-chip" data-doc-filter="Project Materials">Project Materials</button>
+      <button class="doc-filter-chip" data-doc-filter="Other">Other</button>
+    </div>
+
+    <div class="act-card">
+      <div id="docs-container"><div class="doc-empty">Loading&hellip;</div></div>
+    </div>
+    </div><!-- end tab-documents -->
 
   </main>
 </div>
@@ -3081,6 +3170,105 @@
     }
   }
 
+  /* ── Documents tab: public + this investor's individual documents, grouped by category ──
+     Category order matches the required header order. Legacy document_type values
+     (from before the category rework) are mapped for display only — no DB migration. */
+  const DOC_CATEGORY_ORDER = ['Contracts & Agreements', 'Statements', 'Reports & Updates', 'Project Materials', 'Other'];
+
+  function mapDocCategory(type) {
+    switch (type) {
+      case 'Contract':         return 'Contracts & Agreements';
+      case 'Statement':        return 'Statements';
+      case 'Report':           return 'Reports & Updates';
+      case 'Project Material': return 'Project Materials';
+      /* legacy values */
+      case 'Legal':            return 'Contracts & Agreements';
+      case 'Financial Report': return 'Statements';
+      case 'Update':           return 'Reports & Updates';
+      default:                 return 'Other';
+    }
+  }
+
+  let allDocuments = [];
+  let docFilter    = 'all';
+
+  async function loadDocumentsTab(email) {
+    const container = document.getElementById('docs-container');
+    if (!container || !email) return;
+    container.innerHTML = '<div class="doc-empty">Loading…</div>';
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('project_documents')
+        .select('*')
+        .or('investor_email.is.null,investor_email.ilike.' + email)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      allDocuments = data || [];
+    } catch (err) {
+      console.error('Failed to load documents:', err);
+      allDocuments = [];
+    }
+    renderDocumentsTab();
+  }
+
+  function setDocFilter(cat) {
+    docFilter = cat;
+    document.querySelectorAll('.doc-filter-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.docFilter === cat);
+    });
+    renderDocumentsTab();
+  }
+
+  function renderDocumentsTab() {
+    const container = document.getElementById('docs-container');
+    if (!container) return;
+
+    const countEl = document.getElementById('docs-count');
+    if (countEl) countEl.textContent = allDocuments.length + ' document' + (allDocuments.length !== 1 ? 's' : '');
+
+    if (allDocuments.length === 0) {
+      container.innerHTML = '<div class="doc-empty">No documents available yet.</div>';
+      return;
+    }
+
+    const groups = {};
+    DOC_CATEGORY_ORDER.forEach(cat => { groups[cat] = []; });
+    allDocuments.forEach(doc => {
+      groups[mapDocCategory(doc.document_type)].push(doc);
+    });
+
+    const visibleCats = DOC_CATEGORY_ORDER.filter(cat => docFilter === 'all' || docFilter === cat);
+    let html = '';
+    visibleCats.forEach(cat => {
+      const docs = groups[cat];
+      if (!docs || docs.length === 0) return;
+      html += '<div class="doc-group">'
+        + '<div class="doc-group-title">' + escHtml(cat) + '</div>'
+        + docs.map(doc => `
+          <div class="doc-row">
+            <div>
+              <div class="doc-name">${escHtml(doc.document_name)}</div>
+              <div class="doc-meta">
+                <span class="doc-project-tag">${escHtml(doc.project_name)}</span>
+                ${doc.investor_email ? '<span class="doc-project-tag">Personal</span>' : ''}
+              </div>
+            </div>
+            <a href="${escHtml(doc.document_url)}" class="doc-dl" target="_blank" rel="noopener">Download</a>
+          </div>
+        `).join('')
+        + '</div>';
+    });
+
+    container.innerHTML = html || '<div class="doc-empty">No documents in this category.</div>';
+  }
+
+  document.querySelectorAll('.doc-filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => setDocFilter(chip.dataset.docFilter));
+  });
+
   /* ── Login ── */
   async function attemptLogin() {
     const email    = document.getElementById('inp-email').value.trim().toLowerCase();
@@ -3332,6 +3520,9 @@
     setTimeout(() => updateFundingProgress(), 150);
     loadDashboardData(email || currentInvestorEmail);
     loadActiveProjects();
+
+    /* Documents — public + this investor's individual documents, across all projects */
+    loadDocumentsTab(email || currentInvestorEmail);
   }
 
   /* ── Modal functions ── */
