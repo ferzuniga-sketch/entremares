@@ -3687,6 +3687,20 @@
      'live' → notifications go to the real investor(s). */
   const NOTIFY_MODE = 'test';
 
+  const EMAILJS_PUBLIC_KEY = 'qgN_CHVLPlAOPz0Td';
+
+  /* Init immediately — the EmailJS SDK <script> tag in <head> is a
+     blocking, non-deferred load, so `emailjs` already exists by the time
+     this script runs. Don't rely only on the DOMContentLoaded block below,
+     which can throw (and abort) before reaching its own emailjs.init()
+     call if window.supabase / createClient isn't ready yet. */
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    console.log('[EmailJS] Initialized with public key.');
+  } catch (err) {
+    console.error('[EmailJS] init() failed:', err);
+  }
+
   /* ═══════════════════════════════════════════
      DATA
   ═══════════════════════════════════════════ */
@@ -3889,7 +3903,7 @@
     const { createClient } = window.supabase;
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
     console.log('[Supabase] Client created:', supabaseClient);
-    emailjs.init('qgN_CHVLPlAOPz0Td');
+    emailjs.init(EMAILJS_PUBLIC_KEY);
   });
 
   /* ── Investor notification helper (documents & updates) ──
@@ -3908,15 +3922,16 @@
 
     for (const to of recipients) {
       try {
-        await emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
+        const result = await emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
           to_email:   to,
           subject:    subject,
           from_name:  'Entremares',
           from_email: 'portal@entremares.com',
           message:    message
-        });
+        }, { publicKey: EMAILJS_PUBLIC_KEY });
+        console.log('[EmailJS] Notification sent to', to, '—', subject, result);
       } catch (err) {
-        console.error('Notification email failed for', to, err);
+        console.error('[EmailJS] Notification failed for', to, '—', subject, err);
       }
     }
   }
