@@ -1012,6 +1012,7 @@
         <button class="tab-btn" data-tab="allure">Allure</button>
         <button class="tab-btn" data-tab="kabil">Kabil</button>
         <button class="tab-btn" data-tab="realdelmente">Real del Monte</button>
+        <button class="tab-btn" data-tab="general">General</button>
         <button class="tab-btn" data-tab="activity">Activity</button>
         <button class="tab-btn" data-tab="withdrawals">Withdrawals</button>
         <button class="tab-btn" data-tab="landingpage">Landing Page</button>
@@ -1502,9 +1503,10 @@
             <div class="field">
               <label>Document Type</label>
               <select id="allure-doc-type">
-                <option value="Financial Report">Financial Report</option>
-                <option value="Legal">Legal</option>
-                <option value="Update">Update</option>
+                <option value="Contract">Contract</option>
+                <option value="Statement">Statement</option>
+                <option value="Report">Report</option>
+                <option value="Project Material">Project Material</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -1979,9 +1981,10 @@
             <div class="field">
               <label>Document Type</label>
               <select id="kabil-doc-type">
-                <option value="Financial Report">Financial Report</option>
-                <option value="Legal">Legal</option>
-                <option value="Update">Update</option>
+                <option value="Contract">Contract</option>
+                <option value="Statement">Statement</option>
+                <option value="Report">Report</option>
+                <option value="Project Material">Project Material</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -2455,9 +2458,10 @@
             <div class="field">
               <label>Document Type</label>
               <select id="rdm-doc-type">
-                <option value="Financial Report">Financial Report</option>
-                <option value="Legal">Legal</option>
-                <option value="Update">Update</option>
+                <option value="Contract">Contract</option>
+                <option value="Statement">Statement</option>
+                <option value="Report">Report</option>
+                <option value="Project Material">Project Material</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -2485,6 +2489,76 @@
       </div>
 
     </div><!-- /tab-realdelmente -->
+
+    <!-- ═══════════════════════════
+         TAB: GENERAL DOCUMENTS
+    ═══════════════════════════ -->
+    <div class="tab-content" id="tab-general">
+      <div class="sec-top">
+        <div>
+          <div class="sec-heading">General Documents</div>
+          <div class="sec-count" id="general-docs-count">Documents not tied to a single project (e.g. Master Agreement)</div>
+        </div>
+      </div>
+
+      <!-- Existing documents table -->
+      <div class="form-card" style="padding:0;overflow:hidden;margin-bottom:20px">
+        <table class="budget-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>URL</th>
+              <th>Visible To</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="general-docs-tbody">
+            <tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Add document form -->
+      <div style="background:#FAFAF8;border:1px solid #EEEEE9;border-radius:14px;padding:24px;margin-bottom:20px">
+        <div class="sec-heading" style="margin-bottom:18px;font-size:15px">Add Document</div>
+        <div class="form-grid-2" style="margin-bottom:14px">
+          <div class="field">
+            <label>Document Name</label>
+            <input type="text" id="general-doc-name" placeholder="e.g. Master Agreement">
+          </div>
+          <div class="field">
+            <label>Document Type</label>
+            <select id="general-doc-type">
+              <option value="Contract">Contract</option>
+              <option value="Statement">Statement</option>
+              <option value="Report">Report</option>
+              <option value="Project Material">Project Material</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:18px">
+          <label>Document URL</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="general-doc-url" placeholder="Paste URL or upload file below">
+            <button type="button" onclick="document.getElementById('general-doc-file').click()"
+              style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
+              Upload PDF
+            </button>
+            <input type="file" id="general-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'general-doc-url', 'general-doc-upload-status')">
+          </div>
+          <div id="general-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Visible To (leave blank for all investors)</label>
+          <select id="general-doc-investor">
+            <option value="">All investors</option>
+          </select>
+        </div>
+        <button class="btn-save" onclick="addGeneralDocument()">Add Document</button>
+      </div>
+    </div><!-- /tab-general -->
 
     <!-- ═══════════════════════════
          TAB: ACTIVITY
@@ -3795,7 +3869,7 @@
   }
 
   function populateInvestorDropdowns() {
-    const selectors = ['allure-doc-investor', 'kabil-doc-investor', 'rdm-doc-investor'];
+    const selectors = ['allure-doc-investor', 'kabil-doc-investor', 'rdm-doc-investor', 'general-doc-investor'];
     selectors.forEach(id => {
       const sel = document.getElementById(id);
       if (!sel) return;
@@ -4422,6 +4496,7 @@
       if (btn.dataset.tab === 'activity')     loadActivities();
       if (btn.dataset.tab === 'withdrawals')  loadWithdrawals();
       if (btn.dataset.tab === 'landingpage')  loadLandingPage();
+      if (btn.dataset.tab === 'general')      loadGeneralDocuments();
     });
   });
 
@@ -9425,9 +9500,10 @@
     const { error } = await supabaseClient.from('project_documents').delete().eq('id', id);
     if (error) { alert('Failed to delete: ' + error.message); return; }
     showToast('Document deleted.');
-    if (project === 'allure') loadAllureDocuments();
-    if (project === 'kabil')  loadKabilDocuments();
-    if (project === 'rdm')    loadRdmDocuments();
+    if (project === 'allure')  loadAllureDocuments();
+    if (project === 'kabil')   loadKabilDocuments();
+    if (project === 'rdm')     loadRdmDocuments();
+    if (project === 'general') loadGeneralDocuments();
   }
 
   /* ══════════════════════════════════════════
@@ -9567,6 +9643,75 @@
     document.getElementById('rdm-doc-investor').value = '';
     showToast('Document added.');
     loadRdmDocuments();
+  }
+
+  /* ══════════════════════════════════════════
+     DOCUMENTS — GENERAL (not tied to a project)
+  ══════════════════════════════════════════ */
+
+  async function loadGeneralDocuments() {
+    if (!supabaseClient) {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(
+        'https://ghkhvjgeqqxfisfjozzr.supabase.co',
+        'sb_publishable_gn7cmwMKgL-mMHrfp89CFA_TdlulzuR'
+      );
+    }
+    const { data } = await supabaseClient
+      .from('project_documents')
+      .select('*')
+      .eq('project_name', 'General')
+      .order('sort_order', { ascending: true });
+
+    const tbody = document.getElementById('general-docs-tbody');
+    if (!tbody) return;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(doc => `
+      <tr>
+        <td>${escHtml(doc.document_name)}</td>
+        <td>${escHtml(doc.document_type)}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+        </td>
+        <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
+        <td><button class="btn-delete" onclick="deleteDocument('${doc.id}', 'general')">Delete</button></td>
+      </tr>
+    `).join('');
+  }
+
+  async function addGeneralDocument() {
+    const name = document.getElementById('general-doc-name').value.trim();
+    const type = document.getElementById('general-doc-type').value;
+    const url  = document.getElementById('general-doc-url').value.trim();
+    const investorEmail = document.getElementById('general-doc-investor').value || null;
+
+    if (!name) { alert('Document name is required.'); return; }
+    if (!url)  { alert('Please paste a URL or upload a file first.'); return; }
+
+    const { error } = await supabaseClient.from('project_documents').insert({
+      project_name: 'General',
+      document_name: name,
+      document_type: type,
+      document_url: url,
+      investor_email: investorEmail
+    });
+    if (error) { alert('Failed to add document: ' + error.message); return; }
+    notifyInvestors(
+      investorEmail,
+      'New document: ' + name,
+      'New document added',
+      'A new document has been added on Entremares.\n\n'
+        + 'Document: ' + name + '\n\n'
+        + 'View it on your dashboard: https://entremares-nine.vercel.app'
+    ).catch(err => console.error('Document notification failed:', err));
+    document.getElementById('general-doc-name').value = '';
+    document.getElementById('general-doc-url').value  = '';
+    document.getElementById('general-doc-investor').value = '';
+    showToast('Document added.');
+    loadGeneralDocuments();
   }
 </script>
 
