@@ -9446,6 +9446,22 @@
     return urlData.publicUrl;
   }
 
+  /* Keeps investor_activity in sync with project_documents so the
+     dashboard Activity feed shows document uploads. Audience mirrors the
+     document: individual investor_email, or null for public/everyone. */
+  async function logDocumentActivity(projectName, name, investorEmail) {
+    const today = new Date().toISOString().slice(0, 10);
+    const { error } = await supabaseClient.from('investor_activity').insert({
+      investor_email: investorEmail,
+      activity_type:  'Document',
+      description:    name,
+      project_name:   projectName,
+      amount:         null,
+      activity_date:  today
+    });
+    if (error) console.error('Activity log failed:', error);
+  }
+
   /* Opens a document row from one of the docsCache lists. Individual
      documents store an investor-docs object path in document_url, so a
      short-lived signed URL is generated on demand; public documents keep
@@ -9529,6 +9545,7 @@
       investor_email: investorEmail
     });
     if (error) { alert('Failed to add document: ' + error.message); return; }
+    logDocumentActivity('Allure', name, investorEmail);
     notifyInvestors(
       investorEmail,
       'New document: ' + name,
@@ -9547,8 +9564,20 @@
 
   async function deleteDocument(id, project) {
     if (!confirm('Delete this document?')) return;
+    const doc = (docsCache[project] || []).find(d => d.id === id);
     const { error } = await supabaseClient.from('project_documents').delete().eq('id', id);
     if (error) { alert('Failed to delete: ' + error.message); return; }
+    if (doc) {
+      let activityQuery = supabaseClient.from('investor_activity').delete()
+        .eq('activity_type', 'Document')
+        .eq('project_name', doc.project_name)
+        .eq('description', doc.document_name);
+      activityQuery = doc.investor_email
+        ? activityQuery.eq('investor_email', doc.investor_email)
+        : activityQuery.is('investor_email', null);
+      const { error: actErr } = await activityQuery;
+      if (actErr) console.error('Activity cleanup failed:', actErr);
+    }
     showToast('Document deleted.');
     if (project === 'allure')  loadAllureDocuments();
     if (project === 'kabil')   loadKabilDocuments();
@@ -9625,6 +9654,7 @@
       investor_email: investorEmail
     });
     if (error) { alert('Failed to add document: ' + error.message); return; }
+    logDocumentActivity('Kabil', name, investorEmail);
     notifyInvestors(
       investorEmail,
       'New document: ' + name,
@@ -9711,6 +9741,7 @@
       investor_email: investorEmail
     });
     if (error) { alert('Failed to add document: ' + error.message); return; }
+    logDocumentActivity('Real del Monte', name, investorEmail);
     notifyInvestors(
       investorEmail,
       'New document: ' + name,
@@ -9797,6 +9828,7 @@
       investor_email: investorEmail
     });
     if (error) { alert('Failed to add document: ' + error.message); return; }
+    logDocumentActivity('General', name, investorEmail);
     notifyInvestors(
       investorEmail,
       'New document: ' + name,

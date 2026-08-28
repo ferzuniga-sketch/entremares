@@ -3066,7 +3066,7 @@
       const { data, error } = await supabaseClient
         .from('investor_activity')
         .select('*')
-        .ilike('investor_email', email)
+        .or(`investor_email.ilike.${email},and(activity_type.eq.Document,investor_email.is.null)`)
         .order('activity_date', { ascending: false });
 
       if (error) throw error;
