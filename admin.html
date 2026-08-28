@@ -1519,7 +1519,7 @@
                 style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
                 Upload PDF
               </button>
-              <input type="file" id="allure-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'allure-doc-url', 'allure-doc-upload-status')">
+              <input type="file" id="allure-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="stageDocFile(this, 'allure', 'allure-doc-upload-status')">
             </div>
             <div id="allure-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
           </div>
@@ -1997,7 +1997,7 @@
                 style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
                 Upload PDF
               </button>
-              <input type="file" id="kabil-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'kabil-doc-url', 'kabil-doc-upload-status')">
+              <input type="file" id="kabil-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="stageDocFile(this, 'kabil', 'kabil-doc-upload-status')">
             </div>
             <div id="kabil-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
           </div>
@@ -2480,7 +2480,7 @@
                 style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
                 Upload PDF
               </button>
-              <input type="file" id="rdm-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'rdm-doc-url', 'rdm-doc-upload-status')">
+              <input type="file" id="rdm-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="stageDocFile(this, 'rdm', 'rdm-doc-upload-status')">
             </div>
             <div id="rdm-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
           </div>
@@ -2546,7 +2546,7 @@
               style="white-space:nowrap;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;background:#F5F5F3;border:1.5px solid #E8E8E4;border-radius:7px;cursor:pointer">
               Upload PDF
             </button>
-            <input type="file" id="general-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="uploadDocFile(this, 'general-doc-url', 'general-doc-upload-status')">
+            <input type="file" id="general-doc-file" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" style="display:none" onchange="stageDocFile(this, 'general', 'general-doc-upload-status')">
           </div>
           <div id="general-doc-upload-status" style="font-size:12px;margin-top:4px;display:none"></div>
         </div>
@@ -3759,7 +3759,7 @@
 <script>
   /* 'test' → notifications always go only to ferzuniga@gmail.com.
      'live' → notifications go to the real investor(s). */
-  const NOTIFY_MODE = 'test';
+  const NOTIFY_MODE = 'live';
 
   const EMAILJS_PUBLIC_KEY = 'qgN_CHVLPlAOPz0Td';
 
@@ -9397,37 +9397,71 @@
      DOCUMENTS — ALLURE
   ══════════════════════════════════════════ */
 
-  async function uploadDocFile(input, urlFieldId, statusId) {
+  /* Files are staged here on selection, not uploaded — the investor may
+     still be picked after the file, and individual documents must land in
+     the private 'investor-docs' bucket under that investor's folder, which
+     is only known once "Add Document" is clicked. */
+  const pendingDocFiles = {};
+  const docsCache = {};
+
+  function stageDocFile(input, prefix, statusId) {
     const file = input.files[0];
-    if (!file) return;
-
     const statusEl = document.getElementById(statusId);
+    if (!file) return;
+    pendingDocFiles[prefix] = file;
+    document.getElementById(prefix + '-doc-url').value = '';
     statusEl.style.display = 'block';
-    statusEl.style.color = '#9B9B9B';
-    statusEl.textContent = 'Uploading…';
+    statusEl.style.color = '#1A7F4A';
+    statusEl.textContent = 'Selected: ' + file.name + ' (uploads when you click Add Document)';
+    input.value = '';
+  }
 
-    const ext  = file.name.split('.').pop();
-    const path = 'documents/' + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  /* Uploads the file staged for `prefix`, if any. Individual documents
+     (investorEmail set) go to the private investor-docs bucket under
+     {investor_email}/{timestamp}-{filename}, and the returned value is the
+     object path (not a public URL). Public documents keep going to the
+     public project-assets bucket, returning a public URL. */
+  async function uploadStagedDoc(prefix, investorEmail) {
+    const file = pendingDocFiles[prefix];
+    if (!file) return null;
+    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
 
-    const { error: upErr } = await supabaseClient.storage
-      .from('project-assets')
-      .upload(path, file, { cacheControl: '3600', upsert: true });
-
-    if (upErr) {
-      statusEl.style.color = '#C0392B';
-      statusEl.textContent = 'Upload failed: ' + upErr.message;
-      input.value = '';
-      return;
+    if (investorEmail) {
+      const path = investorEmail + '/' + Date.now() + '-' + safeName;
+      const { error } = await supabaseClient.storage
+        .from('investor-docs')
+        .upload(path, file, { cacheControl: '3600', upsert: true });
+      if (error) throw error;
+      pendingDocFiles[prefix] = null;
+      return path;
     }
 
-    const { data: urlData } = supabaseClient.storage
+    const path = 'documents/' + Date.now() + '-' + safeName;
+    const { error } = await supabaseClient.storage
       .from('project-assets')
-      .getPublicUrl(path);
+      .upload(path, file, { cacheControl: '3600', upsert: true });
+    if (error) throw error;
+    pendingDocFiles[prefix] = null;
+    const { data: urlData } = supabaseClient.storage.from('project-assets').getPublicUrl(path);
+    return urlData.publicUrl;
+  }
 
-    document.getElementById(urlFieldId).value = urlData.publicUrl;
-    statusEl.style.color = '#1A7F4A';
-    statusEl.textContent = '✓ Uploaded: ' + file.name;
-    input.value = '';
+  /* Opens a document row from one of the docsCache lists. Individual
+     documents store an investor-docs object path in document_url, so a
+     short-lived signed URL is generated on demand; public documents keep
+     opening document_url directly. */
+  async function openAdminDocument(id, project) {
+    const doc = (docsCache[project] || []).find(d => d.id === id);
+    if (!doc) return;
+    if (doc.investor_email) {
+      const { data, error } = await supabaseClient.storage
+        .from('investor-docs')
+        .createSignedUrl(doc.document_url, 300);
+      if (error) { alert('Failed to open document: ' + error.message); return; }
+      window.open(data.signedUrl, '_blank');
+    } else {
+      window.open(doc.document_url, '_blank');
+    }
   }
 
   async function loadAllureDocuments() {
@@ -9445,6 +9479,7 @@
       if (count) count.textContent = '0 documents';
       return;
     }
+    docsCache.allure = data;
     const count = document.getElementById('allure-docs-count');
     if (count) count.textContent = data.length + ' document' + (data.length !== 1 ? 's' : '');
     tbody.innerHTML = data.map(doc => `
@@ -9452,7 +9487,7 @@
         <td>${escHtml(doc.document_name)}</td>
         <td>${escHtml(doc.document_type)}</td>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+          <a href="#" onclick="openAdminDocument('${doc.id}', 'allure'); return false;" style="color:#1A5FA8">${doc.investor_email ? 'Open (private)' : escHtml(doc.document_url)}</a>
         </td>
         <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
         <td>
@@ -9465,11 +9500,26 @@
   async function addAllureDocument() {
     const name = document.getElementById('allure-doc-name').value.trim();
     const type = document.getElementById('allure-doc-type').value;
-    const url  = document.getElementById('allure-doc-url').value.trim();
-    if (!name) { alert('Document name is required.'); return; }
-    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
-
     const investorEmail = document.getElementById('allure-doc-investor').value || null;
+    if (!name) { alert('Document name is required.'); return; }
+
+    let url = document.getElementById('allure-doc-url').value.trim();
+    if (pendingDocFiles.allure) {
+      const statusEl = document.getElementById('allure-doc-upload-status');
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#9B9B9B';
+      statusEl.textContent = 'Uploading…';
+      try {
+        url = await uploadStagedDoc('allure', investorEmail);
+      } catch (err) {
+        statusEl.style.color = '#C0392B';
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        return;
+      }
+      statusEl.style.color = '#1A7F4A';
+      statusEl.textContent = '✓ Uploaded';
+    }
+    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
 
     const { error } = await supabaseClient.from('project_documents').insert({
       project_name: 'Allure',
@@ -9525,6 +9575,7 @@
       if (count) count.textContent = '0 documents';
       return;
     }
+    docsCache.kabil = data;
     const count = document.getElementById('kabil-docs-count');
     if (count) count.textContent = data.length + ' document' + (data.length !== 1 ? 's' : '');
     tbody.innerHTML = data.map(doc => `
@@ -9532,7 +9583,7 @@
         <td>${escHtml(doc.document_name)}</td>
         <td>${escHtml(doc.document_type)}</td>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+          <a href="#" onclick="openAdminDocument('${doc.id}', 'kabil'); return false;" style="color:#1A5FA8">${doc.investor_email ? 'Open (private)' : escHtml(doc.document_url)}</a>
         </td>
         <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
         <td>
@@ -9545,11 +9596,26 @@
   async function addKabilDocument() {
     const name = document.getElementById('kabil-doc-name').value.trim();
     const type = document.getElementById('kabil-doc-type').value;
-    const url  = document.getElementById('kabil-doc-url').value.trim();
-    if (!name) { alert('Document name is required.'); return; }
-    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
-
     const investorEmail = document.getElementById('kabil-doc-investor').value || null;
+    if (!name) { alert('Document name is required.'); return; }
+
+    let url = document.getElementById('kabil-doc-url').value.trim();
+    if (pendingDocFiles.kabil) {
+      const statusEl = document.getElementById('kabil-doc-upload-status');
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#9B9B9B';
+      statusEl.textContent = 'Uploading…';
+      try {
+        url = await uploadStagedDoc('kabil', investorEmail);
+      } catch (err) {
+        statusEl.style.color = '#C0392B';
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        return;
+      }
+      statusEl.style.color = '#1A7F4A';
+      statusEl.textContent = '✓ Uploaded';
+    }
+    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
 
     const { error } = await supabaseClient.from('project_documents').insert({
       project_name: 'Kabil',
@@ -9599,12 +9665,13 @@
       tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
       return;
     }
+    docsCache.rdm = data;
     tbody.innerHTML = data.map(doc => `
       <tr>
         <td>${escHtml(doc.document_name)}</td>
         <td>${escHtml(doc.document_type)}</td>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+          <a href="#" onclick="openAdminDocument('${doc.id}', 'rdm'); return false;" style="color:#1A5FA8">${doc.investor_email ? 'Open (private)' : escHtml(doc.document_url)}</a>
         </td>
         <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
         <td><button class="btn-delete" onclick="deleteDocument('${doc.id}', 'rdm')">Delete</button></td>
@@ -9615,11 +9682,26 @@
   async function addRdmDocument() {
     const name = document.getElementById('rdm-doc-name').value.trim();
     const type = document.getElementById('rdm-doc-type').value;
-    const url  = document.getElementById('rdm-doc-url').value.trim();
     const investorEmail = document.getElementById('rdm-doc-investor').value || null;
-
     if (!name) { alert('Document name is required.'); return; }
-    if (!url)  { alert('Please paste a URL or upload a file first.'); return; }
+
+    let url = document.getElementById('rdm-doc-url').value.trim();
+    if (pendingDocFiles.rdm) {
+      const statusEl = document.getElementById('rdm-doc-upload-status');
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#9B9B9B';
+      statusEl.textContent = 'Uploading…';
+      try {
+        url = await uploadStagedDoc('rdm', investorEmail);
+      } catch (err) {
+        statusEl.style.color = '#C0392B';
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        return;
+      }
+      statusEl.style.color = '#1A7F4A';
+      statusEl.textContent = '✓ Uploaded';
+    }
+    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
 
     const { error } = await supabaseClient.from('project_documents').insert({
       project_name: 'Real del Monte',
@@ -9669,12 +9751,13 @@
       tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#B0B0AA;text-align:center">No documents yet</td></tr>';
       return;
     }
+    docsCache.general = data;
     tbody.innerHTML = data.map(doc => `
       <tr>
         <td>${escHtml(doc.document_name)}</td>
         <td>${escHtml(doc.document_type)}</td>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          <a href="${escHtml(doc.document_url)}" target="_blank" style="color:#1A5FA8">${escHtml(doc.document_url)}</a>
+          <a href="#" onclick="openAdminDocument('${doc.id}', 'general'); return false;" style="color:#1A5FA8">${doc.investor_email ? 'Open (private)' : escHtml(doc.document_url)}</a>
         </td>
         <td style="font-size:12px;color:#6B6B6B">${doc.investor_email ? doc.investor_email : 'All investors'}</td>
         <td><button class="btn-delete" onclick="deleteDocument('${doc.id}', 'general')">Delete</button></td>
@@ -9685,11 +9768,26 @@
   async function addGeneralDocument() {
     const name = document.getElementById('general-doc-name').value.trim();
     const type = document.getElementById('general-doc-type').value;
-    const url  = document.getElementById('general-doc-url').value.trim();
     const investorEmail = document.getElementById('general-doc-investor').value || null;
-
     if (!name) { alert('Document name is required.'); return; }
-    if (!url)  { alert('Please paste a URL or upload a file first.'); return; }
+
+    let url = document.getElementById('general-doc-url').value.trim();
+    if (pendingDocFiles.general) {
+      const statusEl = document.getElementById('general-doc-upload-status');
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#9B9B9B';
+      statusEl.textContent = 'Uploading…';
+      try {
+        url = await uploadStagedDoc('general', investorEmail);
+      } catch (err) {
+        statusEl.style.color = '#C0392B';
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        return;
+      }
+      statusEl.style.color = '#1A7F4A';
+      statusEl.textContent = '✓ Uploaded';
+    }
+    if (!url) { alert('Please paste a URL or upload a file first.'); return; }
 
     const { error } = await supabaseClient.from('project_documents').insert({
       project_name: 'General',
