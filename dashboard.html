@@ -3350,7 +3350,20 @@
 
     const userEmail = data.user.email.toLowerCase();
 
-    // Check investor exists in investors table
+    // Resolve accessible profiles from investor_access first — a viewer-only
+    // login (e.g. serkanib@gmail.com viewing Groupe Reaction) may have no
+    // row of their own in investors at all.
+    const profiles = await loadAccessibleProfiles(userEmail);
+    if (profiles.length > 0) {
+      accessibleProfiles = profiles;
+      errEl.style.display = 'none';
+      const defaultProfile = profiles.find(p => p.role === 'owner') || profiles[0];
+      await enterProfile(defaultProfile);
+      return;
+    }
+
+    // Legacy fallback: an investors row of their own with no investor_access
+    // rows yet.
     const { data: invData, error: invError } = await supabaseClient
       .from('investors')
       .select('email, name, member_since')
