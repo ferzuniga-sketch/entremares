@@ -1799,6 +1799,39 @@
     .dash-qa-status.success { color: #1A7F4A; }
     .dash-qa-status.error   { color: #C0392B; }
 
+    /* Profile switcher — shown only when a login has access to more than one investor profile */
+    .hdr-profile-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hdr-profile-select {
+      padding: 7px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: #0D0D0D;
+      background: #F5F5F3;
+      border: 1.5px solid #E8E8E4;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .hdr-profile-select:focus { border-color: #0D0D0D; background: #FFFFFF; }
+    .hdr-readonly-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #92400E;
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 100px;
+      padding: 3px 9px;
+      white-space: nowrap;
+    }
+
     /* Admin "view as" preview — force-hide all mutating action buttons */
     body.admin-preview-mode #btn-invest,
     body.admin-preview-mode #btn-withdraw,
@@ -1963,6 +1996,10 @@
   <header class="hdr">
     <a href="index.html" class="hdr-logo">Entremares</a>
     <div class="hdr-right">
+      <div class="hdr-profile-switch" id="hdr-profile-switch" style="display:none">
+        <select class="hdr-profile-select" id="hdr-profile-select" onchange="onProfileSwitch(this.value)"></select>
+        <span class="hdr-readonly-tag" id="hdr-readonly-tag" style="display:none">View only</span>
+      </div>
       <div class="hdr-user-wrap" id="hdr-user-menu">
         <div class="hdr-avatar" id="hdr-initials">--</div>
         <span class="hdr-name" id="hdr-name"></span>
@@ -2805,6 +2842,7 @@
   let currentInvestor = null;
   let currentInvestorEmail = '';
   let isAdminPreview = false;
+  let accessibleProfiles = []; // profiles this login may view, from investor_access — [{ email, role, name }]
   let modalAmount = 0;
   let modalRefNum = '';
   let rdmCommittedAmount = 0;
@@ -3897,6 +3935,70 @@
     if (document.getElementById('login-screen').style.display !== 'none') attemptLogin();
   });
 
+  /* ── Profile switcher (investor_access) ──
+     A login (auth_email) may be linked to more than one investor profile
+     via investor_access(auth_email, investor_email, role). Profiles are
+     derived ONLY from that table — a viewer may not have their own row in
+     `investors` at all, so we never assume the auth email is an investor. */
+  async function loadAccessibleProfiles(authEmail) {
+    const { data: accessRows, error } = await supabaseClient
+      .from('investor_access')
+      .select('investor_email, role')
+      .ilike('auth_email', authEmail);
+    if (error || !accessRows || accessRows.length === 0) return [];
+
+    const { data: invRows } = await supabaseClient.from('investors').select('email, name');
+    const nameByEmail = {};
+    (invRows || []).forEach(inv => { if (inv.email) nameByEmail[inv.email.toLowerCase()] = inv.name; });
+
+    return accessRows
+      .filter(r => r.investor_email)
+      .map(r => ({
+        email: r.investor_email,
+        role:  r.role,
+        name:  nameByEmail[r.investor_email.toLowerCase()] || r.investor_email
+      }));
+  }
+
+  function renderProfileSwitcher() {
+    const wrap = document.getElementById('hdr-profile-switch');
+    const sel  = document.getElementById('hdr-profile-select');
+    if (!wrap || !sel) return;
+    if (accessibleProfiles.length < 2) { wrap.style.display = 'none'; return; }
+    sel.innerHTML = accessibleProfiles.map(p =>
+      `<option value="${escHtml(p.email)}">${escHtml(p.name)}${p.role === 'viewer' ? ' (view only)' : ''}</option>`
+    ).join('');
+    sel.value = currentInvestorEmail;
+    wrap.style.display = 'flex';
+  }
+
+  /* Reuses the existing admin-preview read-only mode — hides/disables
+     commit, withdraw, add funds, modify, cancel — for any profile that
+     isn't this login's own ('owner') profile. */
+  function setReadOnlyMode(active) {
+    isAdminPreview = !!active;
+    document.body.classList.toggle('admin-preview-mode', !!active);
+    const tag = document.getElementById('hdr-readonly-tag');
+    if (tag) tag.style.display = active ? '' : 'none';
+  }
+
+  /* Loads the selected profile through the same initDashboard/renderDashboard
+     pipeline used everywhere else — no duplicated calculations. */
+  async function enterProfile(profile) {
+    await initDashboard(profile.email);
+    setReadOnlyMode(profile.role === 'viewer');
+    renderProfileSwitcher();
+  }
+
+  /* Only ever loads a profile that came back from this login's own
+     investor_access query — never trust the dropdown value (or a URL
+     param) alone. */
+  function onProfileSwitch(profileEmail) {
+    const profile = accessibleProfiles.find(p => p.email.toLowerCase() === (profileEmail || '').toLowerCase());
+    if (!profile) return;
+    enterProfile(profile);
+  }
+
   /* ── Admin "view as" preview ── */
   function enterAdminPreviewMode(name) {
     isAdminPreview = true;
@@ -3950,6 +4052,16 @@
       if (entered) return;
     }
 
+    const profiles = await loadAccessibleProfiles(email);
+    if (profiles.length > 0) {
+      accessibleProfiles = profiles;
+      const defaultProfile = profiles.find(p => p.role === 'owner') || profiles[0];
+      await enterProfile(defaultProfile);
+      return;
+    }
+
+    // Legacy fallback for logins not yet represented in investor_access:
+    // an exact match on the investors table, same as before.
     const { data: invData } = await supabaseClient
       .from('investors')
       .select('email')
