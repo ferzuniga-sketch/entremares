@@ -160,6 +160,7 @@
     .no-commitment-msg { font-size: 14px; color: #9B9B9B; line-height: 1.65; margin-bottom: 20px; }
     .btn-invest-now { display: inline-block; padding: 12px 24px; font-family: inherit; font-size: 14px; font-weight: 600; color: #FFFFFF; background: #0D0D0D; border: none; border-radius: 10px; cursor: pointer; text-align: center; text-decoration: none; transition: opacity 0.15s; letter-spacing: -0.01em; }
     .btn-invest-now:hover { opacity: 0.82; }
+    .btn-invest-closed { cursor: default !important; opacity: 0.55; pointer-events: none; }
 
     /* ══ TAB 4: UPDATES ══ */
     .update-card-v2 { padding: 24px 0; border-bottom: 1px solid #F0F0EE; }
@@ -356,7 +357,8 @@
       <span class="kchip kchip-green">20–30% Target Return</span>
       <span class="kchip kchip-blue">Active</span>
     </div>
-    <button class="btn-hero-invest" onclick="openInvestModal()">Invest Now &rarr;</button>
+    <button class="btn-hero-invest" id="btn-hero-invest" onclick="openInvestModal()">Invest Now &rarr;</button>
+    <button class="btn-hero-invest btn-invest-closed" id="btn-hero-invest-closed" style="display:none" disabled>Fully funded — round closed</button>
     <div class="hero-cover" id="hero-cover">
       <div class="hero-cover-placeholder" id="hero-placeholder">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -692,7 +694,8 @@
             <!-- Shown when investor has no commitment -->
             <div id="no-commitment" class="no-commitment" style="display:none">
               <div class="no-commitment-msg">You have not yet committed to Real del Monte.</div>
-              <button class="btn-invest-now" onclick="openInvestModal()">Invest Now &rarr;</button>
+              <button class="btn-invest-now" id="btn-invest-now" onclick="openInvestModal()">Invest Now &rarr;</button>
+              <button class="btn-invest-now btn-invest-closed" id="btn-invest-now-closed" style="display:none" disabled>Fully funded — round closed</button>
             </div>
 
           </div>
@@ -763,7 +766,8 @@
         <a class="mini-details-link" onclick="switchTab('returns');return false;">View Details &rarr;</a>
       </div>
 
-      <button class="btn-sidebar-invest" onclick="openInvestModal()">Invest Now &rarr;</button>
+      <button class="btn-sidebar-invest" id="btn-sidebar-invest" onclick="openInvestModal()">Invest Now &rarr;</button>
+      <button class="btn-sidebar-invest btn-invest-closed" id="btn-sidebar-invest-closed" style="display:none" disabled>Fully funded — round closed</button>
 
       <div class="docs-card" style="background:#FFFFFF;border:1px solid #EEEEE9;border-radius:14px;padding:20px 22px">
         <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#B0B0AA;margin-bottom:14px">Documents</div>
@@ -930,6 +934,21 @@
 
   const PROJECT_NAME = 'Real del Monte';
   let GOAL = 850000;
+  let rdmFullyFunded = false;
+
+  function setRdmFundedUI(isFunded) {
+    rdmFullyFunded = isFunded;
+    [
+      ['btn-hero-invest',    'btn-hero-invest-closed'],
+      ['btn-invest-now',     'btn-invest-now-closed'],
+      ['btn-sidebar-invest', 'btn-sidebar-invest-closed']
+    ].forEach(([openId, closedId]) => {
+      const openBtn   = document.getElementById(openId);
+      const closedBtn = document.getElementById(closedId);
+      if (openBtn)   openBtn.style.display   = isFunded ? 'none' : '';
+      if (closedBtn) closedBtn.style.display = isFunded ? '' : 'none';
+    });
+  }
 
   let currentInvestorName = '';
   let currentInvestorEmail = '';
@@ -1333,6 +1352,8 @@
     if (capAedifika) capAedifika.textContent = '$' + AEDIFIKA_COMMITTED.toLocaleString('en-US');
     const capTotal = document.getElementById('cap-total-amount');
     if (capTotal) capTotal.textContent = goalFull;
+
+    setRdmFundedUI(GOAL > 0 && total >= GOAL);
   }
 
   async function loadInvestorCommitment(email) {
@@ -1683,6 +1704,7 @@
   }
 
   async function openInvestModal() {
+    if (rdmFullyFunded) return;
     await loadInvestorWalletData();
     const bal = getRDMAvailableBalance();
     document.getElementById('rdm-balance-display').textContent = fmt(bal);
