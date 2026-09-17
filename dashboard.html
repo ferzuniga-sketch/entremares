@@ -2088,6 +2088,7 @@
           </div>
         </div>
         <button class="btn-invest" id="btn-invest">Invest Now &rarr;</button>
+        <div class="btn-invest" id="btn-invest-closed" style="display:none;cursor:default;opacity:0.55;pointer-events:none">Fully funded — round closed</div>
         <button class="btn-withdraw" id="btn-withdraw">Request Withdrawal &rarr;</button>
         <button class="btn-add-funds" id="btn-add-funds">+ Add Funds</button>
       </div>
@@ -2138,6 +2139,7 @@
         <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
           <button class="btn-opp" style="margin-top:0" onclick="window.location.href='real-del-monte.html'">View Details &rarr;</button>
           <button class="btn-opp-primary" id="btn-opp-invest" style="margin-top:0" onclick="openModalForRDM()">Invest Now &rarr;</button>
+          <button class="btn-opp" id="btn-opp-invest-closed" style="display:none;margin-top:0;cursor:default;opacity:0.55;pointer-events:none" disabled>Fully funded — round closed</button>
           <button class="btn-opp" id="btn-opp-modify" style="display:none;margin-top:0;color:#1A5FA8;border-color:#BDD3F5;background:#EEF4FD" onclick="openRDMModifyModal()">Modify &rarr;</button>
         </div>
       </div>
@@ -2650,9 +2652,22 @@
   );
 
   let GOAL = 0;
-  
+  let rdmFullyFunded = false;
 
   const WHT_RATE = 0.10; // 10% WHT on interest only
+
+  function setRdmFundedUI(isFunded) {
+    rdmFullyFunded = isFunded;
+    const invBtn    = document.getElementById('btn-invest');
+    const invClosed = document.getElementById('btn-invest-closed');
+    if (invBtn)    invBtn.style.display    = isFunded ? 'none' : '';
+    if (invClosed) invClosed.style.display = isFunded ? '' : 'none';
+
+    const oppBtn    = document.getElementById('btn-opp-invest');
+    const oppClosed = document.getElementById('btn-opp-invest-closed');
+    if (oppBtn)    oppBtn.style.display    = isFunded ? 'none' : '';
+    if (oppClosed) oppClosed.style.display = isFunded ? '' : 'none';
+  }
 
   /* ── Active projects cache ── */
   let activeProjects = [];
@@ -2789,7 +2804,9 @@
         .eq('project_name', projectName);
       if (error) return;
       const total = (data || []).reduce((s, r) => s + Number(r.amount), 0);
-      if (GOAL > 0 && total >= GOAL) {
+      const isFunded = GOAL > 0 && total >= GOAL;
+      if (projectName === 'Real del Monte') setRdmFundedUI(isFunded);
+      if (isFunded) {
         document.getElementById('funded-banner').style.display = 'block';
         emailjs.send('service_x6mgiqm', 'template_pvaei2l', {
           to_email:   'ferzuniga@gmail.com',
@@ -2825,7 +2842,9 @@
       const rdmRemaining = Math.max(0, GOAL - totalRaised);
       document.getElementById('prog-remaining').textContent = '$' + rdmRemaining.toLocaleString('en-US');
 
-      if (GOAL > 0 && totalRaised >= GOAL) {
+      const isFunded = GOAL > 0 && totalRaised >= GOAL;
+      setRdmFundedUI(isFunded);
+      if (isFunded) {
         document.getElementById('funded-banner').style.display = 'block';
       }
     } catch (err) {
@@ -3598,6 +3617,8 @@
   function openModal() {
     if (isAdminPreview) return;
     if (!currentInvestor) return;
+    const targetProject = selectedProject || activeProjects.find(p => p.project_name === 'Real del Monte') || activeProjects[0];
+    if (rdmFullyFunded && targetProject && targetProject.project_name === 'Real del Monte') return;
     const availableBalance = getAvailableBalance();
     document.getElementById('modal-wallet-display').textContent = fmt(availableBalance);
     const inp = document.getElementById('modal-amount-input');
@@ -3628,6 +3649,7 @@
   }
 
   function openModalForRDM() {
+    if (rdmFullyFunded) return;
     if (activeProjects.length > 0) {
       const rdm = activeProjects.find(p => p.project_name === 'Real del Monte');
       if (rdm) selectedProject = rdm;
@@ -3724,7 +3746,10 @@
     document.getElementById('prog-raised').textContent = '$' + currentRdmRaised.toLocaleString('en-US') + ' raised of ' + goalK + ' target';
     const rdmRemaining = Math.max(0, GOAL - currentRdmRaised);
     document.getElementById('prog-remaining').textContent = '$' + rdmRemaining.toLocaleString('en-US');
-    if (GOAL > 0 && currentRdmRaised >= GOAL) document.getElementById('funded-banner').style.display = 'block';
+    if (GOAL > 0 && currentRdmRaised >= GOAL) {
+      document.getElementById('funded-banner').style.display = 'block';
+      setRdmFundedUI(true);
+    }
 
     document.getElementById('active-investments-section').style.display = '';
     document.getElementById('rdm-committed-amount').textContent = fmt(rdmCommittedAmount);
